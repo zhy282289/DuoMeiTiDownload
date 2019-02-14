@@ -8,7 +8,7 @@
 #include <thread>
 
 #define TRY_COUNT 5
-
+#define GET_MORE_COUNT 10
 
 TaskObtainManager::TaskObtainManager(QObject *parent /*= nullptr*/)
 	:QObject(parent)
@@ -20,6 +20,7 @@ TaskObtainManager::TaskObtainManager(QObject *parent /*= nullptr*/)
 	m_view = nullptr;
 	m_detailView = nullptr;
 	m_redownloadView = nullptr;
+	m_getMoreCount = 0;
 
 	QString pyevnpath = QDir::toNativeSeparators(QApplication::applicationDirPath() + "/python");
 	pyevnpath.replace('\\', '/');
@@ -45,10 +46,10 @@ bool TaskObtainManager::StartScan()
 	m_scaning = true;
 	m_stoping = false;
 
-
 	m_url = ScanConfig::Url();
 	m_count = ScanConfig::Number();
 	m_curCount = 1;
+	m_getMoreCount = 0;
 
 	if (m_view == nullptr)
 	{
@@ -239,16 +240,27 @@ void TaskObtainManager::NextUrl()
 
 void TaskObtainManager::GetMore()
 {
-	LOG("get more");
-	m_view->page()->runJavaScript(
-		"window.scrollTo(0,document.body.scrollHeight);"
-		, [=](QVariant)
+	if (++m_getMoreCount < GET_MORE_COUNT)
 	{
-		QTimer::singleShot(2000, [=]()
+		LOG("get more");
+		m_view->page()->runJavaScript(
+			"window.scrollTo(0,document.body.scrollHeight);"
+			, [=](QVariant)
 		{
-			ParseMainPage();
+			QTimer::singleShot(2000, [=]()
+			{
+				ParseMainPage();
+			});
 		});
-	});
+	}
+	else
+	{
+		LOG(TR("Ë¢ÐÂÖ÷Ò³"));
+		m_getMoreCount = 0;
+		m_view->load(m_url);
+
+	}
+
 }
 
 bool TaskObtainManager::IsUrlExistInDB(const QString &url)
