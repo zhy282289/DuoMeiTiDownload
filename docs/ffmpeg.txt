@@ -1,0 +1,22 @@
+修改分辨率：
+ffmpeg -i 1.mp4 -vf scale=800:400 2.mp4
+
+
+./ffprobe.exe -print_format json -show_format -show_streams 1.mp4
+
+E:\zhy\works\qt\DuoMeiTiDownload\bin\x64\Debug\ffmpeg\ffmpeg.exe -show_format E:\zhy\works\qt\DuoMeiTiDownload\bin\x64\Debug\ffmpeg\1.mp4
+
+
+./ffmpeg.exe -ss 0:0:30 -t 0:0:20 -i 1.mp4 -vcodec copy -acodec copy 2.mp4
+
+./ffplay -i 5.mp4 -vf delogo=x=740:y=20:w=200:h=56:show=0
+
+增加水印：
+ffmpeg -i input.mp4 -i other.png -filter_complex "overlay=x=(main_w-overlay_w)/2:y=(main_h-overlay_h)/2" ouput.mp4
+水印大小：
+y=20,h=56,w=200
+
+
+./ffmpeg.exe -ss 0:0:5 -i 1.mp4 -vf "delogo=x=1:y=20:w=200:h=56,scale=800:400" -b:v 1500k 111.mp4
+
+./ffmpeg.exe -i 1.mp4 -b:v 1500k output.mp4

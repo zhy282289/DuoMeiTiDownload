@@ -190,6 +190,7 @@ void TaskWnd::StartDownload()
 
 	if (m_listWnd->count() > 0)
 	{
+		
 		TaskWndListItem *taksItem = qobject_cast<TaskWndListItem*>(m_listWnd->itemWidget(m_listWnd->item(0)));
 		DownloadManager *download = new DownloadManager;
 		download->Download(taksItem->GetInfo());

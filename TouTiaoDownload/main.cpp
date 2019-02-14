@@ -2,10 +2,15 @@
 #include "TouTiaoDownload.h"
 #include <QtWidgets/QApplication>
 
+#include "VideoInfo.h"
+
+
+void test();
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
 
+	//test();
 
 	if (!MY_DB->Init())
 	{
@@ -17,4 +22,14 @@ int main(int argc, char *argv[])
 
 
 	return a.exec();
+}
+
+#include "DownloadManager.h"
+void test()
+{
+	//VideoInfo::GetMediaInfo("");
+	QString src("E:\\zhy\\works\\qt\\DuoMeiTiDownload\\bin\\x64\\Debug\\ffmpeg\\11.mp4");
+	QString dst("E:\\zhy\\works\\qt\\DuoMeiTiDownload\\bin\\x64\\Debug\\ffmpeg\\333.mp4");
+	ConvertManager convert;
+	convert.Convert(src, gGetTouTiaoTodayDestePath(src));
 }

@@ -301,6 +301,7 @@ void TaskObtainManager::ParseUrlDetailInfo(const QString &url)
 					else
 					{
 						LOG(QString("error: document.getElementsByClassName('bui-left index-content')"));
+						NextDownload();
 					}
 				});
 			});

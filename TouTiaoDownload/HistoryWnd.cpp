@@ -220,6 +220,8 @@ void HistoryWndListItem::MenuPopup(QMouseEvent *event)
 		menu.addSeparator();
 		auto actConver2Download = menu.addAction(TR("标记成待下载"));
 		auto actConver2DownloadFinish = menu.addAction(TR("标记成已下载"));
+		actConver2Download->setEnabled(false);
+		actConver2DownloadFinish->setEnabled(false);
 
 		auto act = menu.exec(event->globalPos());
 		if (act == actViewUrl)

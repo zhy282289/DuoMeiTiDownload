@@ -75,6 +75,9 @@
     <ClCompile Include="WebViewWnd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="VideoInfo.cpp">
+      <Filter>Infos</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -117,6 +120,9 @@
     </QtMoc>
     <QtMoc Include="WebViewWnd.h">
       <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="VideoInfo.h">
+      <Filter>Infos</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>

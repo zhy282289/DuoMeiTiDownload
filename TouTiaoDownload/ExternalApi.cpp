@@ -31,11 +31,21 @@ QString gGetTouTiaoTodayDestePath(QString src)
 	int pos = src.indexOf(".mp4", 0, Qt::CaseInsensitive);
 	if (pos>0)
 	{
-		src.insert(pos, "_dest");
+
+		int i = 1;
+		QString temp;
+		do
+		{
+			temp = src;
+			temp.insert(pos, QString("_%1").arg(i));
+			if (!QFile::exists(temp))
+				break;
+		} while (++i);
+		src = temp;
 	}
 	else
 	{
-		src += "_dest.mp4";
+		src += "_1.mp4";
 	}
 	return src;
 }

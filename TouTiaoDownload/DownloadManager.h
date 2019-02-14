@@ -23,3 +23,18 @@ private:
 private:
 	TaskInfoPtr m_info;
 };
+
+
+class ConvertManager : public QObject
+{
+	Q_OBJECT
+
+public:
+	ConvertManager(QObject *parent = nullptr);
+
+	bool Convert(QString src, QString dst);
+
+
+
+};
+
