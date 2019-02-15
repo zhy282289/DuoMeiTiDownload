@@ -19,7 +19,7 @@ Q_SIGNALS:
 	void sigFinish(bool code, TaskInfoPtr info);
 	void sigUpdateVideoUrl(TaskInfoPtr info);
 private:
-	void Finish(bool code);
+	void Finish(int code);
 private:
 	TaskInfoPtr m_info;
 };

@@ -20,7 +20,6 @@ TaskObtainManager::TaskObtainManager(QObject *parent /*= nullptr*/)
 	m_view = nullptr;
 	m_detailView = nullptr;
 	m_redownloadView = nullptr;
-	m_getMoreCount = 0;
 
 	QString pyevnpath = QDir::toNativeSeparators(QApplication::applicationDirPath() + "/python");
 	pyevnpath.replace('\\', '/');
@@ -49,7 +48,6 @@ bool TaskObtainManager::StartScan()
 	m_url = ScanConfig::Url();
 	m_count = ScanConfig::Number();
 	m_curCount = 1;
-	m_getMoreCount = 0;
 
 	if (m_view == nullptr)
 	{
@@ -57,13 +55,10 @@ bool TaskObtainManager::StartScan()
 
 		connect(m_view, &QWebEngineView::loadFinished, this, &TaskObtainManager::ParseMainPage);
 
-		m_view->load(m_url);
 		m_view->show();
 	}
-	else
-	{
-		ParseMainPage();
-	}
+	m_view->load(m_url);
+
 
 	return false;
 }
@@ -119,6 +114,7 @@ bool TaskObtainManager::UpdateInfo(TaskInfoPtr info)
 							return;
 						}
 					}
+					
 					eventloop.exit(0);
 				});
 			});
@@ -173,7 +169,11 @@ void TaskObtainManager::ParseMainPage()
 			{
 				LOG("error: document.getElementsByClassName('feed-infinite-wrapper');");
 				//QThread::sleep(1);
-				ParseMainPage();
+				if (m_stoping)
+					_StopScan();
+				else
+					ParseMainPage();
+
 			}
 
 		});
@@ -186,10 +186,7 @@ void TaskObtainManager::NextDownload()
 {
 	if (m_stoping)
 	{
-		m_scaning = false;
-		LOG(TR("停止扫描任务！"));
-		emit sigStopScan();
-
+		_StopScan();
 	}
 	else
 	{
@@ -199,8 +196,8 @@ void TaskObtainManager::NextDownload()
 		}
 		else
 		{
-			m_scaning = false;
 			LOG(TR("扫描任务完成！"));
+			m_scaning = false;
 			emit sigScanFinish();
 		}
 	}
@@ -221,10 +218,6 @@ void TaskObtainManager::NextUrl()
 				taskUrl = url;
 				break;
 			}
-			else
-			{
-				LOG("warning: db had exist this url");
-			}
 		}
 	}
 	if (!taskUrl.isEmpty())
@@ -240,7 +233,12 @@ void TaskObtainManager::NextUrl()
 
 void TaskObtainManager::GetMore()
 {
-	if (++m_getMoreCount < GET_MORE_COUNT)
+	if (m_stoping)
+	{
+		_StopScan();
+
+	}
+	else
 	{
 		LOG("get more");
 		m_view->page()->runJavaScript(
@@ -253,27 +251,54 @@ void TaskObtainManager::GetMore()
 			});
 		});
 	}
-	else
-	{
-		LOG(TR("刷新主页"));
-		m_getMoreCount = 0;
-		m_view->load(m_url);
-
-	}
 
 }
+
+
 
 bool TaskObtainManager::IsUrlExistInDB(const QString &url)
 {
-	//https://www.ixigua.com/group/6642977069707821581/
-	QString id = url.mid(29, 19);
-	bool ret = MY_DB->TaskContain(id);
-	return ret;
+	LOG(TR("正在查询数据库，是否有重复数据！"));
+
+	bool bexist = false;
+	do 
+	{
+		QString id = url.mid(29, 19);
+		if (MY_DB->TaskContain(id))
+		{
+			bexist = true;
+			break;
+		}
+		if (MY_DB->DownladContain(id))
+		{
+			bexist = true;
+			break;
+		}
+		if (MY_DB->HistoryContain(id))
+		{
+			bexist = true;
+			break;
+		}
+	} while (false);
+	if (bexist)
+		LOG(TR("查询完毕，重复数据"));
+	else
+		LOG(TR("查询完毕，无重复数据"));
+
+
+	return bexist;
 }
 
 
 
 
+
+void TaskObtainManager::_StopScan()
+{
+	LOG(TR("停止扫描任务！"));
+	m_scaning = false;
+	emit sigStopScan();
+}
 
 void TaskObtainManager::ParseUrlDetailInfo(const QString &url)
 {
@@ -313,7 +338,19 @@ void TaskObtainManager::ParseUrlDetailInfo(const QString &url)
 					else
 					{
 						LOG(QString("error: document.getElementsByClassName('bui-left index-content')"));
-						NextDownload();
+						LOG(TR("获取视频详细信息失败，可能网络访问被限！"));
+
+						if (ScanConfig::Loop())
+						{
+							LOG(TR("设置了无限扫描，10秒后继续扫描任务！"));
+							QTimer::singleShot(10000, this, &TaskObtainManager::NextDownload);
+						}
+						else
+						{
+							_StopScan();
+						}
+
+
 					}
 				});
 			});

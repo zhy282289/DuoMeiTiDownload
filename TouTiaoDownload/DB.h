@@ -20,6 +20,7 @@ public:
 
 	// downlad
 	int DownladCount();
+	bool DownladContain(QString id);
 	bool DownladInsert(TaskInfo *info);
 	bool DownladRemove(QString id);
 	TaskInfos DownladGet(int start, int end, bool order = true);
@@ -27,6 +28,7 @@ public:
 
 	// history
 	int HistoryCount();
+	bool HistoryContain(QString id);
 	bool HistoryInsert(TaskInfo *info);
 	bool HistoryRemove(QString id);
 	TaskInfos HistoryGet(int start, int end, bool order = true);

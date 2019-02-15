@@ -42,7 +42,7 @@ private:
 	void RemoveItemByInfo(TaskInfoPtr info);
 
 	void StartDownload();
-	void FinishDownload(bool code, TaskInfoPtr info);
+	void FinishDownload(int code, TaskInfoPtr info);
 	void StopDownload();
 	void NextDownload();
 
@@ -63,6 +63,8 @@ private:
 	QCheckBox *m_ckbBigIcon;
 	QPushButton *m_btnAllTaskNum;
 	QCheckBox *m_ckbDownloadFromDB;
+
+	QCheckBox *m_ckbLoop;
 
 };
 
@@ -94,7 +96,8 @@ protected:
 	void OpenURL();
 	void ExpanItem();
 	void LocalFile(QString filePath);
-
+	void LocalFileDirectory(QString filePath);
+	void CopyLocalFile(QString filePath);
 protected:
 	void resizeEvent(QResizeEvent *event);
 	void mouseReleaseEvent(QMouseEvent *event);

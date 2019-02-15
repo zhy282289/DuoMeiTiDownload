@@ -235,6 +235,12 @@ int DB::DownladCount()
 	return _Count("downloadurls");
 }
 
+bool DB::DownladContain(QString id)
+{
+	return _Contain("downloadurls");
+
+}
+
 bool DB::DownladInsert(TaskInfo *info)
 {
 	return _Insert(info, "downloadurls");
@@ -253,6 +259,12 @@ TaskInfos DB::DownladGet(int start, int end, bool order /*= true*/)
 int DB::HistoryCount()
 {
 	return _Count("historyurls");
+}
+
+bool DB::HistoryContain(QString id)
+{
+	return _Contain("historyurls");
+
 }
 
 bool DB::HistoryInsert(TaskInfo *info)

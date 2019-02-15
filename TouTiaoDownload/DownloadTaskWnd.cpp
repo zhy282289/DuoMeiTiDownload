@@ -38,63 +38,6 @@ DownloadTaskWnd::~DownloadTaskWnd()
 }
 
 
-////
-DownloadWndListItem::DownloadWndListItem(QListWidgetItem *item)
-	:TaskWndListItem(item)
-{
-
-}
-
-void DownloadWndListItem::MenuPopup(QMouseEvent *event)
-{
-	if (event->button() == Qt::RightButton)
-	{
-		QMenu menu;
-		auto actViewUrl = menu.addAction(TR("查看网页"));
-		//auto actDelete = menu.addAction(TR("删除"));
-		auto actExpa = menu.addAction(TR("展开"));
-		auto actLocalView = menu.addAction(TR("查看本地视频"));
-		menu.addSeparator();
-		auto actConvert2Download = menu.addAction(TR("标记成待下载"));
-		auto actConvert2History = menu.addAction(TR("标记成已历史"));
-
-		auto act = menu.exec(event->globalPos());
-		if (act == actViewUrl)
-		{
-			OpenURL();
-		}
-		else if (actExpa == act)
-		{
-			ExpanItem();
-
-		}
-		else if (actLocalView == act)
-		{
-			LocalFile(m_info->localPath);
-
-		}
-		else if (actConvert2Download == act)
-		{
-			sigConvert2Task();
-		}
-		else if (actConvert2History == act)
-		{
-			sigConvert2Hsitory();
-		}
-	}
-}
-
-void DownloadWndListItem::GenerateInfo()
-{
-	TaskWndListItem::GenerateInfo();
-	if (QFile::exists(m_info->localPath))
-		m_desc->append(m_info->localPath);
-	else
-		m_desc->append(TR("文件不存在"));
-
-
-}
-
 void DownloadTaskWnd::AddItem(TaskInfoPtr info)
 {
 	QListWidgetItem *item = new QListWidgetItem(m_listWnd);
@@ -248,3 +191,65 @@ void DownloadTaskWnd::resizeEvent(QResizeEvent *event)
 	m_listWnd->setGeometry(0, toolbarHeight, width(), height() - toolbarHeight);
 }
 
+
+////
+DownloadWndListItem::DownloadWndListItem(QListWidgetItem *item)
+	:TaskWndListItem(item)
+{
+
+}
+
+void DownloadWndListItem::MenuPopup(QMouseEvent *event)
+{
+	if (event->button() == Qt::RightButton)
+	{
+		QMenu menu;
+		auto actViewUrl = menu.addAction(TR("查看网页"));
+		//auto actDelete = menu.addAction(TR("删除"));
+		auto actExpa = menu.addAction(TR("展开"));
+		auto actLocalView = menu.addAction(TR("查看本地视频"));
+		auto actLocalFileDirectory = menu.addAction(TR("定位本地视频"));
+		menu.addSeparator();
+		auto actConvert2Download = menu.addAction(TR("标记成待下载"));
+		auto actConvert2History = menu.addAction(TR("标记成已历史"));
+
+		auto act = menu.exec(event->globalPos());
+		if (act == actViewUrl)
+		{
+			OpenURL();
+		}
+		else if (actExpa == act)
+		{
+			ExpanItem();
+
+		}
+		else if (actLocalView == act)
+		{
+			LocalFile(m_info->localPath);
+
+		}
+		else if (actLocalFileDirectory == act)
+		{
+			LocalFileDirectory(m_info->localPath);
+		}
+		else if (actConvert2Download == act)
+		{
+			sigConvert2Task();
+		}
+		else if (actConvert2History == act)
+		{
+			sigConvert2Hsitory();
+		}
+	}
+}
+
+void DownloadWndListItem::GenerateInfo()
+{
+	TaskWndListItem::GenerateInfo();
+	if (QFile::exists(m_info->localPath))
+		m_desc->append(m_info->localPath);
+	else
+		m_desc->append(TR("文件不存在"));
+
+
+}

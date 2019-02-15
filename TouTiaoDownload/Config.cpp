@@ -86,6 +86,18 @@ void ScanConfig::SetPlayTimes(int playtimes)
 
 }
 
+bool ScanConfig::Loop()
+{
+
+	return CONFIG_BOOL_DEF("scan/loop", false);
+}
+
+void ScanConfig::SetLoop(bool loop)
+{
+	CONFIG_SET("scan/loop", loop);
+
+}
+
 bool DownloadConfig::Order()
 {
 	return CONFIG_BOOL_DEF("download/order", true);
@@ -120,6 +132,18 @@ bool DownloadConfig::OnlyDownloadList()
 void DownloadConfig::SetOnlyDownloadList(bool order)
 {
 	CONFIG_SET("download/onlydownloadlist", order);
+
+}
+
+bool DownloadConfig::Loop()
+{
+
+	return CONFIG_BOOL_DEF("download/loop", false);
+}
+
+void DownloadConfig::SetLoop(bool loop)
+{
+	CONFIG_SET("download/loop", loop);
 
 }
 

@@ -41,6 +41,10 @@ public:
 
 	static int PlayTimes();
 	static void SetPlayTimes(int playtimes);
+
+	static bool Loop();
+	static void SetLoop(bool loop);
+
 };
 
 class DownloadConfig
@@ -55,6 +59,8 @@ public:
 	static bool OnlyDownloadList();
 	static void SetOnlyDownloadList(bool order);
 
+	static bool Loop();
+	static void SetLoop(bool loop);
 };
 
 class DownloadFinishConfig

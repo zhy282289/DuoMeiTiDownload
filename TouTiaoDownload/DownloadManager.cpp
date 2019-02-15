@@ -19,7 +19,7 @@ DownloadManager::~DownloadManager()
 bool DownloadManager::Download(TaskInfoPtr info)
 {
 
-	auto DownloadFun = [](QString url, QString dstpath) ->bool
+	auto DownloadFun = [](QString url, QString dstpath) ->int
 	{
 		IPython_Exe *pyExe = IPython_Exe::GetInstance();
 		bool ret = pyExe->Simple_Call("toutiao", "downloadFile", "(ss)", url.toUtf8().data(), dstpath.toUtf8().data());
@@ -27,7 +27,7 @@ bool DownloadManager::Download(TaskInfoPtr info)
 
 		ret = QFile::exists(dstpath);
 
-		return ret;
+		return ret ? ERROR_CODE_OK : ERROR_CODE_NETWORK_ERROR;
 	};
 
 	m_info = info;
@@ -35,7 +35,7 @@ bool DownloadManager::Download(TaskInfoPtr info)
 	{
 		QString url = m_info->videoUrl;
 		QString localPath = m_info->localPath;
-		bool ret = false;
+		int ret = ERROR_CODE_NETWORK_ERROR;
 		if (!QFile::exists(localPath))
 		{
 
@@ -43,7 +43,7 @@ bool DownloadManager::Download(TaskInfoPtr info)
 			LOG(TR("开始下载视频"));
 			ret = DownloadFun(url, localPath);
 
-			if (!ret)
+			if (ret == ERROR_CODE_NETWORK_ERROR)
 			{
 				LOG(TR("下载失败，重新获取下载地址"));
 				emit sigUpdateVideoUrl(info);
@@ -57,7 +57,7 @@ bool DownloadManager::Download(TaskInfoPtr info)
 		}
 
 		
-		if (ret)
+		if (ret == ERROR_CODE_OK)
 		{
 			LOG(TR("下载成功"));
 			Convert(localPath);
@@ -83,18 +83,30 @@ bool DownloadManager::Convert(QString dstpath)
 	ConvertManager convert;
 	bool ret = convert.Convert(dstpath, dstpathTemp);
 	if (ret)
+	{
+		LOG(TR("转码成功"));
 		m_info->localPath = dstpathTemp;
+		if (!QFile::remove(dstpath))
+		{
+			LOG(TR("删除原文件失败"));
+		}
+		Finish(ERROR_CODE_OK);
+	}
+	else
+	{
+		LOG(TR("转码失败"));
+		Finish(ERROR_CODE_CONVERT_ERROR);
 
-	LOG(TR("转码结束"));
+	}
 
-	Finish(true);
+
 
 	return true;
 }
 
-void DownloadManager::Finish(bool code)
+void DownloadManager::Finish(int code)
 {
-	emit sigFinish(true, m_info);
+	emit sigFinish(code, m_info);
 	deleteLater();
 }
 
@@ -135,10 +147,12 @@ bool ConvertManager::Convert(QString src, QString dst)
 		height += 1;
 
 	QString startTime = VideoInfo::SecondToQString(5);
+	QString duration = VideoInfo::SecondToQString(vinfo.duration * 0.9);
+
 	QString ffmpegPath = QApplication::applicationDirPath() + "/ffmpeg/ffmpeg.exe";
-	QString cmd = QString("%1 -ss %7 -i %2 -vf delogo=x=%6:y=20:w=190:h=56,scale=%4:%5 -b:v %8 %3").
+	QString cmd = QString("%1 -ss %7 -t %8 -i %2 -vf delogo=x=%6:y=20:w=190:h=56,scale=%4:%5 -b:v %9 %3").
 		arg(ffmpegPath).arg(src).arg(dst).arg(width).arg(height).
-		arg(x).arg(startTime).arg(vinfo.bit_rate);
+		arg(x).arg(startTime).arg(duration).arg(vinfo.bit_rate);
 
 	bool ret = QProcess::execute(cmd) == 0;
 

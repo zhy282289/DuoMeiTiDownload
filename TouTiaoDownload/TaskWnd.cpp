@@ -27,6 +27,7 @@ TaskWnd::TaskWnd(QWidget *parent)
 	m_ckbBigIcon = new QCheckBox(TR("大图标"), this);
 	m_btnAllTaskNum = new QPushButton(TR("总任务数"), this);
 	m_ckbDownloadFromDB = new QCheckBox(TR("只下载列表任务"), this);
+	m_ckbLoop = new QCheckBox(TR("无限下载"), this);
 
 	InitUI();
 
@@ -112,7 +113,7 @@ void TaskWnd::InitUI()
 	m_ckbTop->setChecked(DownloadConfig::Order());
 	m_leTaskNum->setText(QString("%1").arg(DownloadConfig::Number()));
 	m_ckbDownloadFromDB->setChecked(DownloadConfig::OnlyDownloadList());
-
+	m_ckbLoop->setChecked(DownloadConfig::Loop());
 }
 
 bool TaskWnd::CheckUI()
@@ -129,6 +130,7 @@ void TaskWnd::SaveUI()
 	DownloadConfig::SetOrder(m_ckbTop->isChecked());
 	DownloadConfig::SetNumber(m_leTaskNum->text().toInt());
 	DownloadConfig::SetOnlyDownloadList(m_ckbDownloadFromDB->isChecked());
+	DownloadConfig::SetLoop(m_ckbLoop->isChecked());
 
 }
 
@@ -166,7 +168,7 @@ void TaskWnd::SetEnabled(bool enabled)
 	m_ckbTop->setEnabled(enabled);
 	m_leTaskNum->setEnabled(enabled);
 	m_btnTaskNum->setEnabled(enabled);
-	//m_ckbBigIcon->setEnabled(enabled);
+	m_ckbLoop->setEnabled(enabled);
 }
 
 void TaskWnd::slotNewInfo(TaskInfoPtr info)
@@ -177,6 +179,8 @@ void TaskWnd::slotNewInfo(TaskInfoPtr info)
 
 void TaskWnd::slotStartDownload()
 {
+	SaveUI();
+
 	SetEnabled(false);
 	m_btnStopDownload->setEnabled(true);
 
@@ -192,13 +196,13 @@ void TaskWnd::StartDownload()
 	{
 		
 		TaskWndListItem *taksItem = qobject_cast<TaskWndListItem*>(m_listWnd->itemWidget(m_listWnd->item(0)));
+
 		DownloadManager *download = new DownloadManager;
 		download->Download(taksItem->GetInfo());
-
 		connect(download, &DownloadManager::sigFinish, this, &TaskWnd::FinishDownload);
-
-		connect(download, &DownloadManager::sigUpdateVideoUrl, this, [=](TaskInfoPtr info) {
-			TaskObtainManager manager(this);
+		connect(download, &DownloadManager::sigUpdateVideoUrl, this, [=](TaskInfoPtr info) 
+		{
+			static TaskObtainManager manager;
 			manager.UpdateInfo(info);
 		}, Qt::BlockingQueuedConnection);
 	}
@@ -214,6 +218,7 @@ void TaskWnd::StartDownload()
 			}
 			else
 			{
+				LOG(TR("无转码任务"));
 				StopDownload();
 			}
 		}
@@ -228,10 +233,10 @@ void TaskWnd::StartDownload()
 }
 
 
-void TaskWnd::FinishDownload(bool code, TaskInfoPtr info)
+void TaskWnd::FinishDownload(int code, TaskInfoPtr info)
 {
 	bool bdb = false;
-	if (code)
+	if (code == ERROR_CODE_OK)
 	{
 		bdb = MY_DB->DownladInsert(info);
 		if (bdb)
@@ -246,15 +251,32 @@ void TaskWnd::FinishDownload(bool code, TaskInfoPtr info)
 		else
 		{
 			LOG(TR("插入到下载数据库失败， 停止转码"));
-			emit sigDownloadStop();
+			StopDownload();
 		}
+	}
+	else if (code == ERROR_CODE_NETWORK_ERROR)
+	{
+		LOG(TR("获取视频详细信息失败，可能网络访问被限！"));
+		if (DownloadConfig::Loop())
+		{
+			LOG(TR("设置了无限下载任务，10秒后重新下载！"));
+			QTimer::singleShot(10000, this, &TaskWnd::NextDownload);
+		}
+		else
+		{
+
+			StopDownload();
+		}
+	}
+	else if (code == ERROR_CODE_CONVERT_ERROR)
+	{
+		LOG(TR("转码失败，出现未知错误，停止任务"));
+		StopDownload();
 	}
 	else
 	{
-		LOG(TR("转码失败，下一个任务"));
-		MY_DB->TaskRemove(info->id);
-		RemoveItemByInfo(info);
-		NextDownload();
+		LOG(TR("出现未知错误，停止任务"));
+		StopDownload();
 	}
 }
 
@@ -346,6 +368,8 @@ void TaskWnd::resizeEvent(QResizeEvent *event)
 	m_btnAllTaskNum->setGeometry(left, top, btnw, btnh);
 	left = m_btnAllTaskNum->geometry().right() + margins;
 	m_ckbDownloadFromDB->setGeometry(left, top, 100, btnh);
+	left = m_ckbDownloadFromDB->geometry().right() + margins;
+	m_ckbLoop->setGeometry(left, top, 100, btnh);
 
 
 
@@ -470,8 +494,20 @@ void TaskWndListItem::ExpanItem()
 
 void TaskWndListItem::LocalFile(QString filePath)
 {
+
+	QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
+
+}
+
+void TaskWndListItem::LocalFileDirectory(QString filePath)
+{
 	QString cmd = QString("explorer.exe /select,%1").arg(filePath);
 	QProcess::startDetached(cmd);
+}
+
+void TaskWndListItem::CopyLocalFile(QString filePath)
+{
+	QApplication::clipboard()->setText(filePath);
 }
 
 void TaskWndListItem::resizeEvent(QResizeEvent *event)

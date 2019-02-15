@@ -20,6 +20,9 @@ ScanWnd::ScanWnd(QWidget *parent)
 	m_lbPlayCount = new QLabel(TR("播放次数(万）"), this);
 	m_lePlayCount = new QLineEdit(this);
 
+	m_ckbLoop = new QCheckBox(TR("无限扫描"), this);
+
+
 	m_task = new TaskObtainManager(this);
 	connect(m_task, &TaskObtainManager::sigNewInfo, this, &ScanWnd::sigNewInfo);
 	connect(m_task, &TaskObtainManager::sigStopScan, this, [=]() {
@@ -82,6 +85,7 @@ void ScanWnd::InitUI()
 	m_leScanNumber->setText(QString("%1").arg(ScanConfig::Number()));
 	m_chkNotOriginal->setChecked(!ScanConfig::Origin());
 	m_lePlayCount->setText(QString("%1").arg(ScanConfig::PlayTimes()));
+	m_chkNotOriginal->setChecked(ScanConfig::Loop());
 
 }
 
@@ -103,6 +107,8 @@ void ScanWnd::SaveUI()
 	ScanConfig::SetNumber(m_leScanNumber->text().toInt());
 	ScanConfig::SetOrigin(!m_chkNotOriginal->isChecked());
 	ScanConfig::SetPlayTimes(m_lePlayCount->text().toFloat());
+	ScanConfig::SetLoop(m_ckbLoop->isChecked());
+
 }
 
 
@@ -113,6 +119,9 @@ void ScanWnd::SetEnabled(bool enabled)
 	m_leScanNumber->setEnabled(enabled);
 	m_chkNotOriginal->setEnabled(enabled); 
 	m_lePlayCount->setEnabled(enabled);
+	m_ckbLoop->setEnabled(enabled);
+
+
 }
 
 void ScanWnd::resizeEvent(QResizeEvent *event)
@@ -147,4 +156,9 @@ void ScanWnd::resizeEvent(QResizeEvent *event)
 	m_lbPlayCount->setGeometry(left, top, 80, btnh);
 	left = m_lbPlayCount->geometry().right() + margins2;
 	m_lePlayCount->setGeometry(left, top, btnw, btnh);
+
+	left = m_lePlayCount->geometry().right() + margins2;
+	m_ckbLoop->setGeometry(left, top, btnw, btnh);
+
+
 }

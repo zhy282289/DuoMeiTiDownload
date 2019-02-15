@@ -43,7 +43,7 @@ TouTiaoDownload::TouTiaoDownload(QWidget *parent)
 	// ScanWnd
 	connect(scanWnd, &ScanWnd::sigStartScan, taskWnd, [=]() 
 	{
-		m_tabWidget->setCurrentIndex(1);
+		//m_tabWidget->setCurrentIndex(1);
 		taskWnd->StartScan();
 	});
 	connect(scanWnd, &ScanWnd::sigStopScan, taskWnd, [=]() 

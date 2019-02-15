@@ -44,4 +44,8 @@ private:
 	QLabel *m_lbPlayCount;
 	QLineEdit *m_lePlayCount;
 
+
+	QCheckBox *m_ckbLoop;
+
+
 };
