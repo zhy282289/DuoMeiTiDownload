@@ -82,8 +82,11 @@ public:
 	void SetNum(int num);
 	int GetNum();
 
+	bool IsChecked();
+
 Q_SIGNALS:
 	void sigDelete();
+	void sigDeleteSelected();
 	void sigConvert2Task();
 	void sigConvert2Download();
 	void sigConvert2Hsitory();

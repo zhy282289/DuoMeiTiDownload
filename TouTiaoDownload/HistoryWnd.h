@@ -48,6 +48,9 @@ class HistoryWndListItem : public DownloadWndListItem
 public:
 	HistoryWndListItem(QListWidgetItem *item);
 
+Q_SIGNALS:
+	void sigDeleteSrcVideo();
+
 protected:
 	virtual void MenuPopup(QMouseEvent *event);
 
