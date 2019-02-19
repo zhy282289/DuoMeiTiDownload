@@ -443,7 +443,7 @@ void TaskWndListItem::MenuPopup(QMouseEvent *event)
 		QMenu menu;
 		auto actViewUrl = menu.addAction(TR("查看网页"));
 		auto actDelete = menu.addAction(TR("删除"));
-		actDelete->setVisible(false);
+		//actDelete->setVisible(false);
 		auto actExpa = menu.addAction(TR("展开"));
 		menu.addSeparator();
 		auto actConvert2History = menu.addAction(TR("标记成已历史"));
