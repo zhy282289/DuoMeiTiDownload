@@ -90,11 +90,25 @@ void TaskWnd::AddItem(TaskInfoPtr info)
 	w->SetNum(m_listWnd->count());
 	m_listWnd->setItemWidget(item, w);
 
-	connect(w, &TaskWndListItem::sigDelete, this, [=]() 
+	connect(w, &TaskWndListItem::sigDelete, this, [=]()
 	{
 		TaskWndListItem *item = qobject_cast<TaskWndListItem*>(sender());
 		RemoveItemByWidget(item);
 	});
+	connect(w, &TaskWndListItem::sigDeleteSelected, this, [=]()
+	{
+		for (int i = m_listWnd->count()-1; i >=0 ; --i)
+		{
+			TaskWndListItem *taksItem = qobject_cast<TaskWndListItem*>(m_listWnd->itemWidget(m_listWnd->item(i)));
+			if (taksItem->IsChecked())
+			{
+				MY_DB->TaskRemove(taksItem->GetInfo()->id);
+				RemoveItemByWidget(taksItem);
+			}
+		}
+
+	});
+
 	connect(w, &TaskWndListItem::sigConvert2Hsitory, this, [=]()
 	{
 		auto info = qobject_cast<TaskWndListItem*>(sender())->GetInfo();
@@ -419,6 +433,11 @@ int TaskWndListItem::GetNum()
 	return m_lbNum->text().toInt();
 }
 
+bool TaskWndListItem::IsChecked()
+{
+	return m_ckbSelect->isChecked();
+}
+
 void TaskWndListItem::GenerateInfo()
 {
 	m_desc->append(m_info->title);
@@ -442,7 +461,8 @@ void TaskWndListItem::MenuPopup(QMouseEvent *event)
 	{
 		QMenu menu;
 		auto actViewUrl = menu.addAction(TR("查看网页"));
-		auto actDelete = menu.addAction(TR("删除"));
+		auto actDelete= menu.addAction(TR("删除当前任务"));
+		auto actDeleteSelected = menu.addAction(TR("删除选中任务"));
 		//actDelete->setVisible(false);
 		auto actExpa = menu.addAction(TR("展开"));
 		menu.addSeparator();
@@ -467,6 +487,13 @@ void TaskWndListItem::MenuPopup(QMouseEvent *event)
 				}
 			}
 
+		}
+		else if (act == actDeleteSelected)
+		{
+			if (QMessageBox::Yes == QMessageBox::question(this, TR("删除"), TR("确定是否删除")))
+			{
+				emit sigDeleteSelected();
+			}
 		}
 		else if (actExpa == act)
 		{

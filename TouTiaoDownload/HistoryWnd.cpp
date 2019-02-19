@@ -73,6 +73,21 @@ void HistoryWnd::AddItem(TaskInfoPtr info)
 	});
 
 
+	connect(w, &HistoryWndListItem::sigDeleteSrcVideo, this, [=]()
+	{
+		for (int i = m_listWnd->count() - 1; i >= 0; --i)
+		{
+			TaskWndListItem *taksItem = qobject_cast<TaskWndListItem*>(m_listWnd->itemWidget(m_listWnd->item(i)));
+			if (taksItem->IsChecked())
+			{
+				auto path = taksItem->GetInfo()->localPath;
+				QFile::remove(path);
+				QString oldPath = path.remove("_1");
+				QFile::remove(oldPath);
+			}
+		}
+	});
+
 }
 
 void HistoryWnd::RemoveItemByWidget(QWidget *widget)
@@ -217,11 +232,13 @@ void HistoryWndListItem::MenuPopup(QMouseEvent *event)
 		//auto actDelete = menu.addAction(TR("删除"));
 		auto actExpa = menu.addAction(TR("展开"));
 		auto actLocalView = menu.addAction(TR("查看本地视频"));
+		auto actLocalFileDirectory = menu.addAction(TR("定位本地视频"));
 		menu.addSeparator();
+		auto actDeleteSrc = menu.addAction(TR("清理视频"));
 		auto actConver2Download = menu.addAction(TR("标记成待下载"));
 		auto actConver2DownloadFinish = menu.addAction(TR("标记成已下载"));
-		actConver2Download->setEnabled(false);
-		actConver2DownloadFinish->setEnabled(false);
+		//actConver2Download->setEnabled(false);
+		//actConver2DownloadFinish->setEnabled(false);
 
 		auto act = menu.exec(event->globalPos());
 		if (act == actViewUrl)
@@ -245,6 +262,15 @@ void HistoryWndListItem::MenuPopup(QMouseEvent *event)
 		else if (actConver2DownloadFinish == act)
 		{
 			sigConvert2Download();
+		}
+		else if (actDeleteSrc == act)
+		{
+			sigDeleteSrcVideo();
+
+		}
+		else if (actLocalFileDirectory == act)
+		{
+			LocalFileDirectory(m_info->localPath);
 		}
 	}
 }
