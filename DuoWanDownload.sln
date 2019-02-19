@@ -14,6 +14,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DMTCommonLib", "DMTCommonLi
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TouTiaoDownload", "TouTiaoDownload\TouTiaoDownload.vcxproj", "{34354C87-7BEB-4BF2-9AE4-277FFB813DAB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TouTiaoUser", "TouTiaoUser\TouTiaoUser.vcxproj", "{70047606-B713-409D-BAC0-99F4F5F50FF3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -50,6 +52,12 @@ Global
 		{34354C87-7BEB-4BF2-9AE4-277FFB813DAB}.Release|x64.ActiveCfg = Release|x64
 		{34354C87-7BEB-4BF2-9AE4-277FFB813DAB}.Release|x64.Build.0 = Release|x64
 		{34354C87-7BEB-4BF2-9AE4-277FFB813DAB}.Release|x86.ActiveCfg = Release|x64
+		{70047606-B713-409D-BAC0-99F4F5F50FF3}.Debug|x64.ActiveCfg = Debug|x64
+		{70047606-B713-409D-BAC0-99F4F5F50FF3}.Debug|x64.Build.0 = Debug|x64
+		{70047606-B713-409D-BAC0-99F4F5F50FF3}.Debug|x86.ActiveCfg = Debug|x64
+		{70047606-B713-409D-BAC0-99F4F5F50FF3}.Release|x64.ActiveCfg = Release|x64
+		{70047606-B713-409D-BAC0-99F4F5F50FF3}.Release|x64.Build.0 = Release|x64
+		{70047606-B713-409D-BAC0-99F4F5F50FF3}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
