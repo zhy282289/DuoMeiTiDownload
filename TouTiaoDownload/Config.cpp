@@ -98,6 +98,18 @@ void ScanConfig::SetLoop(bool loop)
 
 }
 
+int ScanConfig::ScanType()
+{
+	return CONFIG_INT_DEF("scan/scantype", "0");
+
+}
+
+void ScanConfig::SetScanType(int type)
+{
+	CONFIG_SET("scan/scantype", type);
+
+}
+
 bool DownloadConfig::Order()
 {
 	return CONFIG_BOOL_DEF("download/order", true);
