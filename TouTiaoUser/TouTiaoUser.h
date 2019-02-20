@@ -2,6 +2,7 @@
 
 #include <QtWebEngineWidgets/QtWebEngineWidgets>
 
+class HtmlView;
 class TouTiaoUser : public QWidget
 {
 	Q_OBJECT
@@ -17,7 +18,8 @@ protected:
 private:
 
 	QPushButton *m_btnUnFollow;
-	QWebEngineView *m_unFollowView;
+	QPushButton *m_btnStartUnFollow;
+	HtmlView *m_unFollowView;
 
 };
 
@@ -36,17 +38,9 @@ public:
 		return m_view;
 	}
 protected:
-	QWebEngineView *HtmlView::createWindow(QWebEnginePage::WebWindowType type) {
-		auto ff = url();
-		auto fff = ff.url();
+	QWebEngineView *HtmlView::createWindow(QWebEnginePage::WebWindowType type)
+	{
 
-		if (m_view)
-		{
-			auto view = m_view;
-			m_view = nullptr;
-			view->deleteLater();
-
-		}
 		m_view = new HtmlView(0);
 		m_view->resize(800, 800);
 		m_view->show();
