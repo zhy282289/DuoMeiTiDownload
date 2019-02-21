@@ -181,13 +181,13 @@ void TaskObtainManager::ParseMainPage()
 void TaskObtainManager::_ParseMainPage()
 {
 	// 切换类型
-	const int delayTime = 3000;
+	const int delayTime = 5000;
 
 
+	LOG(QString(TR("切换类型:%1")).arg(ScanConfig::ScanType()));
 	QTimer::singleShot(delayTime, [=]() {
 		m_view->page()->toHtml([=](const QString &text)
 		{
-			LOG(QString(TR("切换类型:%1")).arg(ScanConfig::ScanType()));
 			m_view->page()->runJavaScript(QString(
 				"var es = document.getElementsByClassName('channel-item');"
 				"if (es.length > 0)"
@@ -195,9 +195,8 @@ void TaskObtainManager::_ParseMainPage()
 			).arg(ScanConfig::ScanType())
 				, [=](QVariant v)
 			{
+				LOG(TR("开始解析主页数据！"));
 				QTimer::singleShot(delayTime, [=]() {
-					LOG(TR("开始解析主页数据！"));
-
 					ParseMainPage();
 
 				});

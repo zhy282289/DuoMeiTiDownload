@@ -15,6 +15,7 @@ struct TaskInfo : public Ref
 
 	QString localPath;
 
+	int type;
 };
 
 
