@@ -28,7 +28,7 @@ protected:
 	void resizeEvent(QResizeEvent *event);
 
 private:
-	TaskObtainManager *m_task;
+	ScanTaskManager *m_task;
 
 	QLineEdit *m_leTouTiao;
 
@@ -48,5 +48,6 @@ private:
 	QLabel *m_lbScanType;
 	QLineEdit *m_leScanType;
 
+	QComboBox *m_cmbVideoType;
 
 };

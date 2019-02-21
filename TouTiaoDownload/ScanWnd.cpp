@@ -25,15 +25,18 @@ ScanWnd::ScanWnd(QWidget *parent)
 	m_lbScanType = new QLabel(TR("É¨ÃèÀàÐÍ£º"), this);
 	m_leScanType = new QLineEdit(this);
 
+	m_cmbVideoType = gCreateVideoTypeComboBox(this);
 
-	m_task = new TaskObtainManager(this);
-	connect(m_task, &TaskObtainManager::sigNewInfo, this, &ScanWnd::sigNewInfo);
-	connect(m_task, &TaskObtainManager::sigStopScan, this, [=]() {
+
+
+	m_task = new ScanTaskManager(this);
+	connect(m_task, &ScanTaskManager::sigNewInfo, this, &ScanWnd::sigNewInfo);
+	connect(m_task, &ScanTaskManager::sigStopScan, this, [=]() {
 		sigStopScan();
 		ResetUI();
 
 	});
-	connect(m_task, &TaskObtainManager::sigScanFinish, this, [=]()
+	connect(m_task, &ScanTaskManager::sigScanFinish, this, [=]()
 	{
 		emit sigScanFinish();
 		ResetUI();
@@ -90,6 +93,7 @@ void ScanWnd::InitUI()
 	m_lePlayCount->setText(QString("%1").arg(ScanConfig::PlayTimes()));
 	m_ckbLoop->setChecked(ScanConfig::Loop());
 	m_leScanType->setText(QString("%1").arg(ScanConfig::ScanType()));
+	m_cmbVideoType->setCurrentIndex(m_cmbVideoType->findData(ScanConfig::VideoType()));
 }
 
 
@@ -112,6 +116,7 @@ void ScanWnd::SaveUI()
 	ScanConfig::SetPlayTimes(m_lePlayCount->text().toFloat());
 	ScanConfig::SetLoop(m_ckbLoop->isChecked());
 	ScanConfig::SetScanType(m_leScanType->text().toInt());
+	ScanConfig::SetVideoType(m_cmbVideoType->currentData().toInt());
 
 }
 
@@ -169,7 +174,8 @@ void ScanWnd::resizeEvent(QResizeEvent *event)
 	m_lbScanType->setGeometry(left, top, 60, btnh);
 	left = m_lbScanType->geometry().right() + margins2;
 	m_leScanType->setGeometry(left, top, btnw, btnh);
-
+	left = m_leScanType->geometry().right() + margins2;
+	m_cmbVideoType->setGeometry(left, top, 100, btnh);
 
 
 }

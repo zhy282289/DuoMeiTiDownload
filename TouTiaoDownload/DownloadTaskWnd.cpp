@@ -17,6 +17,9 @@ DownloadTaskWnd::DownloadTaskWnd(QWidget *parent)
 	m_ckbBigIcon = new QCheckBox(TR("大图标"), this);
 	m_btnAllTaskNum = new QPushButton(TR("总任务数"), this);
 
+	m_cmbVideoType = gCreateVideoTypeComboBox(this);
+
+
 	InitUI();
 
 	connect(m_btnTaskNum, &QPushButton::clicked, this, &DownloadTaskWnd::slotSearchTaskNumber);
@@ -89,7 +92,7 @@ void DownloadTaskWnd::slotSearchTaskNumber()
 
 		int count = m_leTaskNum->text().toInt();
 		bool order = m_ckbTop->isChecked();
-		TaskInfos infos = MY_DB->DownladGet(0, count, order);
+		TaskInfos infos = MY_DB->DownladGet(count, DownloadFinishConfig::VideoType(), order);
 		for (auto info : infos)
 		{
 			AddItem(info);
@@ -114,7 +117,7 @@ void DownloadTaskWnd::InitUI()
 {
 	m_ckbTop->setChecked(DownloadFinishConfig::Order());
 	m_leTaskNum->setText(QString("%1").arg(DownloadFinishConfig::Number()));
-
+	m_cmbVideoType->setCurrentIndex(m_cmbVideoType->findData(DownloadFinishConfig::VideoType()));
 }
 
 bool DownloadTaskWnd::CheckUI()
@@ -131,6 +134,7 @@ void DownloadTaskWnd::SaveUI()
 {
 	DownloadFinishConfig::SetOrder(m_ckbTop->isChecked());
 	DownloadFinishConfig::SetNumber(m_leTaskNum->text().toInt());
+	DownloadFinishConfig::SetVideoType(m_cmbVideoType->currentData().toInt());
 }
 
 
@@ -184,6 +188,9 @@ void DownloadTaskWnd::resizeEvent(QResizeEvent *event)
 	m_ckbBigIcon->setGeometry(left, top, 60, btnh);
 	left = m_ckbBigIcon->geometry().right() + margins;
 	m_btnAllTaskNum->setGeometry(left, top, btnw, btnh);
+	left = m_btnAllTaskNum->geometry().right() + margins;
+	m_cmbVideoType->setGeometry(left, top, 100, btnh);
+
 
 	// list
 	left = margins;

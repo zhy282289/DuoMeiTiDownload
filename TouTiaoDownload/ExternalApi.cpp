@@ -51,3 +51,35 @@ QString gGetTouTiaoTodayDestePath(QString src)
 }
 
 
+
+QComboBox* gCreateVideoTypeComboBox(QWidget *parent)
+{
+	auto cmbVideoType = new QComboBox(parent);
+	cmbVideoType->addItem(TR("推荐"), TuiJian);
+	cmbVideoType->addItem(TR("影视"), YingShi);
+	cmbVideoType->addItem(TR("音乐"), YinYue);
+	cmbVideoType->addItem(TR("时尚"), ShiShang);
+	cmbVideoType->addItem(TR("美食"), MeiShi);
+	cmbVideoType->addItem(TR("文化"), WenHua);
+
+	return cmbVideoType;
+}
+
+QString gGetVideoTypeString(int videoType)
+{
+	if (videoType == TuiJian)
+		return TR("推荐");
+	else if (videoType == YingShi)
+		return TR("影视");
+	else if (videoType == YinYue)
+		return TR("音乐");
+	else if (videoType == ShiShang)
+		return TR("时尚");
+	else if (videoType == MeiShi)
+		return TR("美食");
+	else if (videoType == WenHua)
+		return TR("文化");
+
+	return TR("未知");
+}
+

@@ -3,7 +3,7 @@
 
 #include <thread>
 
-#include "TaskInfo.h"
+#include "ScanTaskManager.h"
 #include "DownloadManager.h"
 
 
@@ -28,6 +28,9 @@ TaskWnd::TaskWnd(QWidget *parent)
 	m_btnAllTaskNum = new QPushButton(TR("总任务数"), this);
 	m_ckbDownloadFromDB = new QCheckBox(TR("只下载列表任务"), this);
 	m_ckbLoop = new QCheckBox(TR("无限下载"), this);
+
+	m_cmbVideoType = gCreateVideoTypeComboBox(this);
+
 
 	InitUI();
 
@@ -128,6 +131,8 @@ void TaskWnd::InitUI()
 	m_leTaskNum->setText(QString("%1").arg(DownloadConfig::Number()));
 	m_ckbDownloadFromDB->setChecked(DownloadConfig::OnlyDownloadList());
 	m_ckbLoop->setChecked(DownloadConfig::Loop());
+	m_cmbVideoType->setCurrentIndex(m_cmbVideoType->findData(DownloadConfig::VideoType()));
+
 }
 
 bool TaskWnd::CheckUI()
@@ -145,6 +150,7 @@ void TaskWnd::SaveUI()
 	DownloadConfig::SetNumber(m_leTaskNum->text().toInt());
 	DownloadConfig::SetOnlyDownloadList(m_ckbDownloadFromDB->isChecked());
 	DownloadConfig::SetLoop(m_ckbLoop->isChecked());
+	DownloadConfig::SetVideoType(m_cmbVideoType->currentData().toInt());
 
 }
 
@@ -216,7 +222,7 @@ void TaskWnd::StartDownload()
 		connect(download, &DownloadManager::sigFinish, this, &TaskWnd::FinishDownload);
 		connect(download, &DownloadManager::sigUpdateVideoUrl, this, [=](TaskInfoPtr info) 
 		{
-			static TaskObtainManager manager;
+			static ScanTaskManager manager;
 			manager.UpdateInfo(info);
 		}, Qt::BlockingQueuedConnection);
 	}
@@ -320,7 +326,7 @@ void TaskWnd::slotSearchTaskNumber()
 
 		int count = m_leTaskNum->text().toInt();
 		bool order = m_ckbTop->isChecked();
-		TaskInfos infos =  MY_DB->TaskGetUrls(0, count, order);
+		TaskInfos infos =  MY_DB->TaskGetUrls(count, DownloadConfig::VideoType(), order);
 		for (auto info : infos)
 		{
 			AddItem(info);
@@ -384,7 +390,8 @@ void TaskWnd::resizeEvent(QResizeEvent *event)
 	m_ckbDownloadFromDB->setGeometry(left, top, 100, btnh);
 	left = m_ckbDownloadFromDB->geometry().right() + margins;
 	m_ckbLoop->setGeometry(left, top, 100, btnh);
-
+	left = m_ckbLoop->geometry().right() + margins;
+	m_cmbVideoType->setGeometry(left, top, 100, btnh);
 
 
 
@@ -446,7 +453,8 @@ void TaskWndListItem::GenerateInfo()
 	m_desc->append(QString("%1%2").arg(m_info->playCount).arg(TR("次")));
 	m_desc->append(m_info->origin ? TR("原创") : TR("非原创"));
 	m_desc->append(m_info->userName);
-	m_desc->append(m_info->userUrl);
+	//m_desc->append(m_info->userUrl);
+	m_desc->append(gGetVideoTypeString(m_info->videoType));
 
 	if (!m_info->origin)
 	{

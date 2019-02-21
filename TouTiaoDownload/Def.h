@@ -11,3 +11,14 @@
 #define ERROR_CODE_OK 0 //
 #define ERROR_CODE_NETWORK_ERROR 1 //
 #define ERROR_CODE_CONVERT_ERROR 2 //
+
+
+enum VideoType
+{
+	TuiJian,
+	YingShi,
+	YinYue,
+	ShiShang,
+	WenHua,
+	MeiShi,
+};

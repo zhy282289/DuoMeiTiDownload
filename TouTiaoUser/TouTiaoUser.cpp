@@ -25,10 +25,13 @@ TouTiaoUser::TouTiaoUser(QWidget *parent)
 
 	connect(m_btnStartUnFollow, &QPushButton::clicked, this, [=]()
 	{
-		m_redownloadView->page()->runJavaScript(
+		auto view = m_unFollowView->GetView();
+		if (view == nullptr)
+			view = m_unFollowView;
+		view->page()->runJavaScript(
 			"var es = document.getElementsByClassName('relation');"
 			"for(var i = 0;i<es.length;++i)"
-			"{es[i].parent.clicked();}"
+			"{es[i].firstChild.click();}"
 			, [=](QVariant v)
 		{
 
@@ -51,4 +54,7 @@ void TouTiaoUser::resizeEvent(QResizeEvent *event)
 	const int btnw = 70;
 	const int btnh = 22;
 	m_btnUnFollow->setGeometry(left, top, btnw, btnh);
+	left = m_btnUnFollow->geometry().right() + 10;
+	m_btnStartUnFollow->setGeometry(left, top, btnw, btnh);
+
 }

@@ -29,7 +29,31 @@ DB::DB()
 {
 	
 }
+bool DB::Init()
+{
+	QSqlDatabase database;
 
+	database = QSqlDatabase::addDatabase("QSQLITE");
+	database.setDatabaseName("toutiao.db");
+	if (database.open())
+	{
+		QSqlQuery sql_query;
+		bool ret = sql_query.exec("create table urls (id varchar primary key, title varchar, url varchar, origin int, playcount varchar, videourl varchar, username varchar, userurl varchar, localpath varchar, videotype varchar)");
+		ret = sql_query.exec("create index urlindex on urls(id)");
+
+		ret = sql_query.exec("create table downloadurls (id varchar primary key, title varchar, url varchar, origin int, playcount varchar, videourl varchar, username varchar, userurl varchar, localpath varchar, videotype varchar)");
+		ret = sql_query.exec("create index urlindex on downloadurls(id)");
+
+		ret = sql_query.exec("create table historyurls (id varchar primary key, title varchar, url varchar, origin int, playcount varchar, videourl varchar, username varchar, userurl varchar, localpath varchar, videotype varchar)");
+		ret = sql_query.exec("create index urlindex on historyurls(id)");
+
+		m_isOpen = true;
+
+		return true;
+	}
+
+	return false;
+}
 int DB::_Count(QString table)
 {
 	DB_IS_OPEN;
@@ -73,7 +97,7 @@ bool DB::_Insert(TaskInfo *info, QString table)
 	DB_LOCK;
 
 	QSqlQuery sql_query;
-	QString insert_sql = QString("insert into %1 values (?, ?, ?, ?, ?, ?, ?, ?, ?)").arg(table);
+	QString insert_sql = QString("insert into %1 values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").arg(table);
 	sql_query.prepare(insert_sql);
 	sql_query.addBindValue(info->id);
 	sql_query.addBindValue(info->title);
@@ -84,6 +108,7 @@ bool DB::_Insert(TaskInfo *info, QString table)
 	sql_query.addBindValue(info->userName);
 	sql_query.addBindValue(info->userUrl);
 	sql_query.addBindValue(info->localPath);
+	sql_query.addBindValue(info->videoType);
 
 	if (!sql_query.exec())
 	{
@@ -116,19 +141,25 @@ bool DB::_Remove(QString id, QString table)
 	return false;
 }
 
-TaskInfos DB::_GetUrls(QString table, int start, int end, bool order /*= true*/)
+TaskInfos DB::_GetUrls(QString table, int count, int videoType, bool order /*= true*/)
 {
 	TaskInfos infos;
 
-	if (start > end)
+	if (count <= 0)
 		return infos;
 
 	QSqlQuery sql_query;
 	QString queryString;
+	//if (order)
+	//	queryString = QString("select * from %1 limit %2,%3").arg(table).arg(start).arg(end);
+	//else
+	//	queryString = QString("select * from %1 order by rowid desc limit %2,%3").arg(table).arg(start).arg(end);
+
 	if (order)
-		queryString = QString("select * from %1 limit %2,%3").arg(table).arg(start).arg(end);
+		queryString = QString("select * from %1 where videotype=%2 limit %3").arg(table).arg(videoType).arg(count);
 	else
-		queryString = QString("select * from %1 order by rowid desc limit %2,%3").arg(table).arg(start).arg(end);
+		queryString = QString("select * from %1 where videotype=%2 order by rowid desc limit %3").arg(table).arg(videoType).arg(count);
+
 
 	DB_LOCK;
 
@@ -148,37 +179,14 @@ TaskInfos DB::_GetUrls(QString table, int start, int end, bool order /*= true*/)
 			info->userName = sql_query.value("username").toString();
 			info->userUrl = sql_query.value("userurl").toString();
 			info->localPath = sql_query.value("localpath").toString();
+			info->videoType = sql_query.value("videoType").toInt();
 			infos.push_back(info);
 		}
 	}
 	return infos;
 }
 
-bool DB::Init()
-{
-	QSqlDatabase database;
 
-	database = QSqlDatabase::addDatabase("QSQLITE");
-	database.setDatabaseName("toutiao.db");
-	if (database.open())
-	{
-		QSqlQuery sql_query;
-		bool ret = sql_query.exec("create table urls (id varchar primary key, title varchar, url varchar, origin int, playcount varchar, videourl varchar, username varchar, userurl varchar, localpath varchar)");
-		ret = sql_query.exec("create index urlindex on urls(id)");
-
-		ret = sql_query.exec("create table downloadurls (id varchar primary key, title varchar, url varchar, origin int, playcount varchar, videourl varchar, username varchar, userurl varchar, localpath varchar)");
-		ret = sql_query.exec("create index urlindex on downloadurls(id)");
-
-		ret = sql_query.exec("create table historyurls (id varchar primary key, title varchar, url varchar, origin int, playcount varchar, videourl varchar, username varchar, userurl varchar, localpath varchar)");
-		ret = sql_query.exec("create index urlindex on historyurls(id)");
-
-		m_isOpen = true;
-
-		return true;
-	}
-
-	return false;
-}
 
 int DB::TaskCount()
 {
@@ -224,9 +232,9 @@ bool DB::TaskRemove(QString id)
 //	return false;
 //}
 
-TaskInfos DB::TaskGetUrls( int start, int end, bool order)
+TaskInfos DB::TaskGetUrls(int count, int videoType, bool order)
 {
-	return _GetUrls("urls", start, end, order);
+	return _GetUrls("urls", count, videoType, order);
 
 }
 
@@ -251,9 +259,9 @@ bool DB::DownladRemove(QString id)
 	return _Remove(id, "downloadurls");
 }
 
-TaskInfos DB::DownladGet(int start, int end, bool order /*= true*/)
+TaskInfos DB::DownladGet(int count, int videoType, bool order /*= true*/)
 {
-	return _GetUrls("downloadurls", start, end, order);
+	return _GetUrls("downloadurls", count, videoType, order);
 }
 
 int DB::HistoryCount()
@@ -279,8 +287,8 @@ bool DB::HistoryRemove(QString id)
 
 }
 
-TaskInfos DB::HistoryGet(int start, int end, bool order /*= true*/)
+TaskInfos DB::HistoryGet(int count, int videoType, bool order /*= true*/)
 {
-	return _GetUrls("historyurls", start, end, order);
+	return _GetUrls("historyurls", count, videoType, order);
 }
 

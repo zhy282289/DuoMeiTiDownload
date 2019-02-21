@@ -15,7 +15,7 @@ struct TaskInfo : public Ref
 
 	QString localPath;
 
-	int type;
+	int videoType; //¿‡–Õ
 };
 
 
@@ -25,12 +25,12 @@ Q_DECLARE_METATYPE(TaskInfoPtr)
 
 
 class QWebEngineView;
-class TaskObtainManager : public QObject
+class ScanTaskManager : public QObject
 {
 	Q_OBJECT
 public:
-	TaskObtainManager(QObject *parent = nullptr);
-	~TaskObtainManager();
+	ScanTaskManager(QObject *parent = nullptr);
+	~ScanTaskManager();
 
 	bool StartScan();
 	bool StopScan();
@@ -45,8 +45,8 @@ Q_SIGNALS:
 protected:
 	void ParseMainPage();
 	void _ParseMainPage();
-	void ParseUrlDetailInfo(const QString &url);
-	void _ParseUrlDetailInfo(const std::string &retString);
+	void ParseVideoPage(const QString &url);
+	void _ParseVideoPage(const std::string &retString);
 
 
 	void NextUrl();

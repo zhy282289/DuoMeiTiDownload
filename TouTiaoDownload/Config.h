@@ -48,6 +48,8 @@ public:
 	static int ScanType();
 	static void SetScanType(int number);
 
+	static int VideoType();
+	static void SetVideoType(int type);
 
 };
 
@@ -65,6 +67,9 @@ public:
 
 	static bool Loop();
 	static void SetLoop(bool loop);
+
+	static int VideoType();
+	static void SetVideoType(int type);
 };
 
 class DownloadFinishConfig
@@ -75,6 +80,9 @@ public:
 
 	static int Number();
 	static void SetNumber(int number);
+
+	static int VideoType();
+	static void SetVideoType(int type);
 
 };
 

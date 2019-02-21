@@ -167,7 +167,7 @@ void HistoryWnd::slotSearchTaskNumber()
 
 		int count = m_leTaskNum->text().toInt();
 		bool order = m_ckbTop->isChecked();
-		TaskInfos infos = MY_DB->HistoryGet(0, count, order);
+		TaskInfos infos = MY_DB->HistoryGet(count, ScanConfig::VideoType(), order);
 		for (auto info : infos)
 		{
 			AddItem(info);

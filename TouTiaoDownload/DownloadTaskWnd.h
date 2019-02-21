@@ -39,6 +39,7 @@ private:
 	QPushButton *m_btnTaskNum;
 	QCheckBox *m_ckbBigIcon;
 	QPushButton *m_btnAllTaskNum;
+	QComboBox *m_cmbVideoType;
 
 };
 

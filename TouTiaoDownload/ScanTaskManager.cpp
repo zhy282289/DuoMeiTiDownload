@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "TaskInfo.h"
+#include "scantaskmanager.h"
 
 #include "inc_PyDll/IPython_Exe.h"
 
@@ -10,7 +10,7 @@
 #define TRY_COUNT 5
 #define GET_MORE_COUNT 10
 
-TaskObtainManager::TaskObtainManager(QObject *parent /*= nullptr*/)
+ScanTaskManager::ScanTaskManager(QObject *parent /*= nullptr*/)
 	:QObject(parent)
 {
 	m_scaning = false;
@@ -27,12 +27,12 @@ TaskObtainManager::TaskObtainManager(QObject *parent /*= nullptr*/)
 	 
 }
 
-TaskObtainManager::~TaskObtainManager()
+ScanTaskManager::~ScanTaskManager()
 {
 
 }
 
-bool TaskObtainManager::StartScan()
+bool ScanTaskManager::StartScan()
 {
 	if (m_scaning)
 	{
@@ -51,10 +51,16 @@ bool TaskObtainManager::StartScan()
 
 	if (m_view == nullptr)
 	{
-		//m_view = GET_UNIQUEN_WEBVIEW();
-		m_view = GET_TEST_WEBVIEW();
+		if (ScanConfig::ScanType() == 0)
+		{
+			m_view = GET_UNIQUEN_WEBVIEW()
+		}
+		else
+		{
+			m_view = GET_TEST_WEBVIEW()
+		}
 
-		connect(m_view, &QWebEngineView::loadFinished, this, &TaskObtainManager::_ParseMainPage);
+		connect(m_view, &QWebEngineView::loadFinished, this, &ScanTaskManager::_ParseMainPage);
 
 		m_view->show();
 	}
@@ -64,21 +70,21 @@ bool TaskObtainManager::StartScan()
 	return false;
 }
 
-bool TaskObtainManager::StopScan()
+bool ScanTaskManager::StopScan()
 {
 	m_stoping = true;
 	LOG(TR("正在停止扫描任务！"));
 	return false;
 }
 
-TaskInfos TaskObtainManager::GetInfos()
+TaskInfos ScanTaskManager::GetInfos()
 {
 	return m_infos;
 }
 
 
 
-bool TaskObtainManager::UpdateInfo(TaskInfoPtr info)
+bool ScanTaskManager::UpdateInfo(TaskInfoPtr info)
 {
 	static QString videoUrl;
 	static QEventLoop eventloop;
@@ -90,8 +96,8 @@ bool TaskObtainManager::UpdateInfo(TaskInfoPtr info)
 
 		connect(m_redownloadView, &QWebEngineView::loadFinished, [=]()
 		{
-			m_redownloadView->page()->toHtml([=](const QString &text)
-			{
+			//m_redownloadView->page()->toHtml([=](const QString &text)
+			//{
 				m_redownloadView->page()->runJavaScript(
 					"var es = document.getElementsByClassName('bui-left index-content');"
 					"if (es.length > 0)"
@@ -118,7 +124,7 @@ bool TaskObtainManager::UpdateInfo(TaskInfoPtr info)
 					
 					eventloop.exit(0);
 				});
-			});
+			//});
 		});
 
 
@@ -137,7 +143,7 @@ bool TaskObtainManager::UpdateInfo(TaskInfoPtr info)
 	return false;
 }
 
-void TaskObtainManager::ParseMainPage()
+void ScanTaskManager::ParseMainPage()
 {
 	m_view->page()->runJavaScript(
 		"var es = document.getElementsByClassName('feed-infinite-wrapper');"
@@ -178,7 +184,7 @@ void TaskObtainManager::ParseMainPage()
 
 }
 
-void TaskObtainManager::_ParseMainPage()
+void ScanTaskManager::_ParseMainPage()
 {
 	// 切换类型
 	const int delayTime = 5000;
@@ -186,8 +192,8 @@ void TaskObtainManager::_ParseMainPage()
 
 	LOG(QString(TR("切换类型:%1")).arg(ScanConfig::ScanType()));
 	QTimer::singleShot(delayTime, [=]() {
-		m_view->page()->toHtml([=](const QString &text)
-		{
+		//m_view->page()->toHtml([=](const QString &text)
+		//{
 			m_view->page()->runJavaScript(QString(
 				"var es = document.getElementsByClassName('channel-item');"
 				"if (es.length > 0)"
@@ -206,12 +212,12 @@ void TaskObtainManager::_ParseMainPage()
 
 
 
-		});
+		//});
 	});
 
 }
 
-void TaskObtainManager::NextDownload()
+void ScanTaskManager::NextDownload()
 {
 	if (m_stoping)
 	{
@@ -233,7 +239,7 @@ void TaskObtainManager::NextDownload()
 
 }
 
-void TaskObtainManager::NextUrl()
+void ScanTaskManager::NextUrl()
 {
 	QString taskUrl;
 	while (!m_mainNewUrlist.isEmpty())
@@ -251,16 +257,26 @@ void TaskObtainManager::NextUrl()
 	}
 	if (!taskUrl.isEmpty())
 	{
-		ParseUrlDetailInfo(taskUrl);
+		ParseVideoPage(taskUrl);
 	}
 	else
 	{
-		// 刷新主页
-		GetMore();
+		if (m_mainOldUrlist.size() < 300)
+		{
+			// 刷新主页
+			GetMore();
+		}
+		else
+		{
+			// 重新加载主页
+			LOG(TR("重新加载主页！"));
+			m_view->load(m_url);
+		}
+
 	}
 }
 
-void TaskObtainManager::GetMore()
+void ScanTaskManager::GetMore()
 {
 	if (m_stoping)
 	{
@@ -285,7 +301,7 @@ void TaskObtainManager::GetMore()
 
 
 
-bool TaskObtainManager::IsUrlExistInDB(const QString &url)
+bool ScanTaskManager::IsUrlExistInDB(const QString &url)
 {
 	LOG(TR("正在查询数据库，是否有重复数据！"));
 
@@ -322,14 +338,14 @@ bool TaskObtainManager::IsUrlExistInDB(const QString &url)
 
 
 
-void TaskObtainManager::_StopScan()
+void ScanTaskManager::_StopScan()
 {
 	LOG(TR("停止扫描任务！"));
 	m_scaning = false;
 	emit sigStopScan();
 }
 
-void TaskObtainManager::ParseUrlDetailInfo(const QString &url)
+void ScanTaskManager::ParseVideoPage(const QString &url)
 {
 	if (m_detailView == nullptr)
 	{
@@ -337,8 +353,8 @@ void TaskObtainManager::ParseUrlDetailInfo(const QString &url)
 
 		connect(m_detailView, &QWebEngineView::loadFinished, this, [=]()
 		{
-			m_detailView->page()->toHtml([=](const QString &text)
-			{
+			//m_detailView->page()->toHtml([=](const QString &text)
+			//{
 				m_detailView->page()->runJavaScript(
 					"var es = document.getElementsByClassName('bui-left index-content');"
 					"if (es.length > 0)"
@@ -354,7 +370,7 @@ void TaskObtainManager::ParseUrlDetailInfo(const QString &url)
 						string retString = pyExe->ReturnString();
 						if (!retString.empty())
 						{
-							_ParseUrlDetailInfo(retString);
+							_ParseVideoPage(retString);
 						}
 						else
 						{ 
@@ -372,7 +388,7 @@ void TaskObtainManager::ParseUrlDetailInfo(const QString &url)
 						if (ScanConfig::Loop())
 						{
 							LOG(TR("设置了无限扫描，10秒后继续扫描任务！"));
-							QTimer::singleShot(10000, this, &TaskObtainManager::NextDownload);
+							QTimer::singleShot(10000, this, &ScanTaskManager::NextDownload);
 						}
 						else
 						{
@@ -382,7 +398,7 @@ void TaskObtainManager::ParseUrlDetailInfo(const QString &url)
 
 					}
 				});
-			});
+			//});
 		});
 
 
@@ -393,7 +409,7 @@ void TaskObtainManager::ParseUrlDetailInfo(const QString &url)
 
 }
 
-void TaskObtainManager::_ParseUrlDetailInfo(const string& retString)
+void ScanTaskManager::_ParseVideoPage(const string& retString)
 {
 	QString retStringUtf8 = QString::fromUtf8(retString.c_str());
 	QJsonDocument json = QJsonDocument::fromJson(retString.c_str());
@@ -402,7 +418,7 @@ void TaskObtainManager::_ParseUrlDetailInfo(const string& retString)
 	QString origin = detailObject["origin"].toString();
 	bool bOrigin = origin.indexOf(TR("原创")) == -1;
 
-	LOG(QString("%1 %2 %3 %4").
+	LOG(QString("[%1] %2 %3 %4").
 		arg(bOrigin ? TR("原创") : TR("非原创")).
 		arg(detailObject["title"].toString()).
 		arg(m_detailView->url().toString()).
@@ -448,7 +464,7 @@ void TaskObtainManager::_ParseUrlDetailInfo(const string& retString)
 	info->playCount = playCountStr;
 	info->userName = detailObject["username"].toString();
 	info->userUrl = detailObject["userurl"].toString();
-
+	info->videoType = ScanConfig::VideoType();
 	// 保存到数据库
 	if (MY_DB->TaskInsert(info))
 	{

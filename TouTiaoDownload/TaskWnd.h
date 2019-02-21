@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QWidget>
-#include "TaskInfo.h"
+#include "ScanTaskManager.h"
 
 class TaskWndListItem;
 class TaskWnd : public QWidget
@@ -65,6 +65,7 @@ private:
 	QCheckBox *m_ckbDownloadFromDB;
 
 	QCheckBox *m_ckbLoop;
+	QComboBox *m_cmbVideoType;
 
 };
 

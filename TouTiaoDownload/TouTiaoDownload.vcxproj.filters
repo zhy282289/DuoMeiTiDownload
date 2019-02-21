@@ -54,9 +54,6 @@
     <ClCompile Include="DownloadTaskWnd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TaskInfo.cpp">
-      <Filter>Infos</Filter>
-    </ClCompile>
     <ClCompile Include="Config.cpp">
       <Filter>Infos</Filter>
     </ClCompile>
@@ -76,6 +73,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VideoInfo.cpp">
+      <Filter>Infos</Filter>
+    </ClCompile>
+    <ClCompile Include="ScanTaskManager.cpp">
       <Filter>Infos</Filter>
     </ClCompile>
   </ItemGroup>
@@ -112,9 +112,6 @@
     <QtMoc Include="DownloadTaskWnd.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="TaskInfo.h">
-      <Filter>Infos</Filter>
-    </QtMoc>
     <QtMoc Include="DownloadManager.h">
       <Filter>Infos</Filter>
     </QtMoc>
@@ -122,6 +119,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="VideoInfo.h">
+      <Filter>Infos</Filter>
+    </QtMoc>
+    <QtMoc Include="ScanTaskManager.h">
       <Filter>Infos</Filter>
     </QtMoc>
   </ItemGroup>

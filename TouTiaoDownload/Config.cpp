@@ -110,6 +110,18 @@ void ScanConfig::SetScanType(int type)
 
 }
 
+int ScanConfig::VideoType()
+{
+	return CONFIG_INT_DEF("scan/videotype", "0");
+
+}
+
+void ScanConfig::SetVideoType(int type)
+{
+	CONFIG_SET("scan/videotype", type);
+
+}
+
 bool DownloadConfig::Order()
 {
 	return CONFIG_BOOL_DEF("download/order", true);
@@ -159,6 +171,18 @@ void DownloadConfig::SetLoop(bool loop)
 
 }
 
+int DownloadConfig::VideoType()
+{
+	return CONFIG_INT_DEF("download/videotype", "0");
+
+}
+
+void DownloadConfig::SetVideoType(int type)
+{
+	CONFIG_SET("download/videotype", type);
+
+}
+
 bool DownloadFinishConfig::Order()
 {
 	return CONFIG_BOOL_DEF("downloadfinish/order", true);
@@ -180,6 +204,18 @@ int DownloadFinishConfig::Number()
 void DownloadFinishConfig::SetNumber(int number)
 {
 	CONFIG_SET("downloadfinish/number", number);
+
+}
+
+int DownloadFinishConfig::VideoType()
+{
+	return CONFIG_INT_DEF("hisotry/videotype", "0");
+
+}
+
+void DownloadFinishConfig::SetVideoType(int type)
+{
+	CONFIG_SET("hisotry/videotype", type);
 
 }
 
