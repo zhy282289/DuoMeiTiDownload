@@ -50,6 +50,13 @@ QWebEngineView* WebViewWnd::GetUniquenView()
 	return GetView(id);
 }
 
+QWebEngineView* WebViewWnd::CreateTestView()
+{
+	auto view = new QWebEngineView;
+	view->resize(800, 800);
+	return view;
+}
+
 WebViewWnd::WebViewWnd(QWidget *parent)
 	: QWidget(parent)
 {

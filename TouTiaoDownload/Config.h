@@ -45,6 +45,10 @@ public:
 	static bool Loop();
 	static void SetLoop(bool loop);
 
+	static int ScanType();
+	static void SetScanType(int number);
+
+
 };
 
 class DownloadConfig

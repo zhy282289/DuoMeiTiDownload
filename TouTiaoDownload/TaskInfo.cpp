@@ -51,9 +51,10 @@ bool TaskObtainManager::StartScan()
 
 	if (m_view == nullptr)
 	{
-		m_view = GET_UNIQUEN_WEBVIEW();
+		//m_view = GET_UNIQUEN_WEBVIEW();
+		m_view = GET_TEST_WEBVIEW();
 
-		connect(m_view, &QWebEngineView::loadFinished, this, &TaskObtainManager::ParseMainPage);
+		connect(m_view, &QWebEngineView::loadFinished, this, &TaskObtainManager::_ParseMainPage);
 
 		m_view->show();
 	}
@@ -138,46 +139,74 @@ bool TaskObtainManager::UpdateInfo(TaskInfoPtr info)
 
 void TaskObtainManager::ParseMainPage()
 {
-	m_view->page()->toHtml([=](const QString &text)
+	m_view->page()->runJavaScript(
+		"var es = document.getElementsByClassName('feed-infinite-wrapper');"
+		"if (es.length > 0)"
+		"{es[0].innerHTML;}"
+		, [=](QVariant v)
 	{
-
-		m_view->page()->runJavaScript(
-			"var es = document.getElementsByClassName('feed-infinite-wrapper');"
-			"if (es.length > 0)"
-			"{es[0].innerHTML;}"
-			, [=](QVariant v)
+		bool bData = false;
+		QString html = v.toString();
+		if (!html.isEmpty())
 		{
-			bool bData = false;
-			QString html = v.toString();
-			if (!html.isEmpty())
+			IPython_Exe *pyExe = IPython_Exe::GetInstance();
+			bool ret = pyExe->Simple_Call("toutiao", "parseTouTiaoFromMain", "(s)", html.toUtf8().data());
+			string retString = pyExe->ReturnString();
+			if (!retString.empty())
 			{
-				IPython_Exe *pyExe = IPython_Exe::GetInstance();
-				bool ret = pyExe->Simple_Call("toutiao", "parseTouTiaoFromMain", "(s)", html.toUtf8().data());
-				string retString = pyExe->ReturnString();
-				if (!retString.empty())
-				{
-					bData = true;
-					QString retStringUtf8 = QString::fromUtf8(retString.c_str());
-					m_mainNewUrlist = retStringUtf8.split(";", QString::SkipEmptyParts);
-					LOG(QString(TR("获取主页总条数：%2")).arg(m_mainNewUrlist.size()));
-					NextUrl();
-
-				}
+				bData = true;
+				QString retStringUtf8 = QString::fromUtf8(retString.c_str());
+				m_mainNewUrlist = retStringUtf8.split(";", QString::SkipEmptyParts);
+				LOG(QString(TR("获取主页总条数：%2")).arg(m_mainNewUrlist.size()));
+				NextUrl();
 
 			}
-			if (!bData)
+
+		}
+		if (!bData)
+		{
+			LOG("error: document.getElementsByClassName('feed-infinite-wrapper');");
+			//QThread::sleep(1);
+			if (m_stoping)
+				_StopScan();
+			else
+				ParseMainPage();
+
+		}
+
+	});
+
+}
+
+void TaskObtainManager::_ParseMainPage()
+{
+	// 切换类型
+	const int delayTime = 5000;
+
+
+	LOG(QString(TR("切换类型:%1")).arg(ScanConfig::ScanType()));
+	QTimer::singleShot(delayTime, [=]() {
+		m_view->page()->toHtml([=](const QString &text)
+		{
+			m_view->page()->runJavaScript(QString(
+				"var es = document.getElementsByClassName('channel-item');"
+				"if (es.length > 0)"
+				"{es[%1].click();}"
+			).arg(ScanConfig::ScanType())
+				, [=](QVariant v)
 			{
-				LOG("error: document.getElementsByClassName('feed-infinite-wrapper');");
-				//QThread::sleep(1);
-				if (m_stoping)
-					_StopScan();
-				else
+				LOG(TR("开始解析主页数据！"));
+				QTimer::singleShot(delayTime, [=]() {
 					ParseMainPage();
 
-			}
+				});
+
+
+			});
+
+
 
 		});
-
 	});
 
 }

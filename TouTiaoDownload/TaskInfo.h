@@ -15,6 +15,7 @@ struct TaskInfo : public Ref
 
 	QString localPath;
 
+	int type;
 };
 
 
@@ -43,6 +44,7 @@ Q_SIGNALS:
 	void sigStopScan();
 protected:
 	void ParseMainPage();
+	void _ParseMainPage();
 	void ParseUrlDetailInfo(const QString &url);
 	void _ParseUrlDetailInfo(const std::string &retString);
 

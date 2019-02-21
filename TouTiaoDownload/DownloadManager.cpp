@@ -36,25 +36,28 @@ bool DownloadManager::Download(TaskInfoPtr info)
 		QString url = m_info->videoUrl;
 		QString localPath = m_info->localPath;
 		int ret = ERROR_CODE_NETWORK_ERROR;
-		if (!QFile::exists(localPath))
+
+		// 存在文件删除
+		if (QFile::exists(localPath))
+			QFile::remove(localPath);
+		
+
+		localPath = gGetTouTiaoTodaySourcePath();
+		LOG(TR("开始下载视频"));
+		ret = DownloadFun(url, localPath);
+
+		if (ret == ERROR_CODE_NETWORK_ERROR)
 		{
-
-			localPath = gGetTouTiaoTodaySourcePath();
-			LOG(TR("开始下载视频"));
-			ret = DownloadFun(url, localPath);
-
-			if (ret == ERROR_CODE_NETWORK_ERROR)
+			LOG(TR("下载失败，重新获取下载地址"));
+			emit sigUpdateVideoUrl(info);
+			if (url != info->videoUrl)
 			{
-				LOG(TR("下载失败，重新获取下载地址"));
-				emit sigUpdateVideoUrl(info);
-				if (url != info->videoUrl)
-				{
-					LOG(TR("获取下载地址成功，开始下载"));
-					ret = DownloadFun(info->videoUrl, localPath);
-				}
-
+				LOG(TR("获取下载地址成功，开始下载"));
+				ret = DownloadFun(info->videoUrl, localPath);
 			}
+
 		}
+		
 
 		
 		if (ret == ERROR_CODE_OK)
@@ -147,7 +150,7 @@ bool ConvertManager::Convert(QString src, QString dst)
 		height += 1;
 
 	QString startTime = VideoInfo::SecondToQString(5);
-	QString duration = VideoInfo::SecondToQString(vinfo.duration * 0.9);
+	QString duration = VideoInfo::SecondToQString(vinfo.duration * 0.98);
 
 	QString ffmpegPath = QApplication::applicationDirPath() + "/ffmpeg/ffmpeg.exe";
 	QString cmd = QString("%1 -ss %7 -t %8 -i %2 -vf delogo=x=%6:y=20:w=190:h=56,scale=%4:%5 -b:v %9 %3").
