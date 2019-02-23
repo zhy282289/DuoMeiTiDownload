@@ -1,6 +1,7 @@
 
 #include "LogInfo.h"
 #include <QDateTime>
+#include <QDebug>
 
 LogInfo::LogInfo()
 	: QObject(nullptr)
@@ -25,5 +26,6 @@ void LogInfo::ShowLog(QString log)
 
 Q_INVOKABLE void LogInfo::_ShowLog(QString log)
 {
+	qDebug() << log;
 	emit sigShowLog(log);
 }

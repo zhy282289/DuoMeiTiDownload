@@ -268,6 +268,7 @@ void ScanTaskManager::NextUrl()
 		}
 		else
 		{
+			m_mainOldUrlist.clear();
 			// 重新加载主页
 			LOG(TR("重新加载主页！"));
 			m_view->load(m_url);
@@ -387,8 +388,8 @@ void ScanTaskManager::ParseVideoPage(const QString &url)
 
 						if (ScanConfig::Loop())
 						{
-							LOG(TR("设置了无限扫描，10秒后继续扫描任务！"));
-							QTimer::singleShot(10000, this, &ScanTaskManager::NextDownload);
+							LOG(TR("设置了无限扫描，60秒后继续扫描任务！"));
+							QTimer::singleShot(1000 * 60, this, &ScanTaskManager::NextDownload);
 						}
 						else
 						{

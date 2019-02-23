@@ -150,7 +150,7 @@ bool ConvertManager::Convert(QString src, QString dst)
 		height += 1;
 
 	QString startTime = VideoInfo::SecondToQString(5);
-	QString duration = VideoInfo::SecondToQString(vinfo.duration * 0.98);
+	QString duration = VideoInfo::SecondToQString(vinfo.duration * 0.95);
 
 	QString ffmpegPath = QApplication::applicationDirPath() + "/ffmpeg/ffmpeg.exe";
 	QString cmd = QString("%1 -ss %7 -t %8 -i %2 -vf delogo=x=%6:y=20:w=190:h=56,scale=%4:%5 -b:v %9 %3").

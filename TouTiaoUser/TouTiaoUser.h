@@ -11,7 +11,9 @@ public:
 	TouTiaoUser(QWidget *parent = Q_NULLPTR);
 
 private:
-
+	void GetMoreFollow();
+	QWebEngineView* GetView();
+	void UnFollow();
 protected:
 	void resizeEvent(QResizeEvent *event);
 
@@ -20,6 +22,9 @@ private:
 	QPushButton *m_btnUnFollow;
 	QPushButton *m_btnStartUnFollow;
 	HtmlView *m_unFollowView;
+
+	int m_moreCount;
+	QString m_url;
 
 };
 

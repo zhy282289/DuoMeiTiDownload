@@ -72,6 +72,20 @@ void DownloadTaskWnd::AddItem(TaskInfoPtr info)
 		RemoveItemByInfo(info);
 		emit sigConvert2Task(info);
 	});
+
+	connect(w, &TaskWndListItem::sigConvert2TaskAll, this, [=]()
+	{
+		for (int i = 0; i < m_listWnd->count(); ++i)
+		{
+			auto info = qobject_cast<TaskWndListItem*>(m_listWnd->itemWidget(m_listWnd->item(i)))->GetInfo();
+			MY_DB->DownladRemove(info->id);
+			MY_DB->TaskInsert(info);
+			emit sigConvert2Task(info);
+		}
+		//RemoveItemByInfo(info);
+		m_listWnd->clear();
+
+	});
 }
 
 void DownloadTaskWnd::SetEnabled(bool enabled)
@@ -217,7 +231,8 @@ void DownloadWndListItem::MenuPopup(QMouseEvent *event)
 		auto actLocalView = menu.addAction(TR("查看本地视频"));
 		auto actLocalFileDirectory = menu.addAction(TR("定位本地视频"));
 		menu.addSeparator();
-		auto actConvert2Download = menu.addAction(TR("标记成待下载"));
+		auto actConvert2Download = menu.addAction(TR("标记当前成待下载"));
+		auto actConvert2DownloadAll = menu.addAction(TR("标记所有选择成待下载"));
 		auto actConvert2History = menu.addAction(TR("标记成已历史"));
 
 		auto act = menu.exec(event->globalPos());
@@ -242,6 +257,10 @@ void DownloadWndListItem::MenuPopup(QMouseEvent *event)
 		else if (actConvert2Download == act)
 		{
 			sigConvert2Task();
+		}
+		else if (actConvert2DownloadAll == act)
+		{
+			sigConvert2TaskAll();
 		}
 		else if (actConvert2History == act)
 		{

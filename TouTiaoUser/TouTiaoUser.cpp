@@ -18,32 +18,75 @@ TouTiaoUser::TouTiaoUser(QWidget *parent)
 			m_unFollowView = new HtmlView(0);
 			m_unFollowView->resize(800,800);
 			m_unFollowView->show();
-			m_unFollowView->load(QUrl("https://www.toutiao.com/c/user/relation/51620417289/?tab=following#mid=1568287264229378"));
+			m_url = "https://www.toutiao.com/c/user/relation/51620417289/?tab=following#mid=1568287264229378";
+			m_unFollowView->load(QUrl(m_url));
 			//m_unFollowView->load(QUrl("https://www.baidu.com"));
+			connect(m_unFollowView, &QWebEngineView::loadFinished, [=]()
+			{
+				m_moreCount = 0;
+				GetMoreFollow();
+
+			});
 		}
 	});
 
 	connect(m_btnStartUnFollow, &QPushButton::clicked, this, [=]()
 	{
-		auto view = m_unFollowView->GetView();
-		if (view == nullptr)
-			view = m_unFollowView;
-		view->page()->runJavaScript(
-			"var es = document.getElementsByClassName('relation');"
-			"for(var i = 0;i<es.length;++i)"
-			"{es[i].firstChild.click();}"
-			, [=](QVariant v)
-		{
+		m_moreCount = 0;
+		GetMoreFollow();
 
-			QString html = v.toString();
-			if (!html.isEmpty())
-			{
-				
-			}
 
-		});
 	});
 
+}
+
+void TouTiaoUser::GetMoreFollow()
+{
+	if (++m_moreCount <= 13)
+	{
+		LOG(QString("GetMoreFollow:%1").arg(m_moreCount));
+		GetView()->page()->runJavaScript(
+			"window.scrollTo(0,document.body.scrollHeight);"
+			, [=](QVariant)
+		{
+			QTimer::singleShot(500, [=]()
+			{
+				GetMoreFollow();
+			});
+		});
+	}
+	else
+	{
+		UnFollow();
+	}
+
+}
+
+QWebEngineView* TouTiaoUser::GetView()
+{
+	auto view = m_unFollowView->GetView();
+	if (view == nullptr)
+		view = m_unFollowView;
+
+	return view;
+}
+
+
+void TouTiaoUser::UnFollow()
+{
+	LOG(QString("UnFollow"));
+	auto view = GetView();
+	view->page()->runJavaScript(
+		"var es = document.getElementsByClassName('relation');"
+		"for(var i = 0;i<es.length;++i)"
+		"{if (es[i].children.length>0)"
+		"{es[i].children[0].children[0].click();}else{alert('2');}}"
+		, [=](QVariant v)
+	{
+		LOG(QString("UnFollow Finish"));
+		GetView()->load(m_url);
+
+	});
 }
 
 void TouTiaoUser::resizeEvent(QResizeEvent *event)
