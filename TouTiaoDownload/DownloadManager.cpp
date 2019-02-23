@@ -50,7 +50,8 @@ bool DownloadManager::Download(TaskInfoPtr info)
 		{
 			LOG(TR("下载失败，重新获取下载地址"));
 			emit sigUpdateVideoUrl(info);
-			if (url != info->videoUrl)
+			ret = info->errorCode;
+			if (ret == ERROR_CODE_OK && url != info->videoUrl)
 			{
 				LOG(TR("获取下载地址成功，开始下载"));
 				ret = DownloadFun(info->videoUrl, localPath);

@@ -276,17 +276,28 @@ void TaskWnd::FinishDownload(int code, TaskInfoPtr info)
 	}
 	else if (code == ERROR_CODE_NETWORK_ERROR)
 	{
+	
 		LOG(TR("获取视频详细信息失败，可能网络访问被限！"));
 		if (DownloadConfig::Loop())
 		{
-			LOG(TR("设置了无限下载任务，10秒后重新下载！"));
-			QTimer::singleShot(10000, this, &TaskWnd::NextDownload);
+			LOG(TR("设置了无限下载任务，60秒后重新下载！"));
+			QTimer::singleShot(1000 * 60, this, &TaskWnd::NextDownload);
 		}
 		else
 		{
-
 			StopDownload();
+
 		}
+
+	}
+	else if (code == ERROR_CODE_REMOTEPATH_NOT_EXIST_ERROR)
+	{
+		LOG(TR("获取视频详细信息失败，视频已经不存在，删除任务！"));
+
+		MY_DB->TaskRemove(info->id);
+		RemoveItemByInfo(info);
+		NextDownload();
+
 	}
 	else if (code == ERROR_CODE_CONVERT_ERROR)
 	{

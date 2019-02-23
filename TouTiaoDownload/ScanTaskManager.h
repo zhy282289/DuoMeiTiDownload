@@ -16,6 +16,9 @@ struct TaskInfo : public Ref
 	QString localPath;
 
 	int videoType; //类型
+
+
+	int errorCode; // 临时使用，不存入数据库
 };
 
 

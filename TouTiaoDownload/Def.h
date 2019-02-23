@@ -11,6 +11,7 @@
 #define ERROR_CODE_OK 0 //
 #define ERROR_CODE_NETWORK_ERROR 1 //
 #define ERROR_CODE_CONVERT_ERROR 2 //
+#define ERROR_CODE_REMOTEPATH_NOT_EXIST_ERROR 3 //
 
 
 enum VideoType

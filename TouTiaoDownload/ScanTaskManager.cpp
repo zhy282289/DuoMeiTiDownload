@@ -86,6 +86,7 @@ TaskInfos ScanTaskManager::GetInfos()
 
 bool ScanTaskManager::UpdateInfo(TaskInfoPtr info)
 {
+
 	static QString videoUrl;
 	static QEventLoop eventloop;
 
@@ -96,35 +97,52 @@ bool ScanTaskManager::UpdateInfo(TaskInfoPtr info)
 
 		connect(m_redownloadView, &QWebEngineView::loadFinished, [=]()
 		{
-			//m_redownloadView->page()->toHtml([=](const QString &text)
-			//{
-				m_redownloadView->page()->runJavaScript(
-					"var es = document.getElementsByClassName('bui-left index-content');"
-					"if (es.length > 0)"
-					"{es[0].innerHTML;}"
-					, [=](QVariant v)
-				{
 
-					QString html = v.toString();
-					if (!html.isEmpty())
+			m_redownloadView->page()->runJavaScript(
+				"var es = document.getElementsByClassName('bui-left index-content');"
+				"if (es.length > 0)"
+				"{es[0].innerHTML;}"
+				, [=](QVariant v)
+			{
+
+				QString html = v.toString();
+				if (!html.isEmpty())
+				{
+					IPython_Exe *pyExe = IPython_Exe::GetInstance();
+					bool ret = pyExe->Simple_Call("toutiao", "parseTouTiaoDetail", "(s)", html.toUtf8().data());
+					string retString = pyExe->ReturnString();
+					if (!retString.empty())
 					{
-						IPython_Exe *pyExe = IPython_Exe::GetInstance();
-						bool ret = pyExe->Simple_Call("toutiao", "parseTouTiaoDetail", "(s)", html.toUtf8().data());
-						string retString = pyExe->ReturnString();
-						if (!retString.empty())
-						{
-							QString retStringUtf8 = QString::fromUtf8(retString.c_str());
-							QJsonDocument json = QJsonDocument::fromJson(retString.c_str());
-							QJsonObject detailObject = json.object();
-							videoUrl = detailObject["videourl"].toString();
-							eventloop.exit(1);
-							return;
-						}
+						QString retStringUtf8 = QString::fromUtf8(retString.c_str());
+						QJsonDocument json = QJsonDocument::fromJson(retString.c_str());
+						QJsonObject detailObject = json.object();
+						videoUrl = detailObject["videourl"].toString();
+						eventloop.exit(ERROR_CODE_OK);
+						return;
 					}
+					eventloop.exit(ERROR_CODE_CONVERT_ERROR);
+				}
+				else
+				{
+					// 检测视频是否已经不存在了
+					m_redownloadView->page()->runJavaScript(
+						"document.body.innerHTML;"
+						, [=](QVariant v)
+					{
+						QString html = v.toString();
+						if (html.contains(TR("找不到你想要的页面")))
+						{
+							LOG(TR("获取视频信息失败，找不到你想要的页面"));
+							eventloop.exit(ERROR_CODE_REMOTEPATH_NOT_EXIST_ERROR);
+
+						}
+						else
+							eventloop.exit(ERROR_CODE_NETWORK_ERROR);
+					});
+				}
 					
-					eventloop.exit(0);
-				});
-			//});
+			});
+	
 		});
 
 
@@ -133,8 +151,9 @@ bool ScanTaskManager::UpdateInfo(TaskInfoPtr info)
 	m_redownloadView->load(info->url);
 	m_redownloadView->show();
 
-
-	if (eventloop.exec())
+	int code = eventloop.exec();
+	info->errorCode = code;
+	if (code == ERROR_CODE_OK)
 	{
 		info->videoUrl = videoUrl;
 		return true;

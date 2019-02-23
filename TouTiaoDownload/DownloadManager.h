@@ -16,7 +16,7 @@ public:
 	bool Convert(QString dstpath);
 
 Q_SIGNALS:
-	void sigFinish(bool code, TaskInfoPtr info);
+	void sigFinish(int code, TaskInfoPtr info);
 	void sigUpdateVideoUrl(TaskInfoPtr info);
 private:
 	void Finish(int code);
