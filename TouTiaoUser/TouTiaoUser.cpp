@@ -10,6 +10,8 @@ TouTiaoUser::TouTiaoUser(QWidget *parent)
 	m_btnUnFollow = new QPushButton(TR("反关注"), this);
 	m_btnStartUnFollow = new QPushButton(TR("开始反关注"), this);
 
+	m_browser = new QTextBrowser(this);
+
 	connect(m_btnUnFollow, &QPushButton::clicked, this, [=]()
 	{
 		if (m_unFollowView)
@@ -23,8 +25,8 @@ TouTiaoUser::TouTiaoUser(QWidget *parent)
 			//m_unFollowView->load(QUrl("https://www.baidu.com"));
 			connect(m_unFollowView, &QWebEngineView::loadFinished, [=]()
 			{
-				m_moreCount = 0;
-				GetMoreFollow();
+				//m_moreCount = 0;
+				//GetMoreFollow();
 
 			});
 		}
@@ -35,6 +37,17 @@ TouTiaoUser::TouTiaoUser(QWidget *parent)
 		m_moreCount = 0;
 		GetMoreFollow();
 
+		connect(GetView(), &QWebEngineView::loadFinished, this, [=]()
+		{
+			m_moreCount = 0;
+			GetMoreFollow();
+
+		}, Qt::UniqueConnection);
+
+	});
+
+	connect(LOG_INFO, &LogInfo::sigShowLog, this, [=](QString msg) {
+		m_browser->append(msg);
 	});
 
 }
@@ -73,19 +86,37 @@ QWebEngineView* TouTiaoUser::GetView()
 
 void TouTiaoUser::UnFollow()
 {
-	LOG(QString("UnFollow"));
+	LOG(QString("开始反关注"));
 	auto view = GetView();
 	view->page()->runJavaScript(
 		"var es = document.getElementsByClassName('relation');"
 		"for(var i = 0;i<es.length;++i)"
-		"{if (es[i].children.length>0)"
-		"{es[i].children[0].children[0].click();}else{alert('2');}}"
+		"{"
+		"if (es[i].children.length>0)"
+		"{es[i].children[0].children[0].click();}else{alert('2');}"
+		"es[0].children[0].getAttribute('media_id')"
+		"}"
 		, [=](QVariant v)
 	{
-		LOG(QString("UnFollow Finish"));
-		GetView()->load(m_url);
+		if (m_firstId != v.toString())
+		{
+			LOG(QString("反关注完成"));
+			m_firstId = v.toString();
+			GetView()->load(m_url);
+		}
+		else
+		{
+			LOG(QString("无法再反关注，任务完成"));
+		}
+
 
 	});
+}
+
+void TouTiaoUser::ConnectView()
+{
+
+
 }
 
 void TouTiaoUser::resizeEvent(QResizeEvent *event)
@@ -99,4 +130,5 @@ void TouTiaoUser::resizeEvent(QResizeEvent *event)
 	left = m_btnUnFollow->geometry().right() + 10;
 	m_btnStartUnFollow->setGeometry(left, top, btnw, btnh);
 
+	m_browser->setGeometry(0, 100, width(), height() - 100);
 }

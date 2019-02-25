@@ -14,6 +14,9 @@ private:
 	void GetMoreFollow();
 	QWebEngineView* GetView();
 	void UnFollow();
+	
+	void ConnectView();
+
 protected:
 	void resizeEvent(QResizeEvent *event);
 
@@ -25,6 +28,10 @@ private:
 
 	int m_moreCount;
 	QString m_url;
+
+	QString m_firstId;
+
+	QTextBrowser *m_browser;
 
 };
 
