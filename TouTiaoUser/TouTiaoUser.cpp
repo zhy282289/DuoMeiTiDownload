@@ -35,14 +35,13 @@ TouTiaoUser::TouTiaoUser(QWidget *parent)
 		m_moreCount = 0;
 		GetMoreFollow();
 
-
 	});
 
 }
 
 void TouTiaoUser::GetMoreFollow()
 {
-	if (++m_moreCount <= 13)
+	if (++m_moreCount <= 10)
 	{
 		LOG(QString("GetMoreFollow:%1").arg(m_moreCount));
 		GetView()->page()->runJavaScript(

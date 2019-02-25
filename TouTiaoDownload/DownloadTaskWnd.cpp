@@ -1,10 +1,13 @@
 #include "stdafx.h"
 #include "DownloadTaskWnd.h"
 #include <thread>
+#include <AutoUploadManager.h>
 
 DownloadTaskWnd::DownloadTaskWnd(QWidget *parent)
 	: QWidget(parent)
 {
+	m_autoUpload = nullptr;
+
 
 	m_listWnd = new QListWidget(this);
 	m_listWnd->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
@@ -19,6 +22,10 @@ DownloadTaskWnd::DownloadTaskWnd(QWidget *parent)
 
 	m_cmbVideoType = gCreateVideoTypeComboBox(this);
 
+	m_btnAutoUpload = new QPushButton(TR("自动上传"), this);
+	m_btnAutoUploadRefresh = new QPushButton(TR("获取上传按钮"), this);
+
+	m_autoUpload = new AutoUploadManager(this);
 
 	InitUI();
 
@@ -34,6 +41,8 @@ DownloadTaskWnd::DownloadTaskWnd(QWidget *parent)
 		t.detach();
 	});
 
+	connect(m_btnAutoUpload, &QPushButton::clicked, this, &DownloadTaskWnd::AutoUpload);
+	connect(m_btnAutoUploadRefresh, &QPushButton::clicked, m_autoUpload, &AutoUploadManager::LoadFinished);
 }
 
 DownloadTaskWnd::~DownloadTaskWnd()
@@ -177,6 +186,12 @@ void DownloadTaskWnd::RemoveItemByInfo(TaskInfoPtr info)
 		}
 	}
 }
+
+void DownloadTaskWnd::AutoUpload()
+{
+	m_autoUpload->StartUpload();
+}
+
 void DownloadTaskWnd::resizeEvent(QResizeEvent *event)
 {
 	const int toolbarHeight = 60;
@@ -204,7 +219,12 @@ void DownloadTaskWnd::resizeEvent(QResizeEvent *event)
 	m_btnAllTaskNum->setGeometry(left, top, btnw, btnh);
 	left = m_btnAllTaskNum->geometry().right() + margins;
 	m_cmbVideoType->setGeometry(left, top, 100, btnh);
+	left = m_btnAllTaskNum->geometry().right() + margins;
+	m_btnAutoUpload->setGeometry(left, top, 100, btnh);
+	left = m_btnAutoUpload->geometry().right() + margins;
+	m_btnAutoUploadRefresh->setGeometry(left, top, 100, btnh);
 
+	
 
 	// list
 	left = margins;
@@ -217,7 +237,18 @@ void DownloadTaskWnd::resizeEvent(QResizeEvent *event)
 DownloadWndListItem::DownloadWndListItem(QListWidgetItem *item)
 	:TaskWndListItem(item)
 {
+	m_btnCopyName = new QPushButton("T", this);
+	m_btnCopyPath = new QPushButton("F", this);
 
+
+	connect(m_btnCopyName, &QPushButton::clicked, this, [=]() {
+
+		QApplication::clipboard()->setText(m_info->title);
+	});
+	connect(m_btnCopyPath, &QPushButton::clicked, this, [=]() {
+		QApplication::clipboard()->setText(m_info->localPath);
+
+	});
 }
 
 void DownloadWndListItem::MenuPopup(QMouseEvent *event)
@@ -278,4 +309,17 @@ void DownloadWndListItem::GenerateInfo()
 		m_desc->append(TR("文件不存在"));
 
 
+}
+
+void DownloadWndListItem::resizeEvent(QResizeEvent *event)
+{
+
+	TaskWndListItem::resizeEvent(event);
+
+	int left = 0;
+	const int btnw = 22;
+	int top = height() - (2 * (btnw + 10));
+	m_btnCopyName->setGeometry(left, top, btnw, btnw);
+	top = m_btnCopyName->geometry().bottom() + 2;
+	m_btnCopyPath->setGeometry(left, top, btnw, btnw);
 }

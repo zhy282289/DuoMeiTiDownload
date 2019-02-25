@@ -4,6 +4,7 @@
 
 #include "TaskWnd.h"
 
+class AutoUploadManager;
 class DownloadTaskWnd : public QWidget
 {
 	Q_OBJECT
@@ -29,6 +30,9 @@ private:
 
 	void RemoveItemByWidget(QWidget *widget);
 	void RemoveItemByInfo(TaskInfoPtr info);
+private:
+	void AutoUpload();
+
 protected:
 	void resizeEvent(QResizeEvent *event);
 
@@ -41,6 +45,12 @@ private:
 	QPushButton *m_btnAllTaskNum;
 	QComboBox *m_cmbVideoType;
 
+	//////////////////////////////////////////////////////////////////////////
+	
+	QPushButton *m_btnAutoUpload;
+	QPushButton *m_btnAutoUploadRefresh;
+
+	AutoUploadManager *m_autoUpload;
 };
 
 
@@ -54,4 +64,10 @@ protected:
 	virtual void MenuPopup(QMouseEvent *event);
 	virtual void GenerateInfo();
 
+protected:
+	void resizeEvent(QResizeEvent *event);
+
+private:
+	QPushButton *m_btnCopyName;
+	QPushButton *m_btnCopyPath;
 };

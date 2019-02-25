@@ -64,6 +64,7 @@ bool DownloadManager::Download(TaskInfoPtr info)
 		if (ret == ERROR_CODE_OK)
 		{
 			LOG(TR("œ¬‘ÿ≥…π¶"));
+			QThread::sleep(1);
 			Convert(localPath);
 		}
 		else

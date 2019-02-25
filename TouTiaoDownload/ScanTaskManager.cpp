@@ -4,7 +4,6 @@
 #include "inc_PyDll/IPython_Exe.h"
 
 #include <QtWebEngineWidgets/QtWebEngineWidgets>
-#include <QtWebEngineWidgets/QtWebEngineWidgets>
 #include <thread>
 
 #define TRY_COUNT 5

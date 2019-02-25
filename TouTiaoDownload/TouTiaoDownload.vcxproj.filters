@@ -78,6 +78,9 @@
     <ClCompile Include="ScanTaskManager.cpp">
       <Filter>Infos</Filter>
     </ClCompile>
+    <ClCompile Include="AutoUploadManager.cpp">
+      <Filter>Infos</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -122,6 +125,9 @@
       <Filter>Infos</Filter>
     </QtMoc>
     <QtMoc Include="ScanTaskManager.h">
+      <Filter>Infos</Filter>
+    </QtMoc>
+    <QtMoc Include="AutoUploadManager.h">
       <Filter>Infos</Filter>
     </QtMoc>
   </ItemGroup>

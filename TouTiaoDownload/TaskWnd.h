@@ -67,6 +67,8 @@ private:
 	QCheckBox *m_ckbLoop;
 	QComboBox *m_cmbVideoType;
 
+	int m_tryConvertCount;
+	int tryConvertDeleteTaskCount;
 };
 
 

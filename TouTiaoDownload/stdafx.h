@@ -5,6 +5,7 @@
 #include <QtCore/QtCore>
 #include <QtGui/QtGui>
 
+#include <QtWebEngineWidgets/QtWebEngineWidgets>
 
 #include "inc_DMTCommonLib/Def.h"
 #include "inc_DMTCommonLib/ExteranlApi.h"

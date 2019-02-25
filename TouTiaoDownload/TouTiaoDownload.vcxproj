@@ -130,6 +130,7 @@ copy $(ProjectDir)python\* $(SolutionDir)bin\$(Platform)\$(Configuration)\python
     </QtRcc>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AutoUploadManager.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="DB.cpp" />
     <ClCompile Include="Def.cpp" />
@@ -177,6 +178,10 @@ copy $(ProjectDir)python\* $(SolutionDir)bin\$(Platform)\$(Configuration)\python
     <QtMoc Include="DownloadTaskWnd.h">
       <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWebEngineWidgets;$(QTDIR)\include\QtWebEngineCore;$(QTDIR)\include\QtWidgets;.\..\public</IncludePath>
       <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWebEngineWidgets;$(QTDIR)\include\QtWebEngineCore;$(QTDIR)\include\QtWidgets</IncludePath>
+    </QtMoc>
+    <QtMoc Include="AutoUploadManager.h">
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWebEngineWidgets;$(QTDIR)\include\QtWebEngineCore;$(QTDIR)\include\QtWidgets;.\..\public;$(QTDIR)\include\QtSql</IncludePath>
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWebEngineWidgets;$(QTDIR)\include\QtWebEngineCore;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtSql</IncludePath>
     </QtMoc>
     <ClInclude Include="Config.h">
       <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWebEngineWidgets;$(QTDIR)\include\QtWebEngineCore;$(QTDIR)\include\QtWidgets;.\..\public</IncludePath>

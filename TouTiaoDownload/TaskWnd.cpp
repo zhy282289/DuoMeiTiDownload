@@ -12,6 +12,7 @@
 TaskWnd::TaskWnd(QWidget *parent)
 	: QWidget(parent)
 	, m_bDownloading(false)
+	, m_tryConvertCount(0)
 {
 	m_btnDownload = new QPushButton(TR("开始下载"), this);
 	m_btnStopDownload = new QPushButton(TR("停止下载"), this);
@@ -211,6 +212,8 @@ void TaskWnd::slotStartDownload()
 void TaskWnd::StartDownload()
 {
 	m_bDownloading = true;
+	m_tryConvertCount = 0;
+	tryConvertDeleteTaskCount = 0;
 
 	if (m_listWnd->count() > 0)
 	{
@@ -266,7 +269,7 @@ void TaskWnd::FinishDownload(int code, TaskInfoPtr info)
 			RemoveItemByInfo(info);
 			sigDownloadOneFinish(info);
 			NextDownload();
-
+			tryConvertDeleteTaskCount = 0;
 		}
 		else
 		{
@@ -301,8 +304,34 @@ void TaskWnd::FinishDownload(int code, TaskInfoPtr info)
 	}
 	else if (code == ERROR_CODE_CONVERT_ERROR)
 	{
-		LOG(TR("转码失败，出现未知错误，停止任务"));
-		StopDownload();
+		if (++m_tryConvertCount < 3)
+		{
+			LOG(QString(TR("转码失败，重新转码 %1")).arg(m_tryConvertCount));
+			NextDownload();
+		}
+		else
+		{
+			m_tryConvertCount = 0;
+			
+			if (++tryConvertDeleteTaskCount < 3)
+			{
+				LOG(TR("转码失败，出现未知错误，删除任务"));
+				MY_DB->TaskRemove(info->id);
+				RemoveItemByInfo(info);
+				NextDownload();
+			}
+			else
+			{
+				LOG(TR("转码失败，出现未知错误，停止任务"));
+				StopDownload();
+			}
+
+
+
+
+			//StopDownload();
+		}
+
 	}
 	else
 	{
