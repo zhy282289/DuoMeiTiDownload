@@ -100,13 +100,13 @@ void TouTiaoUser::UnFollow()
 	{
 		if (m_firstId != v.toString())
 		{
-			LOG(QString("反关注完成"));
+			LOG((TR("反关注完成")));
 			m_firstId = v.toString();
 			GetView()->load(m_url);
 		}
 		else
 		{
-			LOG(QString("无法再反关注，任务完成"));
+			LOG(TR("无法再反关注，任务完成"));
 		}
 
 
