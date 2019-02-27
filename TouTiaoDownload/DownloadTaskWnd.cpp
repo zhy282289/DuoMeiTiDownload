@@ -7,7 +7,7 @@ DownloadTaskWnd::DownloadTaskWnd(QWidget *parent)
 	: QWidget(parent)
 {
 	m_autoUpload = nullptr;
-
+	m_bUploading = false;
 
 	m_listWnd = new QListWidget(this);
 	m_listWnd->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
@@ -23,7 +23,7 @@ DownloadTaskWnd::DownloadTaskWnd(QWidget *parent)
 	m_cmbVideoType = gCreateVideoTypeComboBox(this);
 
 	m_btnAutoUpload = new QPushButton(TR("自动上传"), this);
-	m_btnAutoUploadRefresh = new QPushButton(TR("获取上传按钮"), this);
+	m_btnAutoUploadStop = new QPushButton(TR("停止自动上传"), this);
 
 	m_autoUpload = new AutoUploadManager(this);
 
@@ -41,8 +41,17 @@ DownloadTaskWnd::DownloadTaskWnd(QWidget *parent)
 		t.detach();
 	});
 
-	connect(m_btnAutoUpload, &QPushButton::clicked, this, &DownloadTaskWnd::AutoUpload);
-	connect(m_btnAutoUploadRefresh, &QPushButton::clicked, m_autoUpload, &AutoUploadManager::LoadFinished);
+	connect(m_btnAutoUpload, &QPushButton::clicked, this, &DownloadTaskWnd::slotStartUpload);
+	connect(m_btnAutoUploadStop, &QPushButton::clicked, this, &DownloadTaskWnd::slotStopUpload);
+
+	connect(this, &DownloadTaskWnd::sigUploadStart, this, [=]()
+	{
+		SetEnabled(false);
+	});
+	connect(this, &DownloadTaskWnd::sigUploadStop, this, [=]()
+	{
+		SetEnabled(true);
+	});
 }
 
 DownloadTaskWnd::~DownloadTaskWnd()
@@ -99,10 +108,10 @@ void DownloadTaskWnd::AddItem(TaskInfoPtr info)
 
 void DownloadTaskWnd::SetEnabled(bool enabled)
 {
-
 	m_ckbTop->setEnabled(enabled);
 	m_leTaskNum->setEnabled(enabled);
 	m_btnTaskNum->setEnabled(enabled);
+	m_btnAutoUpload->setEnabled(enabled);
 }
 
 void DownloadTaskWnd::slotSearchTaskNumber()
@@ -134,6 +143,19 @@ void DownloadTaskWnd::slotBigIconChanged(int state)
 	{
 		m_listWnd->item(i)->setSizeHint(QSize(100, height));
 	}
+}
+
+void DownloadTaskWnd::slotStartUpload()
+{
+	m_bUploading = true;
+	emit sigUploadStart();
+
+	StartAutoUpload();
+}
+
+void DownloadTaskWnd::slotStopUpload()
+{
+	m_bUploading = false;
 }
 
 void DownloadTaskWnd::InitUI()
@@ -187,9 +209,83 @@ void DownloadTaskWnd::RemoveItemByInfo(TaskInfoPtr info)
 	}
 }
 
-void DownloadTaskWnd::AutoUpload()
+void DownloadTaskWnd::FinishUpload(bool ret, TaskInfoPtr info)
 {
-	m_autoUpload->StartUpload();
+	if (ret)
+	{
+		LOG(TR("上传成功，下一个上传任务"));
+
+		//MY_DB->HistoryInsert(info);
+		//MY_DB->DownladRemove(info->id);
+		//RemoveItemByInfo(info);
+		//sigConvert2History(info);
+		NextUploadTask();
+		
+
+	}
+	else
+	{
+		LOG(TR("上传失败，继续上传任务"));
+
+		StopUploadTask();
+	}
+
+
+}
+
+void DownloadTaskWnd::StartAutoUpload()
+{
+
+	if (m_listWnd->count() > 0)
+	{
+
+		TaskWndListItem *taksItem = qobject_cast<TaskWndListItem*>(m_listWnd->itemWidget(m_listWnd->item(0)));
+		m_autoUpload->StartUpload(taksItem->GetInfo());
+		connect(m_autoUpload, &AutoUploadManager::sigFinish, this, &DownloadTaskWnd::FinishUpload);
+
+	}
+	else
+	{
+		//if (!m_ckbDownloadFromDB->isChecked())
+		{
+			LOG(TR("无转码任务，获取数据库数据"));
+			slotSearchTaskNumber();
+			if (m_listWnd->count() > 0)
+			{
+				NextUploadTask();
+			}
+			else
+			{
+				LOG(TR("无转码任务"));
+				StopUploadTask();
+			}
+		}
+		//else
+		//{
+		//	LOG(TR("无转码任务"));
+		//	StopDownload();
+		//}
+
+
+	}
+
+}
+
+void DownloadTaskWnd::NextUploadTask()
+{
+	if (m_bUploading)
+	{
+		StartAutoUpload();
+	}
+	else
+	{
+		StopUploadTask();
+	}
+}
+
+void DownloadTaskWnd::StopUploadTask()
+{
+	emit sigUploadStop();
 }
 
 void DownloadTaskWnd::resizeEvent(QResizeEvent *event)
@@ -222,7 +318,7 @@ void DownloadTaskWnd::resizeEvent(QResizeEvent *event)
 	left = m_btnAllTaskNum->geometry().right() + margins;
 	m_btnAutoUpload->setGeometry(left, top, 100, btnh);
 	left = m_btnAutoUpload->geometry().right() + margins;
-	m_btnAutoUploadRefresh->setGeometry(left, top, 100, btnh);
+	m_btnAutoUploadStop->setGeometry(left, top, 100, btnh);
 
 	
 

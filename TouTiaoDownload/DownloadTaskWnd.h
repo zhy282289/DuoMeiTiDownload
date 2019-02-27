@@ -19,10 +19,13 @@ public:
 Q_SIGNALS:
 	void sigConvert2Task(TaskInfoPtr info);
 	void sigConvert2History(TaskInfoPtr info);
-
+	void sigUploadStart();
+	void sigUploadStop();
 private:
 	void slotSearchTaskNumber();
 	void slotBigIconChanged(int state);
+	void slotStartUpload();
+	void slotStopUpload();
 private:
 	void InitUI();
 	bool CheckUI();
@@ -31,7 +34,11 @@ private:
 	void RemoveItemByWidget(QWidget *widget);
 	void RemoveItemByInfo(TaskInfoPtr info);
 private:
-	void AutoUpload();
+	void FinishUpload(bool ret, TaskInfoPtr info);
+private:
+	void StartAutoUpload();
+	void StopUploadTask();
+	void NextUploadTask();
 
 protected:
 	void resizeEvent(QResizeEvent *event);
@@ -48,9 +55,10 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	
 	QPushButton *m_btnAutoUpload;
-	QPushButton *m_btnAutoUploadRefresh;
+	QPushButton *m_btnAutoUploadStop;
 
 	AutoUploadManager *m_autoUpload;
+	bool m_bUploading;
 };
 
 
