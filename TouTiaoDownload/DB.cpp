@@ -34,7 +34,9 @@ bool DB::Init()
 	QSqlDatabase database;
 
 	database = QSqlDatabase::addDatabase("QSQLITE");
-	database.setDatabaseName("toutiao.db");
+
+	QString dbPath = QApplication::applicationDirPath() + "/toutiao.db";
+	database.setDatabaseName(dbPath);
 	if (database.open())
 	{
 		QSqlQuery sql_query;

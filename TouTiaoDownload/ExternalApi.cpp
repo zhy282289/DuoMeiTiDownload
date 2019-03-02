@@ -83,3 +83,27 @@ QString gGetVideoTypeString(int videoType)
 	return TR("δ֪");
 }
 
+void gKeybdEvent(char key)
+{
+	keybd_event(key, 0, 0, 0);
+	keybd_event(key, 0, KEYEVENTF_KEYUP, 0);
+}
+
+void gKeybdEvent_CTL(char key)
+{
+	keybd_event(VK_CONTROL, 0, 0, 0);
+	keybd_event(key, 0, 0, 0);
+	keybd_event(key, 0, KEYEVENTF_KEYUP, 0);
+	keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0);
+
+}
+
+void gMoveCursorAndClick(QPoint point)
+{
+	QCursor::setPos(point);
+	mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+	QThread::msleep(10);
+	mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+
+}
+

@@ -17,6 +17,13 @@ bool AutoUploadManager::StartUpload(TaskInfoPtr info)
 {
 	m_info = info;
 
+	if (QFile::exists(m_info->localPath))
+	{
+		LOG((TR("文件路径不存在，下个任务")));
+		sigFinish(false, m_info);
+		return false;
+	}
+
 	LOG((TR("开始上传任务")));
 	if (m_view == nullptr)
 	{
@@ -28,7 +35,7 @@ bool AutoUploadManager::StartUpload(TaskInfoPtr info)
 	}
 	m_view->load(m_url);
 
-	return false;
+	return true;
 }
 
 void AutoUploadManager::LoadFinished()
@@ -49,7 +56,7 @@ void AutoUploadManager::LoadFinished()
 			if (ret == 0)
 			{
 				LOG((TR("取不到视频输入框，继续获取")));
-				QTimer::singleShot(5 * 1000, [=]()
+				QTimer::singleShot(2 * 1000, [=]()
 				{
 					LoadFinished();
 				});
@@ -61,8 +68,8 @@ void AutoUploadManager::LoadFinished()
 				m_tryLoadUpload = 0;
 
 				m_view->activateWindow();
-				QThread::msleep(40);
-				MoveCursorAndClick(m_view->mapToGlobal(QPoint(500, 365)));
+				//QThread::msleep(40);
+				gMoveCursorAndClick(m_view->mapToGlobal(QPoint(500, 365)));
 				UploadFile();
 			}
 		});
@@ -76,14 +83,7 @@ void AutoUploadManager::LoadFinished()
 
 }
 
-void AutoUploadManager::MoveCursorAndClick(QPoint point)
-{
-	QCursor::setPos(point);
-	mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
-	QThread::msleep(10);
-	mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
 
-}
 
 void AutoUploadManager::UploadFile()
 {
@@ -120,7 +120,7 @@ void AutoUploadManager::UploadFile()
 
 void AutoUploadManager::MonitorUploadFileFinish()
 {
-	QTimer::singleShot(10 * 1000, [=]()
+	QTimer::singleShot(2 * 1000, [=]()
 	{
 		m_view->page()->runJavaScript(
 			"var es = document.getElementsByClassName('tips');"
@@ -268,12 +268,84 @@ void AutoUploadManager::UploadFileFinish()
 
 void AutoUploadManager::UploadFileFinishEx()
 {
-	MoveCursorAndClick(m_view->mapToGlobal(QPoint(500, 477)));
-	QApplication::clipboard()->setText(m_info->localPath);
-	auto hwnd = GetFocus();
-	qDebug() << hwnd;
-	QThread::msleep(400);
-	MoveCursorAndClick(m_view->mapToGlobal(QPoint(500, 535)));
-	auto hwnd2 = GetFocus();
-	qDebug() << hwnd2;
+	m_view->activateWindow();
+
+
+	QApplication::clipboard()->setText(m_info->title);
+	gMoveCursorAndClick(m_view->mapToGlobal(QPoint(500, 477)));
+	gKeybdEvent_CTL('A');
+	gKeybdEvent_CTL('V');
+
+	QTimer::singleShot(1000, [=]() {
+		m_view->activateWindow();
+		gMoveCursorAndClick(m_view->mapToGlobal(QPoint(500, 535)));
+		gKeybdEvent_CTL('A');
+		gKeybdEvent_CTL('V');
+
+		gKeybdEvent(VK_TAB);
+		gKeybdEvent(VK_TAB);
+		gKeybdEvent(VK_TAB);
+
+		QTimer::singleShot(1000, [=]() {
+			QApplication::clipboard()->setText(TR("搞笑"));
+			gKeybdEvent_CTL('V');
+			gKeybdEvent_CTL(VK_RETURN);
+
+			QTimer::singleShot(1000, [=]() {
+				QApplication::clipboard()->setText(TR("影视"));
+				gKeybdEvent_CTL('V');
+				gKeybdEvent_CTL(VK_RETURN);
+
+				QTimer::singleShot(1000, [=]() {
+					gKeybdEvent(VK_TAB);
+					gKeybdEvent(VK_TAB);
+					gKeybdEvent(VK_TAB);
+					gKeybdEvent(VK_TAB);
+					gKeybdEvent(VK_RETURN);
+
+					QTimer::singleShot(1000, [=]() {
+						for (int i = 0; i < 12; ++i)
+							gKeybdEvent(VK_DOWN);
+
+						gKeybdEvent(VK_RETURN);
+
+						QTimer::singleShot(1000, [=]() {
+							Submit();
+
+						});
+					});
+
+				});
+
+
+			});
+
+
+		});
+	});
+
+	
+}
+
+void AutoUploadManager::Submit()
+{
+	m_view->page()->runJavaScript(""
+		"var submitbtn = document.getElementsByClassName('submit btn ');"
+		"if(submitbtn.length>0){"
+			"submitbtn[0].click();0+1;}else{0+0;}"
+		, [=](QVariant v)
+	{
+		auto ret = v.toInt();
+		qDebug() << ret;
+		if (ret == 1)
+		{
+			LOG((TR("任务成功提交")));
+
+		}
+		else
+		{
+			LOG((TR("任务成功失败")));
+		}
+
+	});
 }

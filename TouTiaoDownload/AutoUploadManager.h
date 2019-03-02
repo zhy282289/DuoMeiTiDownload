@@ -20,12 +20,11 @@ Q_SIGNALS:
 	void sigFinish(bool bok, TaskInfoPtr info);
 
 private:
-	void MoveCursorAndClick(QPoint point);
-private:
 	void UploadFile();
 	void MonitorUploadFileFinish();
 	void UploadFileFinish();
 	void UploadFileFinishEx();
+	void Submit();
 private:
 	QWebEngineView *m_view;
 	QString m_url;

@@ -369,6 +369,7 @@ void ScanTaskManager::ParseVideoPage(const QString &url)
 	if (m_detailView == nullptr)
 	{
 		m_detailView = GET_UNIQUEN_WEBVIEW();
+		//m_detailView = GET_TEST_WEBVIEW();
 
 		connect(m_detailView, &QWebEngineView::loadFinished, this, [=]()
 		{
