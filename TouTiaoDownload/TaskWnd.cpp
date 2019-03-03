@@ -241,8 +241,18 @@ void TaskWnd::StartDownload()
 			}
 			else
 			{
-				LOG(TR("无转码任务"));
-				StopDownload();
+				if (DownloadConfig::Loop())
+				{
+					LOG(TR("设置了无限下载任务，60秒后重新下载！"));
+					QTimer::singleShot(1000 * 60, this, &TaskWnd::NextDownload);
+
+				}
+				else
+				{
+					LOG(TR("无转码任务"));
+					StopDownload();
+				}
+
 			}
 		}
 		else

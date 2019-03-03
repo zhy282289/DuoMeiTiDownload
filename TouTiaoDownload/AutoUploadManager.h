@@ -29,6 +29,7 @@ private:
 	QWebEngineView *m_view;
 	QString m_url;
 	int m_tryLoadUpload;
+	int m_tryLoadFinish;
 
 	TaskInfoPtr m_info;
 };

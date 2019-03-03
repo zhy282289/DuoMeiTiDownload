@@ -279,7 +279,7 @@ void ScanTaskManager::NextUrl()
 	}
 	else
 	{
-		if (m_mainOldUrlist.size() < 300)
+		if (m_mainOldUrlist.size() < 200)
 		{
 			// 刷新主页
 			GetMore();
@@ -361,6 +361,8 @@ void ScanTaskManager::_StopScan()
 {
 	LOG(TR("停止扫描任务！"));
 	m_scaning = false;
+	m_detailView->deleteLater();
+	m_detailView = nullptr;
 	emit sigStopScan();
 }
 

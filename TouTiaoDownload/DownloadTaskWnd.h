@@ -33,6 +33,9 @@ private:
 
 	void RemoveItemByWidget(QWidget *widget);
 	void RemoveItemByInfo(TaskInfoPtr info);
+
+	void Convert2Task(TaskInfoPtr info);
+	void Convert2Hsitory(TaskInfoPtr info);
 private:
 	void FinishUpload(bool ret, TaskInfoPtr info);
 private:

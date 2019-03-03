@@ -6,7 +6,7 @@
 #include "DownloadTaskWnd.h"
 #include "HistoryWnd.h"
 #include "webviewwnd.h"
-
+#include "ReplaceWnd.h"
 
 TouTiaoDownload::TouTiaoDownload(QWidget *parent)
 	: QWidget(parent)
@@ -22,10 +22,13 @@ TouTiaoDownload::TouTiaoDownload(QWidget *parent)
 	TaskWnd *taskWnd = new TaskWnd;
 	DownloadTaskWnd *downloadWnd = new DownloadTaskWnd;
 	HistoryWnd *historyWnd = new HistoryWnd;
+	ReplaceWnd *replaceWnd = new ReplaceWnd;
+
 	m_tabWidget->addTab(scanWnd, TR("扫描设置"));
 	m_tabWidget->addTab(taskWnd, TR("待下载任务"));
 	m_tabWidget->addTab(downloadWnd, TR("已下载任务"));
 	m_tabWidget->addTab(historyWnd, TR("历史任务"));
+	m_tabWidget->addTab(replaceWnd, TR("替换词"));
 
 
 	m_splitter = new QSplitter(Qt::Vertical, this);

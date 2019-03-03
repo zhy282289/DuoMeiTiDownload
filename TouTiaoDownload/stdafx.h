@@ -17,4 +17,5 @@
 #include "ExternalApi.h"
 #include "Def.h"
 #include "WebViewWnd.h"
+#include "ReplaceWordsManager.h"
 

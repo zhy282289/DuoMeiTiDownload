@@ -76,19 +76,13 @@ void DownloadTaskWnd::AddItem(TaskInfoPtr info)
 	connect(w, &TaskWndListItem::sigConvert2Hsitory, this, [=]()
 	{
 		auto info = qobject_cast<TaskWndListItem*>(sender())->GetInfo();
-		MY_DB->DownladRemove(info->id);
-		MY_DB->HistoryInsert(info);
-		RemoveItemByInfo(info);
-		emit sigConvert2History(info);
+		Convert2Hsitory(info);
 	});
 
 	connect(w, &TaskWndListItem::sigConvert2Task, this, [=]()
 	{
 		auto info = qobject_cast<TaskWndListItem*>(sender())->GetInfo();
-		MY_DB->DownladRemove(info->id);
-		MY_DB->TaskInsert(info);
-		RemoveItemByInfo(info);
-		emit sigConvert2Task(info);
+		Convert2Task(info);
 	});
 
 	connect(w, &TaskWndListItem::sigConvert2TaskAll, this, [=]()
@@ -209,16 +203,28 @@ void DownloadTaskWnd::RemoveItemByInfo(TaskInfoPtr info)
 	}
 }
 
+void DownloadTaskWnd::Convert2Task(TaskInfoPtr info)
+{
+	MY_DB->DownladRemove(info->id);
+	MY_DB->TaskInsert(info);
+	RemoveItemByInfo(info);
+	emit sigConvert2Task(info);
+}
+
+void DownloadTaskWnd::Convert2Hsitory(TaskInfoPtr info)
+{
+	MY_DB->DownladRemove(info->id);
+	MY_DB->HistoryInsert(info);
+	RemoveItemByInfo(info);
+	emit sigConvert2History(info);
+}
+
 void DownloadTaskWnd::FinishUpload(bool ret, TaskInfoPtr info)
 {
 	if (ret)
 	{
 		LOG(TR("上传成功，下一个上传任务"));
-
-		//MY_DB->HistoryInsert(info);
-		//MY_DB->DownladRemove(info->id);
-		//RemoveItemByInfo(info);
-		//sigConvert2History(info);
+		//Convert2Hsitory(info);
 		NextUploadTask();
 		
 
@@ -226,8 +232,8 @@ void DownloadTaskWnd::FinishUpload(bool ret, TaskInfoPtr info)
 	else
 	{
 		LOG(TR("上传失败，继续上传任务"));
+		NextUploadTask();
 
-		StopUploadTask();
 	}
 
 
@@ -240,13 +246,23 @@ void DownloadTaskWnd::StartAutoUpload()
 	{
 
 		TaskWndListItem *taksItem = qobject_cast<TaskWndListItem*>(m_listWnd->itemWidget(m_listWnd->item(0)));
-		m_autoUpload->StartUpload(taksItem->GetInfo());
-		connect(m_autoUpload, &AutoUploadManager::sigFinish, this, &DownloadTaskWnd::FinishUpload);
+		auto info = taksItem->GetInfo();
+		if (QFile::exists(info->localPath))
+		{
+			connect(m_autoUpload, &AutoUploadManager::sigFinish, this, &DownloadTaskWnd::FinishUpload);
+			m_autoUpload->StartUpload(info);
+		}
+		else
+		{
+			Convert2Task(info);
+			QTimer::singleShot(1000, [=]() {
+				StartAutoUpload();
+			});
+		}
 
 	}
 	else
 	{
-		//if (!m_ckbDownloadFromDB->isChecked())
 		{
 			LOG(TR("无转码任务，获取数据库数据"));
 			slotSearchTaskNumber();
@@ -256,17 +272,12 @@ void DownloadTaskWnd::StartAutoUpload()
 			}
 			else
 			{
-				LOG(TR("无转码任务"));
-				StopUploadTask();
+				LOG(TR("无转码任务 1分钟后再获取任务"));
+				QTimer::singleShot(60 * 1000, [=]() {
+					StartAutoUpload();
+				});
 			}
 		}
-		//else
-		//{
-		//	LOG(TR("无转码任务"));
-		//	StopDownload();
-		//}
-
-
 	}
 
 }

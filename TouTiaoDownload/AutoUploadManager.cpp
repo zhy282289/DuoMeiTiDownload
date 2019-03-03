@@ -7,6 +7,7 @@ AutoUploadManager::AutoUploadManager(QObject *parent)
 {
 	m_url = "https://mp.toutiao.com/profile_v3/xigua/upload-video";
 	m_tryLoadUpload = 0;
+	m_tryLoadFinish = 0;
 }
 
 AutoUploadManager::~AutoUploadManager()
@@ -16,13 +17,6 @@ AutoUploadManager::~AutoUploadManager()
 bool AutoUploadManager::StartUpload(TaskInfoPtr info)
 {
 	m_info = info;
-
-	if (QFile::exists(m_info->localPath))
-	{
-		LOG((TR("文件路径不存在，下个任务")));
-		sigFinish(false, m_info);
-		return false;
-	}
 
 	LOG((TR("开始上传任务")));
 	if (m_view == nullptr)
@@ -99,7 +93,6 @@ void AutoUploadManager::UploadFile()
 			auto Edit = ::FindWindowEx(ComboBox, 0, L"Edit", nullptr);  //# 上面三句依次寻找对象，直到找到输入框Edit对象的句柄
 			auto button = ::FindWindowEx(dlgHwnd, 0, L"Button", nullptr);//  # 确定按钮Button
 
-			//wchar_t fff[] = L"E:\\zhy\\works\\qt\\DuoMeiTiDownload\\bin\\x64\\Debug\\toutiao\\19-02-24\\{a6828027-75a0-428e-ab4b-a02cfca98b2a}_1.mp4";
 			auto pathw = m_info->localPath.toStdWString();
 			::SendMessage(Edit, WM_SETTEXT, 0, (LPARAM)pathw.c_str()); // # 往输入框输入绝对地址
 			::SendMessage(dlgHwnd, WM_COMMAND, 1, (LPARAM)button); // # 按button
@@ -120,33 +113,45 @@ void AutoUploadManager::UploadFile()
 
 void AutoUploadManager::MonitorUploadFileFinish()
 {
-	QTimer::singleShot(2 * 1000, [=]()
+	if (++m_tryLoadFinish < 30 * 10)
 	{
-		m_view->page()->runJavaScript(
-			"var es = document.getElementsByClassName('tips');"
-			"if (es.length > 0)"
-			"{"
-			"var s;"
-			"for(var i=0;i<es.length;i++){s=s+es[i].innerHTML;}"
-			"s+'1';"
-			"}"
-			"else{''+'1';}"
-			, [=](QVariant v)
+		QTimer::singleShot(2 * 1000, [=]()
 		{
-			QString html = v.toString();
-			qDebug() << html;
-			if (html.contains(TR("上传完毕")))
+			m_view->page()->runJavaScript(
+				"var es = document.getElementsByClassName('tips');"
+				"if (es.length > 0)"
+				"{"
+				"var s;"
+				"for(var i=0;i<es.length;i++){s=s+es[i].innerHTML;}"
+				"s+'1';"
+				"}"
+				"else{''+'1';}"
+				, [=](QVariant v)
 			{
-				LOG((TR("获取到上传完毕状态")));
-				UploadFileFinishEx();
-			}
-			else
-			{
-				LOG((TR("未获取到上传完毕状态，继续监听")));
-				MonitorUploadFileFinish();
-			}
+				QString html = v.toString();
+				qDebug() << html;
+				if (html.contains(TR("上传完毕")))
+				{
+					m_tryLoadFinish = 0;
+					LOG((TR("获取到上传完毕状态")));
+					UploadFileFinishEx();
+				}
+				else
+				{
+					LOG((TR("未获取到上传完毕状态，继续监听")));
+					MonitorUploadFileFinish();
+				}
+			});
 		});
-	});
+
+	}
+	else
+	{
+		// 重新刷新网页
+		LOG((TR("等不到上传文件完成，重新刷新网页")));
+		m_view->load(m_url);
+	}
+
 }
 
 void AutoUploadManager::UploadFileFinish()
@@ -310,8 +315,9 @@ void AutoUploadManager::UploadFileFinishEx()
 						gKeybdEvent(VK_RETURN);
 
 						QTimer::singleShot(1000, [=]() {
-							Submit();
-
+							//Submit();
+							//test
+							sigFinish(true, m_info);
 						});
 					});
 
@@ -337,15 +343,19 @@ void AutoUploadManager::Submit()
 	{
 		auto ret = v.toInt();
 		qDebug() << ret;
-		if (ret == 1)
-		{
-			LOG((TR("任务成功提交")));
+		QTimer::singleShot(4000, [=]() {
+		
+			if (ret == 1)
+			{
+				LOG((TR("任务成功提交")));
+			}
+			else
+			{
+				LOG((TR("任务成功失败 找不到提交按钮")));
+			}
+			emit sigFinish(ret, m_info);
+		});
 
-		}
-		else
-		{
-			LOG((TR("任务成功失败")));
-		}
 
 	});
 }
