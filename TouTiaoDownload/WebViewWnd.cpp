@@ -14,11 +14,11 @@ WebViewWnd* WebViewWnd::GetInstance(QWidget *parent /*= nullptr*/)
 	return s_WebViewWnd;
 }
 
-QWebEngineView* WebViewWnd::GetView(int id)
+HtmlView* WebViewWnd::GetView(int id)
 {
 	if (!m_views.contains(id))
 	{
-		QWebEngineView *view = new QWebEngineView(this);
+		HtmlView *view = new HtmlView(this);
 		const int w = 8;
 		view->setGeometry(w*m_views.size(), 0, w, height());
 		m_views[id] = view;
@@ -27,7 +27,7 @@ QWebEngineView* WebViewWnd::GetView(int id)
 	return m_views[id];
 }
 
-QWebEngineView* WebViewWnd::GetExistView(int id)
+HtmlView* WebViewWnd::GetExistView(int id)
 {
 	if (m_views.contains(id))
 	{
@@ -38,7 +38,7 @@ QWebEngineView* WebViewWnd::GetExistView(int id)
 	return nullptr;
 }
 
-QWebEngineView* WebViewWnd::GetUniquenView()
+HtmlView* WebViewWnd::GetUniquenView()
 {
 	int id = 0;
 	do 
@@ -50,9 +50,9 @@ QWebEngineView* WebViewWnd::GetUniquenView()
 	return GetView(id);
 }
 
-QWebEngineView* WebViewWnd::CreateTestView()
+HtmlView* WebViewWnd::CreateTestView()
 {
-	auto view = new QWebEngineView;
+	auto view = new HtmlView(0);
 	view->resize(800, 800);
 	return view;
 }
@@ -66,4 +66,26 @@ WebViewWnd::WebViewWnd(QWidget *parent)
 WebViewWnd::~WebViewWnd()
 {
 	s_WebViewWnd = nullptr;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+HtmlView::HtmlView(QWidget *parent)
+	:QWebEngineView(parent)
+{
+	m_view = nullptr;
+}
+
+HtmlView* HtmlView::GetView()
+{
+	return m_view;
+}
+QWebEngineView *HtmlView::createWindow(QWebEnginePage::WebWindowType type)
+{
+
+	m_view = new HtmlView(0);
+	m_view->resize(800, 800);
+	m_view->show();
+	return m_view;  
+
 }

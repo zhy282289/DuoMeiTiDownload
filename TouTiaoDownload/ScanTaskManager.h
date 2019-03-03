@@ -73,6 +73,5 @@ private:
 	QStringList m_mainNewUrlist; //当前主页获取列表
 	QStringList m_mainOldUrlist; 
 
+	int m_tryGetMoreCount;
 };
-
-

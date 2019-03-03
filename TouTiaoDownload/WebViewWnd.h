@@ -2,6 +2,7 @@
 
 #include <QWidget>
 
+class HtmlView;
 class WebViewWnd : public QWidget
 {
 	Q_OBJECT
@@ -10,19 +11,33 @@ public:
 	static WebViewWnd* GetInstance(QWidget *parent = nullptr);
 
 
-	QWebEngineView* GetView(int id);
-	QWebEngineView* GetExistView(int id);
-	QWebEngineView* GetUniquenView();
+	HtmlView* GetView(int id);
+	HtmlView* GetExistView(int id);
+	HtmlView* GetUniquenView();
 
-	QWebEngineView* CreateTestView();
+	HtmlView* CreateTestView();
 
 	WebViewWnd(QWidget *parent);
 	~WebViewWnd();
 
 private:
-	QMap<int, QWebEngineView*> m_views;
+	QMap<int, HtmlView*> m_views;
 };
 
+
+class HtmlView : public QWebEngineView
+{
+	Q_OBJECT
+public:
+	HtmlView(QWidget *parent);
+	HtmlView* GetView();
+protected:
+	QWebEngineView *HtmlView::createWindow(QWebEnginePage::WebWindowType type);
+	
+
+private:
+	HtmlView *m_view;
+};
 
 #define GET_WEBVIEW(id) WebViewWnd::GetInstance()->GetView(id);
 #define GET_EXIST_WEBVIEW(id) WebViewWnd::GetInstance()->GetExistView(id);

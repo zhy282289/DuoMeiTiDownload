@@ -3,6 +3,9 @@
 
 #include <QtXml/QtXml>
 
+
+#define LIMIT_SIZE 30
+
 ReplaceWordsManager* ReplaceWordsManager::GetInstance()
 {
 	static ReplaceWordsManager instance;
@@ -14,7 +17,7 @@ ReplaceWordsManager* ReplaceWordsManager::GetInstance()
 
 ReplaceWordsManager::ReplaceWordsManager()
 {
-	m_path = QApplication::applicationDirPath() + "/words.json";
+	m_path = QApplication::applicationDirPath() + "/words.xml";
 
 	Load();
 }
@@ -104,7 +107,7 @@ bool ReplaceWordsManager::AIReplace(QString &text)
 	QString src = text;
 
 	//  增加搞笑
-	QString s[] = {
+	static QString s[] = {
 		TR("太搞笑了！"),
 		TR("笑尿！"),
 		TR("不要太搞笑"),
@@ -119,10 +122,10 @@ bool ReplaceWordsManager::AIReplace(QString &text)
 		TR("笑到脸痛"),
 		TR("笑到抽筋"),
 	};
-	if (text.indexOf(TR("哈哈")) 
-		|| text.indexOf(TR("搞笑"))
-		|| text.indexOf(TR("快乐"))
-		|| text.indexOf(TR("笑"))
+	if (text.indexOf(TR("哈哈")) >0
+		|| text.indexOf(TR("搞笑"))>0
+		|| text.indexOf(TR("快乐"))>0
+		|| text.indexOf(TR("笑"))>0
 		)
 	{
 		int i = qrand() % (sizeof(s) / sizeof(*s));
@@ -137,11 +140,36 @@ bool ReplaceWordsManager::AIReplace(QString &text)
 			text.push_front(s[i]);
 		}
 
-		if (text.size()>30)
+	}
+
+	return true;
+}
+
+bool ReplaceWordsManager::SureReplace(QString src, QString &text)
+{
+
+	static QString s[] = {
+		TR("无语"),
+		TR("不知道说什么"),
+		TR("网友无语"),
+		TR("呆了"),
+		TR("晕了"),
+		TR("网友表示不懂"),
+		TR("厉害了"),
+		TR("想不通"),
+		TR("这下好玩了"),
+		TR("这下搞笑了"),
+		TR("笑了"),
+	};
+
+	if (src == text)
+	{
+		int i = qrand() % (sizeof(s) / sizeof(*s));
+		text.append(s[i]);
+		if (text.size()>LIMIT_SIZE)
 		{
 			text = src;
 		}
-
 	}
 
 	return true;
@@ -149,12 +177,13 @@ bool ReplaceWordsManager::AIReplace(QString &text)
 
 void ReplaceWordsManager::LimitWords(QString &text)
 {
-	text = text.left(30);
+	text = text.left(LIMIT_SIZE);
 }
 
 QString ReplaceWordsManager::Replace(QString text)
 {
 	DouHaoReplace(text);
+	QString src = text;
 
 	int count = 0;
 	for (auto &word : m_words)
@@ -171,6 +200,7 @@ QString ReplaceWordsManager::Replace(QString text)
 	}
 
 	AIReplace(text);
+	SureReplace(src, text);
 	LimitWords(text);
 
 	return text;

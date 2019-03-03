@@ -13,11 +13,16 @@ public:
 	~AutoUploadManager();
 
 
+	bool Login();
 	bool StartUpload(TaskInfoPtr info);
+	bool StopUpload();
 	void LoadFinished();
 
 Q_SIGNALS:
 	void sigFinish(bool bok, TaskInfoPtr info);
+
+private:
+	void CreateWebView();
 
 private:
 	void UploadFile();
@@ -32,4 +37,6 @@ private:
 	int m_tryLoadFinish;
 
 	TaskInfoPtr m_info;
+	bool m_bLogin;
+	bool m_bUploading;
 };

@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "AutoUploadManager.h"
 
+#include <thread>
+
 AutoUploadManager::AutoUploadManager(QObject *parent)
 	: QObject(parent)
 	, m_view(nullptr)
@@ -8,34 +10,73 @@ AutoUploadManager::AutoUploadManager(QObject *parent)
 	m_url = "https://mp.toutiao.com/profile_v3/xigua/upload-video";
 	m_tryLoadUpload = 0;
 	m_tryLoadFinish = 0;
+	m_bLogin = false;
+	m_bUploading = false;
 }
 
 AutoUploadManager::~AutoUploadManager()
 {
 }
 
+bool AutoUploadManager::Login()
+{
+	CreateWebView();
+	m_bLogin = true;
+	m_view->load(m_url);
+	return true;
+}
+
 bool AutoUploadManager::StartUpload(TaskInfoPtr info)
 {
+	m_bLogin = false;
+	m_bUploading = true;
+
 	m_info = info;
 
 	LOG((TR("开始上传任务")));
-	if (m_view == nullptr)
-	{
+	CreateWebView();
 
-		m_view = GET_TEST_WEBVIEW()
-		connect(m_view, &QWebEngineView::loadFinished, this, &AutoUploadManager::LoadFinished);
-
-		m_view->show();
-	}
 	m_view->load(m_url);
 
+
+	std::thread t([=]() {
+	
+		while (true)
+		{
+			QThread::sleep(30);
+			auto dlg = m_view->findChild<QDialog*>();
+			if (dlg)
+			{
+				LOG((TR("离开本页面需要回车确认")));
+				gKeybdEvent_CTL(VK_RETURN);
+			}
+
+			if (!m_bUploading)
+			{
+				break;
+			}
+
+		}
+
+	
+	});
+	t.detach();
+
+	return true;
+}
+
+bool AutoUploadManager::StopUpload()
+{
+	m_bUploading = false;
 	return true;
 }
 
 void AutoUploadManager::LoadFinished()
 {
-	//return;
-	if (++m_tryLoadUpload <= 20)
+	if (m_bLogin)
+		return;
+
+	if (++m_tryLoadUpload <= 30)
 	{
 		m_view->page()->runJavaScript(
 			"var es = document.getElementsByTagName('input');"
@@ -72,6 +113,7 @@ void AutoUploadManager::LoadFinished()
 	{
 		// 重新刷新网页
 		LOG((TR("获取不到上传文件按钮，重新刷新网页")));
+		m_tryLoadUpload = 0;
 		m_view->load(m_url);
 	}
 
@@ -79,10 +121,22 @@ void AutoUploadManager::LoadFinished()
 
 
 
+void AutoUploadManager::CreateWebView()
+{
+	if (m_view == nullptr)
+	{
+
+		m_view = GET_TEST_WEBVIEW()
+		connect(m_view, &QWebEngineView::loadFinished, this, &AutoUploadManager::LoadFinished, Qt::UniqueConnection);
+
+		m_view->show();
+	}
+}
+
 void AutoUploadManager::UploadFile()
 {
 
-	QTimer::singleShot(2000, [=]()
+	QTimer::singleShot(1000, [=]()
 	{
 		auto dlg = m_view->findChild<QDialog*>();
 		if (dlg)
@@ -113,8 +167,9 @@ void AutoUploadManager::UploadFile()
 
 void AutoUploadManager::MonitorUploadFileFinish()
 {
-	if (++m_tryLoadFinish < 30 * 10)
+	if (++m_tryLoadFinish < 30 * 5)
 	{
+	
 		QTimer::singleShot(2 * 1000, [=]()
 		{
 			m_view->page()->runJavaScript(
@@ -147,6 +202,7 @@ void AutoUploadManager::MonitorUploadFileFinish()
 	}
 	else
 	{
+		m_tryLoadFinish = 0;
 		// 重新刷新网页
 		LOG((TR("等不到上传文件完成，重新刷新网页")));
 		m_view->load(m_url);
@@ -275,15 +331,23 @@ void AutoUploadManager::UploadFileFinishEx()
 {
 	m_view->activateWindow();
 
+	QString title = REPLACEWORDS_MANAGER->Replace(m_info->title);
 
-	QApplication::clipboard()->setText(m_info->title);
+	if (title == m_info->title)
+		LOG((TR("未进行标题替换")));
+	else
+		LOG((QString(TR("替换标题\n原:%1\n目:%2")).arg(m_info->title).arg(title)));
+
+	QApplication::clipboard()->setText(title);
 	gMoveCursorAndClick(m_view->mapToGlobal(QPoint(500, 477)));
 	gKeybdEvent_CTL('A');
 	gKeybdEvent_CTL('V');
 
 	QTimer::singleShot(1000, [=]() {
-		m_view->activateWindow();
-		gMoveCursorAndClick(m_view->mapToGlobal(QPoint(500, 535)));
+		//m_view->activateWindow();
+		//gMoveCursorAndClick(m_view->mapToGlobal(QPoint(300, 535)));
+
+		gKeybdEvent(VK_TAB);
 		gKeybdEvent_CTL('A');
 		gKeybdEvent_CTL('V');
 
@@ -306,6 +370,7 @@ void AutoUploadManager::UploadFileFinishEx()
 					gKeybdEvent(VK_TAB);
 					gKeybdEvent(VK_TAB);
 					gKeybdEvent(VK_TAB);
+					gKeybdEvent(VK_TAB);
 					gKeybdEvent(VK_RETURN);
 
 					QTimer::singleShot(1000, [=]() {
@@ -314,10 +379,12 @@ void AutoUploadManager::UploadFileFinishEx()
 
 						gKeybdEvent(VK_RETURN);
 
-						QTimer::singleShot(1000, [=]() {
-							//Submit();
-							//test
-							sigFinish(true, m_info);
+
+						m_bLogin = true;
+
+						QTimer::singleShot(2000, [=]() {
+							Submit();
+	
 						});
 					});
 
@@ -341,9 +408,10 @@ void AutoUploadManager::Submit()
 			"submitbtn[0].click();0+1;}else{0+0;}"
 		, [=](QVariant v)
 	{
+
 		auto ret = v.toInt();
 		qDebug() << ret;
-		QTimer::singleShot(4000, [=]() {
+		QTimer::singleShot(2000, [=]() {
 		
 			if (ret == 1)
 			{

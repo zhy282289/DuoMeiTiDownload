@@ -30,6 +30,7 @@ private:
 	bool BaseReplace(QString &text, const Word &word);
 	bool DouHaoReplace(QString &text);
 	bool AIReplace(QString &text);
+	bool SureReplace(QString src, QString &text);
 	void LimitWords(QString &text);
 private:
 	Words m_words;

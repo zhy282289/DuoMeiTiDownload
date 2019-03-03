@@ -3,9 +3,11 @@
 #include <thread>
 #include <AutoUploadManager.h>
 
+
 DownloadTaskWnd::DownloadTaskWnd(QWidget *parent)
 	: QWidget(parent)
 {
+	m_uploadCount = 0;
 	m_autoUpload = nullptr;
 	m_bUploading = false;
 
@@ -22,6 +24,7 @@ DownloadTaskWnd::DownloadTaskWnd(QWidget *parent)
 
 	m_cmbVideoType = gCreateVideoTypeComboBox(this);
 
+	m_btnAutoUploadLogin = new QPushButton(TR("自动上传登陆"), this);
 	m_btnAutoUpload = new QPushButton(TR("自动上传"), this);
 	m_btnAutoUploadStop = new QPushButton(TR("停止自动上传"), this);
 
@@ -41,6 +44,7 @@ DownloadTaskWnd::DownloadTaskWnd(QWidget *parent)
 		t.detach();
 	});
 
+	connect(m_btnAutoUploadLogin, &QPushButton::clicked, this, &DownloadTaskWnd::slotLoginUpload);
 	connect(m_btnAutoUpload, &QPushButton::clicked, this, &DownloadTaskWnd::slotStartUpload);
 	connect(m_btnAutoUploadStop, &QPushButton::clicked, this, &DownloadTaskWnd::slotStopUpload);
 
@@ -139,6 +143,11 @@ void DownloadTaskWnd::slotBigIconChanged(int state)
 	}
 }
 
+void DownloadTaskWnd::slotLoginUpload()
+{
+	m_autoUpload->Login();
+}
+
 void DownloadTaskWnd::slotStartUpload()
 {
 	m_bUploading = true;
@@ -150,6 +159,8 @@ void DownloadTaskWnd::slotStartUpload()
 void DownloadTaskWnd::slotStopUpload()
 {
 	m_bUploading = false;
+	m_autoUpload->StopUpload();
+
 }
 
 void DownloadTaskWnd::InitUI()
@@ -223,9 +234,15 @@ void DownloadTaskWnd::FinishUpload(bool ret, TaskInfoPtr info)
 {
 	if (ret)
 	{
-		LOG(TR("上传成功，下一个上传任务"));
-		//Convert2Hsitory(info);
-		NextUploadTask();
+		LOG(TR("上传成功，60秒后一个上传任务"));
+		Convert2Hsitory(info);
+			
+		int time = qrand() % 30;
+		QTimer::singleShot(time * 1000, this, &DownloadTaskWnd::NextUploadTask);
+
+
+		//QTimer::singleShot(5 * 60 * 1000, this, &DownloadTaskWnd::NextUploadTask);
+		//NextUploadTask();
 		
 
 	}
@@ -233,7 +250,6 @@ void DownloadTaskWnd::FinishUpload(bool ret, TaskInfoPtr info)
 	{
 		LOG(TR("上传失败，继续上传任务"));
 		NextUploadTask();
-
 	}
 
 
@@ -249,35 +265,31 @@ void DownloadTaskWnd::StartAutoUpload()
 		auto info = taksItem->GetInfo();
 		if (QFile::exists(info->localPath))
 		{
-			connect(m_autoUpload, &AutoUploadManager::sigFinish, this, &DownloadTaskWnd::FinishUpload);
+			connect(m_autoUpload, &AutoUploadManager::sigFinish, this, &DownloadTaskWnd::FinishUpload, Qt::UniqueConnection);
 			m_autoUpload->StartUpload(info);
 		}
 		else
 		{
 			Convert2Task(info);
-			QTimer::singleShot(1000, [=]() {
-				StartAutoUpload();
-			});
+			QTimer::singleShot(1000, this, &DownloadTaskWnd::StartAutoUpload);
 		}
-
 	}
 	else
 	{
-		{
-			LOG(TR("无转码任务，获取数据库数据"));
-			slotSearchTaskNumber();
-			if (m_listWnd->count() > 0)
-			{
-				NextUploadTask();
-			}
-			else
-			{
-				LOG(TR("无转码任务 1分钟后再获取任务"));
-				QTimer::singleShot(60 * 1000, [=]() {
-					StartAutoUpload();
-				});
-			}
-		}
+		m_autoUpload->StopUpload();
+		//LOG(TR("无转码任务，获取数据库数据"));
+		//slotSearchTaskNumber();
+		//if (m_listWnd->count() > 0)
+		//{
+		//	NextUploadTask();
+		//}
+		//else
+		//{
+		//	LOG(TR("无转码任务 1分钟后再获取任务"));
+		//	QTimer::singleShot(60 * 1000, this, &DownloadTaskWnd::StartAutoUpload);
+
+		//}
+		
 	}
 
 }
@@ -327,6 +339,8 @@ void DownloadTaskWnd::resizeEvent(QResizeEvent *event)
 	left = m_btnAllTaskNum->geometry().right() + margins;
 	m_cmbVideoType->setGeometry(left, top, 100, btnh);
 	left = m_btnAllTaskNum->geometry().right() + margins;
+	m_btnAutoUploadLogin->setGeometry(left, top, 100, btnh);
+	left = m_btnAutoUploadLogin->geometry().right() + margins;
 	m_btnAutoUpload->setGeometry(left, top, 100, btnh);
 	left = m_btnAutoUpload->geometry().right() + margins;
 	m_btnAutoUploadStop->setGeometry(left, top, 100, btnh);

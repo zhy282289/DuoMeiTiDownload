@@ -12,6 +12,7 @@
 ScanTaskManager::ScanTaskManager(QObject *parent /*= nullptr*/)
 	:QObject(parent)
 {
+	m_tryGetMoreCount = 0;
 	m_scaning = false;
 	m_stoping = false;
 	m_count = 1;
@@ -43,6 +44,7 @@ bool ScanTaskManager::StartScan()
 
 	m_scaning = true;
 	m_stoping = false;
+	m_tryGetMoreCount = 0;
 
 	m_url = ScanConfig::Url();
 	m_count = ScanConfig::Number();
@@ -279,18 +281,30 @@ void ScanTaskManager::NextUrl()
 	}
 	else
 	{
-		if (m_mainOldUrlist.size() < 200)
+		if (++m_tryGetMoreCount < 10)
 		{
-			// 刷新主页
-			GetMore();
+			if (m_mainOldUrlist.size() < 200)
+			{
+				m_tryGetMoreCount = 0;
+				// 刷新主页
+				GetMore();
+			}
+			else
+			{
+				m_mainOldUrlist.clear();
+				// 重新加载主页
+				LOG(TR("重新加载主页！"));
+				m_view->load(m_url);
+			}
 		}
 		else
 		{
-			m_mainOldUrlist.clear();
+			m_tryGetMoreCount = 0;
 			// 重新加载主页
 			LOG(TR("重新加载主页！"));
 			m_view->load(m_url);
 		}
+
 
 	}
 }

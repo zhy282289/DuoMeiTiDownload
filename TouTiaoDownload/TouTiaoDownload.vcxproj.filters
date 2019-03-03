@@ -81,11 +81,11 @@
     <ClCompile Include="AutoUploadManager.cpp">
       <Filter>Infos</Filter>
     </ClCompile>
-    <ClCompile Include="ReplaceWordsManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ReplaceWnd.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplaceWordsManager.cpp">
+      <Filter>Infos</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -105,7 +105,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ReplaceWordsManager.h">
-      <Filter>Header Files</Filter>
+      <Filter>Infos</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

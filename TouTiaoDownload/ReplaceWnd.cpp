@@ -15,6 +15,9 @@ ReplaceWnd::ReplaceWnd(QWidget *parent)
 
 	connect(m_btnLoad, &QPushButton::clicked, this, &ReplaceWnd::Load);
 	connect(m_btnSave, &QPushButton::clicked, this, &ReplaceWnd::Save);
+
+
+	Load();
 }
 
 ReplaceWnd::~ReplaceWnd()
@@ -33,22 +36,41 @@ void ReplaceWnd::Load()
 
 void ReplaceWnd::Save()
 {
-	//Words words;
-	//QString text = m_info->toPlainText();
-	//QStringList texts = text.split("\n");
-	//for (auto &w : texts)
-	//{
-	//	QStringList wlist =  w.split("=");
-	//	if (wlist.size()==2)
-	//	{
-	//		Word word;
-	//		word.key = wlist[0];
-	//		word.value = wlist[1];
-	//		words.push_back(word);
-	//	}
-	//}
+	Words words;
+	QString text = m_info->toPlainText();
+	if (text.isEmpty())
+	{
+		QMessageBox::information(this, TR("信息"), TR("不能保存空的信息"));
+	}
 
-	//REPLACEWORDS_MANAGER->Save(words);
+	if (QMessageBox::Yes == QMessageBox::question(this, TR("请问"), TR("是否确定保存"), QMessageBox::Yes | QMessageBox::No));
+	{
+		QStringList texts = text.split("\n");
+		for (auto &w : texts)
+		{
+			QStringList wlist = w.split("=");
+			if (wlist.size() != 2)
+			{
+				wlist = w.split(TR("＝"));
+			}
+			if (wlist.size() == 2)
+			{
+				Word word;
+				word.key = wlist[0];
+				word.value = wlist[1];
+				words.push_back(word);
+			}
+			else
+			{
+				QMessageBox::information(this, TR("信息"), TR("保存信息格式有误，保存失败"));
+				return;
+			}
+		}
+
+		REPLACEWORDS_MANAGER->Save(words);
+	}
+
+
 }
 
 void ReplaceWnd::resizeEvent(QResizeEvent *event)

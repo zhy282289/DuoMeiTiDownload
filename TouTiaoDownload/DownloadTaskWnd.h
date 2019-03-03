@@ -24,6 +24,7 @@ Q_SIGNALS:
 private:
 	void slotSearchTaskNumber();
 	void slotBigIconChanged(int state);
+	void slotLoginUpload();
 	void slotStartUpload();
 	void slotStopUpload();
 private:
@@ -57,11 +58,13 @@ private:
 
 	//////////////////////////////////////////////////////////////////////////
 	
+	QPushButton *m_btnAutoUploadLogin;
 	QPushButton *m_btnAutoUpload;
 	QPushButton *m_btnAutoUploadStop;
 
 	AutoUploadManager *m_autoUpload;
 	bool m_bUploading;
+	int m_uploadCount;
 };
 
 
