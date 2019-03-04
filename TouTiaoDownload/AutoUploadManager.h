@@ -27,7 +27,6 @@ private:
 private:
 	void UploadFile();
 	void MonitorUploadFileFinish();
-	void UploadFileFinish();
 	void UploadFileFinishEx();
 	void Submit();
 private:
@@ -39,4 +38,5 @@ private:
 	TaskInfoPtr m_info;
 	bool m_bLogin;
 	bool m_bUploading;
+	bool m_bInDialog;
 };

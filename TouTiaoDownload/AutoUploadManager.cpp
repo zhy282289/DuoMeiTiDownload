@@ -12,6 +12,7 @@ AutoUploadManager::AutoUploadManager(QObject *parent)
 	m_tryLoadFinish = 0;
 	m_bLogin = false;
 	m_bUploading = false;
+	m_bInDialog = false;
 }
 
 AutoUploadManager::~AutoUploadManager()
@@ -40,15 +41,25 @@ bool AutoUploadManager::StartUpload(TaskInfoPtr info)
 
 
 	std::thread t([=]() {
-	
+
 		while (true)
 		{
 			QThread::sleep(30);
-			auto dlg = m_view->findChild<QDialog*>();
-			if (dlg)
+
+			if (!m_bInDialog)
 			{
-				LOG((TR("离开本页面需要回车确认")));
-				gKeybdEvent_CTL(VK_RETURN);
+				auto dlg = m_view->findChild<QDialog*>();
+				if (dlg)
+				{
+					LOG((TR("离开本页面需要回车确认")));
+					gKeybdEvent_CTL(VK_RETURN);
+
+					auto dlgHwnd = ::FindWindow(L"#32770", L"打开");
+					auto button = ::FindWindowEx(dlgHwnd, 0, L"Button", nullptr);//  # 确定按钮Button
+					auto cancelButton = ::FindWindowEx(dlgHwnd, button, L"Button", nullptr);//  # 确定按钮Button
+					::SendMessage(dlgHwnd, WM_COMMAND, 1, (LPARAM)cancelButton); // # 按button
+
+				}
 			}
 
 			if (!m_bUploading)
@@ -56,9 +67,10 @@ bool AutoUploadManager::StartUpload(TaskInfoPtr info)
 				break;
 			}
 
+
 		}
 
-	
+
 	});
 	t.detach();
 
@@ -104,7 +116,7 @@ void AutoUploadManager::LoadFinished()
 
 				m_view->activateWindow();
 				//QThread::msleep(40);
-				gMoveCursorAndClick(m_view->mapToGlobal(QPoint(500, 365)));
+				gMoveCursorAndClick(m_view->mapToGlobal(QPoint(1000, 365)));
 				UploadFile();
 			}
 		});
@@ -127,15 +139,16 @@ void AutoUploadManager::CreateWebView()
 	{
 
 		m_view = GET_TEST_WEBVIEW()
-		connect(m_view, &QWebEngineView::loadFinished, this, &AutoUploadManager::LoadFinished, Qt::UniqueConnection);
+			connect(m_view, &QWebEngineView::loadFinished, this, &AutoUploadManager::LoadFinished, Qt::UniqueConnection);
 
-		m_view->show();
+		m_view->showMaximized();
 	}
 }
 
 void AutoUploadManager::UploadFile()
 {
 
+	m_bInDialog = true;
 	QTimer::singleShot(1000, [=]()
 	{
 		auto dlg = m_view->findChild<QDialog*>();
@@ -153,7 +166,6 @@ void AutoUploadManager::UploadFile()
 
 			LOG((TR("开始上传文件")));
 			MonitorUploadFileFinish();
-
 		}
 		else
 		{
@@ -161,7 +173,8 @@ void AutoUploadManager::UploadFile()
 			LOG((TR("获取不到上传文件对话框，重新刷新网页")));
 			m_view->load(m_url);
 		}
-		
+
+		m_bInDialog = false;
 	});
 }
 
@@ -169,7 +182,7 @@ void AutoUploadManager::MonitorUploadFileFinish()
 {
 	if (++m_tryLoadFinish < 30 * 5)
 	{
-	
+
 		QTimer::singleShot(2 * 1000, [=]()
 		{
 			m_view->page()->runJavaScript(
@@ -191,6 +204,13 @@ void AutoUploadManager::MonitorUploadFileFinish()
 					LOG((TR("获取到上传完毕状态")));
 					UploadFileFinishEx();
 				}
+				else if (html.contains(TR("重复")))
+				{
+					m_tryLoadFinish = 0;
+					LOG((TR("视频重复上传,下个任务")));
+					emit sigFinish(true, m_info);
+
+				}
 				else
 				{
 					LOG((TR("未获取到上传完毕状态，继续监听")));
@@ -206,126 +226,11 @@ void AutoUploadManager::MonitorUploadFileFinish()
 		// 重新刷新网页
 		LOG((TR("等不到上传文件完成，重新刷新网页")));
 		m_view->load(m_url);
+
 	}
 
 }
 
-void AutoUploadManager::UploadFileFinish()
-{
-	auto CreateTitle = [](QString title) {
-		return QString(
-			"var es = document.getElementsByClassName('article-title-wrap-new');"
-			"if (es.length > 0){"
-			"es[0].children[0].setAttribute('value','%1');"
-			"0+1;"
-			"}"
-			"else{0+0;}"
-		).arg(title);
-	};
-	auto CreateContent = [](QString content) {
-		return QString(
-			"var es2 = document.getElementsByClassName('tui-input-wrapper');"
-			"if (es2.length > 0){"
-			"es2[0].innerHTML='%1';"
-			"0+1;"
-			"}"
-			"else{0+0;}"
-		).arg(content);
-	};
-	auto CreateVideoLabel = [](QString tag,int valueIndex) {
-		return QString(
-			"var Selectmultivaluewrapper = document.getElementsByClassName('Select-multi-value-wrapper');"
-			"if (Selectmultivaluewrapper.length > 0){"
-			//"Selectmultivaluewrapper[0].removeChild(Selectmultivaluewrapper[0].firstChild);"
-
-			"var selectvalue = document.createElement('div');"
-			"selectvalue.setAttribute('class','Select-value');"
-
-			"var firstspan = document.createElement('span');"
-			"firstspan.setAttribute('class','Select-value-icon');"
-			"firstspan.setAttribute('aria-hidden','true');"
-			"firstspan.innerText='x';"
-			//"Selectmultivaluewrapper[0].appendChild(firstspan);"
-
-			"var selectvaluespan = document.createElement('span');"
-			"selectvaluespan.setAttribute('class','Select-value-label');"
-			"selectvaluespan.setAttribute('role','option');"
-			"selectvaluespan.setAttribute('aria-selected','true');"
-			"selectvaluespan.setAttribute('id','react-select-2--value-%2');"
-			"selectvaluespan.innerText='%1';"
-
-			"var selectariaonlyspan = document.createElement('span');"
-			"selectariaonlyspan.setAttribute('class','Select-aria-only');"
-			"selectariaonlyspan.innerText='&nbsp;';"
-			"selectvaluespan.appendChild(selectariaonlyspan);"
-
-			"selectvalue.appendChild(selectvaluespan);"
-			"Selectmultivaluewrapper[0].appendChild(selectvalue);"
-			"0+1;"
-			"}else{0+0;}"
-		).arg(tag).arg(valueIndex);
-	};
-
-	auto CreateVideoType = [](QString tag) {
-		return QString(
-			"var SelecttuiselectSelectsingle = document.getElementsByClassName('Select tui-select Select--single');"
-			"if(SelecttuiselectSelectsingle.length>0){"
-			"SelecttuiselectSelectsingle[0].setAttribute('class','Select tui-select has-value Select--single');"
-			"}"
-
-			"var Selectmultivaluewrapper = document.getElementsByClassName('Select-multi-value-wrapper');"
-			"if (Selectmultivaluewrapper.length > 1){"
-			//"Selectmultivaluewrapper[1].removeChild(Selectmultivaluewrapper[1].firstChild);"
-
-			"var selectvalue = document.createElement('div');"
-			"selectvalue.setAttribute('class','Select-value');"
-			"var selectvaluespan = document.createElement('span');"
-			"selectvaluespan.setAttribute('class','Select-value-label');"
-			"selectvaluespan.setAttribute('role','option');"
-			"selectvaluespan.setAttribute('aria-selected','true');"
-			"selectvaluespan.setAttribute('id','react-select-3--value-item');"
-			"selectvaluespan.innerText='%1';"
-			"selectvalue.appendChild(selectvaluespan);"
-			"Selectmultivaluewrapper[1].appendChild(selectvalue);"
-			"0+1;"
-			"}else{0+0;}"
-
-			"var submitbtn = document.getElementsByClassName('submit btn ');"
-			//	"if(submitbtn.length==1){"
-			//	"submitbtn[0].click();0+1;}else{0+0;}"
-			"var temppp = document.getElementsByClassName('video-content-body');"
-			"temppp[0].innerHTML+'0';"
-		).arg(tag);
-	};
-
-
-	QString title = m_info->title;
-
-	LOG((TR("修改上传参数")));
-
-	m_view->page()->runJavaScript(QString(
-		"%1%2%3%4%5"	
-	).arg(CreateTitle(title)).arg(CreateContent(title))
-		.arg(CreateVideoLabel(TR("搞笑"),0)).arg(CreateVideoLabel(TR("视频"),1))
-		.arg(CreateVideoType(TR("搞笑")))
-		, [=](QVariant v)
-	{
-		auto html = v.toString();
-		qDebug() << html;
-		//if (v.toInt())
-		//{
-		//	//提交成功
-		//	sigFinish(true, m_info);
-		// }
-		//else
-		//{
-		//	// 提交失败
-		//	sigFinish(false, m_info);
-		//}
-
-		
-	});
-}
 
 void AutoUploadManager::UploadFileFinishEx()
 {
@@ -339,7 +244,7 @@ void AutoUploadManager::UploadFileFinishEx()
 		LOG((QString(TR("替换标题\n原:%1\n目:%2")).arg(m_info->title).arg(title)));
 
 	QApplication::clipboard()->setText(title);
-	gMoveCursorAndClick(m_view->mapToGlobal(QPoint(500, 477)));
+	gMoveCursorAndClick(m_view->mapToGlobal(QPoint(870, 477)));
 	gKeybdEvent_CTL('A');
 	gKeybdEvent_CTL('V');
 
@@ -384,7 +289,7 @@ void AutoUploadManager::UploadFileFinishEx()
 
 						QTimer::singleShot(2000, [=]() {
 							Submit();
-	
+
 						});
 					});
 
@@ -397,7 +302,7 @@ void AutoUploadManager::UploadFileFinishEx()
 		});
 	});
 
-	
+
 }
 
 void AutoUploadManager::Submit()
@@ -405,14 +310,14 @@ void AutoUploadManager::Submit()
 	m_view->page()->runJavaScript(""
 		"var submitbtn = document.getElementsByClassName('submit btn ');"
 		"if(submitbtn.length>0){"
-			"submitbtn[0].click();0+1;}else{0+0;}"
+		"submitbtn[0].click();0+1;}else{0+0;}"
 		, [=](QVariant v)
 	{
 
 		auto ret = v.toInt();
 		qDebug() << ret;
 		QTimer::singleShot(2000, [=]() {
-		
+
 			if (ret == 1)
 			{
 				LOG((TR("任务成功提交")));
