@@ -44,7 +44,7 @@ bool AutoUploadManager::StartUpload(TaskInfoPtr info)
 
 		while (true)
 		{
-			QThread::sleep(30);
+			QThread::sleep(10);
 
 			if (!m_bInDialog)
 			{
@@ -52,13 +52,11 @@ bool AutoUploadManager::StartUpload(TaskInfoPtr info)
 				if (dlg)
 				{
 					LOG((TR("离开本页面需要回车确认")));
-					gKeybdEvent_CTL(VK_RETURN);
 
 					auto dlgHwnd = ::FindWindow(L"#32770", L"打开");
 					auto button = ::FindWindowEx(dlgHwnd, 0, L"Button", nullptr);//  # 确定按钮Button
 					auto cancelButton = ::FindWindowEx(dlgHwnd, button, L"Button", nullptr);//  # 确定按钮Button
-					::SendMessage(dlgHwnd, WM_COMMAND, 1, (LPARAM)cancelButton); // # 按button
-
+					::SendMessage(dlgHwnd, WM_COMMAND, 2, (LPARAM)cancelButton); // # 按button
 				}
 			}
 
@@ -113,9 +111,8 @@ void AutoUploadManager::LoadFinished()
 				LOG((TR("取到视频输入框，上传文件")));
 
 				m_tryLoadUpload = 0;
-
 				m_view->activateWindow();
-				//QThread::msleep(40);
+			
 				gMoveCursorAndClick(m_view->mapToGlobal(QPoint(1000, 365)));
 				UploadFile();
 			}
@@ -139,7 +136,7 @@ void AutoUploadManager::CreateWebView()
 	{
 
 		m_view = GET_TEST_WEBVIEW()
-			connect(m_view, &QWebEngineView::loadFinished, this, &AutoUploadManager::LoadFinished, Qt::UniqueConnection);
+		connect(m_view, &QWebEngineView::loadFinished, this, &AutoUploadManager::LoadFinished, Qt::UniqueConnection);
 
 		m_view->showMaximized();
 	}
@@ -147,7 +144,6 @@ void AutoUploadManager::CreateWebView()
 
 void AutoUploadManager::UploadFile()
 {
-
 	m_bInDialog = true;
 	QTimer::singleShot(1000, [=]()
 	{
@@ -164,17 +160,22 @@ void AutoUploadManager::UploadFile()
 			::SendMessage(Edit, WM_SETTEXT, 0, (LPARAM)pathw.c_str()); // # 往输入框输入绝对地址
 			::SendMessage(dlgHwnd, WM_COMMAND, 1, (LPARAM)button); // # 按button
 
-			LOG((TR("开始上传文件")));
-			MonitorUploadFileFinish();
+			QTimer::singleShot(1000, [=]() {
+				LOG((TR("开始上传文件")));
+				MonitorUploadFileFinish();
+				m_bInDialog = false;
+			});
+
 		}
 		else
 		{
+			m_bInDialog = false;
+			UploadFile();
 			// 重新刷新网页
-			LOG((TR("获取不到上传文件对话框，重新刷新网页")));
-			m_view->load(m_url);
+			//LOG((TR("获取不到上传文件对话框，重新刷新网页")));
+			//m_view->load(m_url);
 		}
 
-		m_bInDialog = false;
 	});
 }
 
@@ -206,9 +207,14 @@ void AutoUploadManager::MonitorUploadFileFinish()
 				}
 				else if (html.contains(TR("重复")))
 				{
-					m_tryLoadFinish = 0;
 					LOG((TR("视频重复上传,下个任务")));
-					emit sigFinish(true, m_info);
+					m_tryLoadFinish = 0;
+					m_view->load(m_url);
+
+					QTimer::singleShot(1000, [=]() {
+						gKeybdEvent_CTL(VK_RETURN);
+						emit sigFinish(true, m_info);
+					});
 
 				}
 				else
