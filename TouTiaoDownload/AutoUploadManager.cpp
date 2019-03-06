@@ -145,7 +145,7 @@ void AutoUploadManager::CreateWebView()
 void AutoUploadManager::UploadFile()
 {
 	m_bInDialog = true;
-	QTimer::singleShot(1000, [=]()
+	QTimer::singleShot(3000, [=]()
 	{
 		auto dlg = m_view->findChild<QDialog*>();
 		if (dlg)
@@ -159,12 +159,23 @@ void AutoUploadManager::UploadFile()
 			auto pathw = m_info->localPath.toStdWString();
 			::SendMessage(Edit, WM_SETTEXT, 0, (LPARAM)pathw.c_str()); // # 往输入框输入绝对地址
 
-			QTimer::singleShot(1000, [=]() {
-				::SendMessage(dlgHwnd, WM_COMMAND, 1, (LPARAM)button); // # 按button
-				LOG((TR("开始上传文件")));
-				MonitorUploadFileFinish();
-				m_bInDialog = false;
-			});
+			int len = SendMessage(Edit, WM_GETTEXTLENGTH, 0, 0);
+			if (len==0)
+			{
+				UploadFile();
+			}
+			else
+			{
+				QTimer::singleShot(1000, [=]() {
+					::SendMessage(dlgHwnd, WM_COMMAND, 1, (LPARAM)button); // # 按button
+					LOG((TR("开始上传文件")));
+					MonitorUploadFileFinish();
+					m_bInDialog = false;
+				});
+			}
+			
+
+
 
 		}
 		else

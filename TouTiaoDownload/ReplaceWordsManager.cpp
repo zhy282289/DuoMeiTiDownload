@@ -83,6 +83,22 @@ void ReplaceWordsManager::Save(const Words &words)
 	Save();
 }
 
+bool ReplaceWordsManager::RotateReplace(QString &text)
+{
+	QStringList ls = text.split(TR("£¬"));
+	if (ls.size()>1)
+	{
+		QString newtext = QString(TR("%1£¬%2")).arg(ls[1]).arg(ls[0]);
+		for (int i = 2; i < ls.size();++i)
+		{
+			newtext += TR("£¬") + ls[i];
+		}
+		text = newtext;
+	}
+
+	return true;
+}
+
 bool ReplaceWordsManager::BaseReplace(QString &text, const Word &word)
 {
 	QString src = text;
@@ -185,6 +201,7 @@ QString ReplaceWordsManager::Replace(QString text)
 	DouHaoReplace(text);
 	QString src = text;
 
+	RotateReplace(text);
 	int count = 0;
 	for (auto &word : m_words)
 	{

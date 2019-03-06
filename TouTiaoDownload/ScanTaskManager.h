@@ -17,10 +17,12 @@ struct TaskInfo : public Ref
 
 	int videoType; //类型
 
+	bool titleModify;
 
 	int errorCode; // 临时使用，不存入数据库
-};
 
+
+};
 
 typedef AutoRefPtr<TaskInfo> TaskInfoPtr;
 typedef QList<TaskInfoPtr> TaskInfos;

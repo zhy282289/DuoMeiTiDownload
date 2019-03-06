@@ -50,7 +50,7 @@ DownloadTaskWnd::DownloadTaskWnd(QWidget *parent)
 
 	connect(this, &DownloadTaskWnd::sigUploadStart, this, [=]()
 	{
-		SetEnabled(false);
+		//SetEnabled(false);
 	});
 	connect(this, &DownloadTaskWnd::sigUploadStop, this, [=]()
 	{
@@ -377,8 +377,17 @@ DownloadWndListItem::DownloadWndListItem(QListWidgetItem *item)
 		dlg.SetText(m_info->title);
 		if (dlg.exec())
 		{
-			m_info->title = dlg.GetText();
-			MY_DB->DownlodUpdate(m_info);
+			if (m_info->title != dlg.GetText())
+			{
+				m_info->title = dlg.GetText();
+				if (MY_DB->DownlodUpdate(m_info))
+				{
+					m_info->titleModify = true;
+					m_desc->clear();
+					GenerateInfo();
+				}
+
+			}
 		}
 
 	});
@@ -441,7 +450,10 @@ void DownloadWndListItem::GenerateInfo()
 	else
 		m_desc->append(TR("文件不存在"));
 
-
+	if (m_info->titleModify)
+	{
+		m_btnEditName->setStyleSheet("background-color:rgb(0,200,0)");
+	}
 }
 
 void DownloadWndListItem::resizeEvent(QResizeEvent *event)
@@ -467,6 +479,7 @@ EditNameDlg::EditNameDlg(QWidget *parent)
 {
 	resize(600, 110);
 	m_lbEdit = new QLineEdit(this);
+	m_lbEdit->setMaxLength(30);
 	m_btnOk = new QPushButton("OK", this);
 
 	connect(m_btnOk, &QPushButton::clicked, this, [=]() {

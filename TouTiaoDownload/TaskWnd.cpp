@@ -510,7 +510,6 @@ void TaskWndListItem::GenerateInfo()
 	{
 		m_lbNum->setStyleSheet("background:rgb(60,200,30)");
 	}
-
 }
 
 void TaskWndListItem::MenuPopup(QMouseEvent *event)

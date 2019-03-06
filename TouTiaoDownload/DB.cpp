@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "DB.h"
 
-#include <QtSql/QtSql>
 
 static DB *s_db = nullptr;
 #define DB_IS_OPEN if (!m_isOpen) return 0;
@@ -143,6 +142,9 @@ bool DB::_Remove(QString id, QString table)
 	return false;
 }
 
+
+
+
 TaskInfos DB::_GetUrls(QString table, int count, int videoType, bool order /*= true*/)
 {
 	TaskInfos infos;
@@ -152,11 +154,6 @@ TaskInfos DB::_GetUrls(QString table, int count, int videoType, bool order /*= t
 
 	QSqlQuery sql_query;
 	QString queryString;
-	//if (order)
-	//	queryString = QString("select * from %1 limit %2,%3").arg(table).arg(start).arg(end);
-	//else
-	//	queryString = QString("select * from %1 order by rowid desc limit %2,%3").arg(table).arg(start).arg(end);
-
 	if (order)
 		queryString = QString("select * from %1 where videotype=%2 limit %3").arg(table).arg(videoType).arg(count);
 	else
@@ -189,6 +186,47 @@ TaskInfos DB::_GetUrls(QString table, int count, int videoType, bool order /*= t
 }
 
 
+
+TaskInfos DB::_DowloadGetUrls(QString table, int count, int videoType, bool order /*= true*/)
+{
+	TaskInfos infos;
+
+	if (count <= 0)
+		return infos;
+
+	QSqlQuery sql_query;
+	QString queryString;
+	if (order)
+		queryString = QString("select * from %1 where videotype=%2 limit %3").arg(table).arg(videoType).arg(count);
+	else
+		queryString = QString("select * from %1 where videotype=%2 order by rowid desc limit %3").arg(table).arg(videoType).arg(count);
+
+
+	DB_LOCK;
+
+	if (sql_query.exec(queryString))
+	{
+		while (sql_query.next())
+		{
+
+			TaskInfo *info = new TaskInfo;
+
+			info->id = sql_query.value("id").toString();
+			info->title = sql_query.value("title").toString();
+			info->url = sql_query.value("url").toString();
+			info->origin = sql_query.value("origin").toInt();
+			info->playCount = sql_query.value("playcount").toString();
+			info->videoUrl = sql_query.value("videourl").toString();
+			info->userName = sql_query.value("username").toString();
+			info->userUrl = sql_query.value("userurl").toString();
+			info->localPath = sql_query.value("localpath").toString();
+			info->videoType = sql_query.value("videoType").toInt();
+			info->titleModify = sql_query.value("titlemodify").toInt();
+			infos.push_back(info);
+		}
+	}
+	return infos;
+}
 
 int DB::TaskCount()
 {
@@ -267,16 +305,14 @@ bool DB::DownlodUpdate(TaskInfo *info)
 	DB_LOCK;
 
 	QSqlQuery sql_query;
-	QString insert_sql = "update downloadurls set title=? where id=?";
+	QString insert_sql = "update downloadurls set title=?, titlemodify=? where id=?";
 	sql_query.prepare(insert_sql);
 	sql_query.addBindValue(info->title);
+	sql_query.addBindValue("1");
 	sql_query.addBindValue(info->id);
 	if (sql_query.exec())
 	{
-		while (sql_query.next())
-		{
-			return true;
-		}
+		return true;
 	}
 
 	return false;
@@ -284,7 +320,8 @@ bool DB::DownlodUpdate(TaskInfo *info)
 
 TaskInfos DB::DownladGet(int count, int videoType, bool order /*= true*/)
 {
-	return _GetUrls("downloadurls", count, videoType, order);
+	return _DowloadGetUrls("downloadurls", count, videoType, order);
+	//return _GetUrls("downloadurls", count, videoType, order);
 }
 
 int DB::HistoryCount()
