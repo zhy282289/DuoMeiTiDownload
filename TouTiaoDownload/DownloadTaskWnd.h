@@ -82,6 +82,25 @@ protected:
 	void resizeEvent(QResizeEvent *event);
 
 private:
+	QPushButton *m_btnEditName;
 	QPushButton *m_btnCopyName;
 	QPushButton *m_btnCopyPath;
+};
+
+
+class EditNameDlg : public QDialog
+{
+	Q_OBJECT
+public:
+	EditNameDlg(QWidget *parent);
+
+	void SetText(QString text);
+	QString GetText();
+
+protected:
+	void resizeEvent(QResizeEvent *event);
+
+private:
+	QLineEdit *m_lbEdit;
+	QPushButton *m_btnOk;
 };

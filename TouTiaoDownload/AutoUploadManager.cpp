@@ -136,10 +136,10 @@ void AutoUploadManager::CreateWebView()
 	{
 
 		m_view = GET_TEST_WEBVIEW()
-		connect(m_view, &QWebEngineView::loadFinished, this, &AutoUploadManager::LoadFinished, Qt::UniqueConnection);
-
 		m_view->showMaximized();
 	}
+	connect(m_view, &QWebEngineView::loadFinished, this, &AutoUploadManager::LoadFinished, Qt::UniqueConnection);
+
 }
 
 void AutoUploadManager::UploadFile()
@@ -158,9 +158,9 @@ void AutoUploadManager::UploadFile()
 
 			auto pathw = m_info->localPath.toStdWString();
 			::SendMessage(Edit, WM_SETTEXT, 0, (LPARAM)pathw.c_str()); // # 往输入框输入绝对地址
-			::SendMessage(dlgHwnd, WM_COMMAND, 1, (LPARAM)button); // # 按button
 
 			QTimer::singleShot(1000, [=]() {
+				::SendMessage(dlgHwnd, WM_COMMAND, 1, (LPARAM)button); // # 按button
 				LOG((TR("开始上传文件")));
 				MonitorUploadFileFinish();
 				m_bInDialog = false;
@@ -255,8 +255,6 @@ void AutoUploadManager::UploadFileFinishEx()
 	gKeybdEvent_CTL('V');
 
 	QTimer::singleShot(1000, [=]() {
-		//m_view->activateWindow();
-		//gMoveCursorAndClick(m_view->mapToGlobal(QPoint(300, 535)));
 
 		gKeybdEvent(VK_TAB);
 		gKeybdEvent_CTL('A');
@@ -332,6 +330,8 @@ void AutoUploadManager::Submit()
 			{
 				LOG((TR("任务成功失败 找不到提交按钮")));
 			}
+			if (m_view)
+				disconnect(m_view, &QWebEngineView::loadFinished, this, &AutoUploadManager::LoadFinished);
 			emit sigFinish(ret, m_info);
 		});
 

@@ -43,7 +43,7 @@ bool DB::Init()
 		bool ret = sql_query.exec("create table urls (id varchar primary key, title varchar, url varchar, origin int, playcount varchar, videourl varchar, username varchar, userurl varchar, localpath varchar, videotype varchar)");
 		ret = sql_query.exec("create index urlindex on urls(id)");
 
-		ret = sql_query.exec("create table downloadurls (id varchar primary key, title varchar, url varchar, origin int, playcount varchar, videourl varchar, username varchar, userurl varchar, localpath varchar, videotype varchar)");
+		ret = sql_query.exec("create table downloadurls (id varchar primary key, title varchar, url varchar, origin int, playcount varchar, videourl varchar, username varchar, userurl varchar, localpath varchar, videotype varchar, titlemodify varchar)");
 		ret = sql_query.exec("create index urlindex on downloadurls(id)");
 
 		ret = sql_query.exec("create table historyurls (id varchar primary key, title varchar, url varchar, origin int, playcount varchar, videourl varchar, username varchar, userurl varchar, localpath varchar, videotype varchar)");
@@ -259,6 +259,27 @@ bool DB::DownladInsert(TaskInfo *info)
 bool DB::DownladRemove(QString id)
 {
 	return _Remove(id, "downloadurls");
+}
+
+bool DB::DownlodUpdate(TaskInfo *info)
+{
+	DB_IS_OPEN;
+	DB_LOCK;
+
+	QSqlQuery sql_query;
+	QString insert_sql = "update downloadurls set title=? where id=?";
+	sql_query.prepare(insert_sql);
+	sql_query.addBindValue(info->title);
+	sql_query.addBindValue(info->id);
+	if (sql_query.exec())
+	{
+		while (sql_query.next())
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 TaskInfos DB::DownladGet(int count, int videoType, bool order /*= true*/)

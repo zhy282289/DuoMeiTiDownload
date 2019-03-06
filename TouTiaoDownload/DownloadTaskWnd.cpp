@@ -358,6 +358,7 @@ void DownloadTaskWnd::resizeEvent(QResizeEvent *event)
 DownloadWndListItem::DownloadWndListItem(QListWidgetItem *item)
 	:TaskWndListItem(item)
 {
+	m_btnEditName = new QPushButton("E", this);
 	m_btnCopyName = new QPushButton("T", this);
 	m_btnCopyPath = new QPushButton("F", this);
 
@@ -368,6 +369,17 @@ DownloadWndListItem::DownloadWndListItem(QListWidgetItem *item)
 	});
 	connect(m_btnCopyPath, &QPushButton::clicked, this, [=]() {
 		QApplication::clipboard()->setText(m_info->localPath);
+
+	});
+	connect(m_btnEditName, &QPushButton::clicked, this, [=]() {
+		
+		EditNameDlg dlg(this);
+		dlg.SetText(m_info->title);
+		if (dlg.exec())
+		{
+			m_info->title = dlg.GetText();
+			MY_DB->DownlodUpdate(m_info);
+		}
 
 	});
 }
@@ -439,8 +451,46 @@ void DownloadWndListItem::resizeEvent(QResizeEvent *event)
 
 	int left = 0;
 	const int btnw = 22;
-	int top = height() - (2 * (btnw + 10));
+	int top = height() - (3 * (btnw + 4));
 	m_btnCopyName->setGeometry(left, top, btnw, btnw);
 	top = m_btnCopyName->geometry().bottom() + 2;
 	m_btnCopyPath->setGeometry(left, top, btnw, btnw);
+	top = m_btnCopyPath->geometry().bottom() + 2;
+	m_btnEditName->setGeometry(left, top, btnw, btnw);
+
+
+
+}
+
+EditNameDlg::EditNameDlg(QWidget *parent)
+	:QDialog(parent)
+{
+	resize(600, 110);
+	m_lbEdit = new QLineEdit(this);
+	m_btnOk = new QPushButton("OK", this);
+
+	connect(m_btnOk, &QPushButton::clicked, this, [=]() {
+		done(1);
+	});
+
+}
+
+void EditNameDlg::SetText(QString text)
+{
+	m_lbEdit->setText(text);
+}
+
+QString EditNameDlg::GetText()
+{
+	return m_lbEdit->text();
+}
+
+void EditNameDlg::resizeEvent(QResizeEvent *event)
+{
+	const int margin = 20;
+	int left = margin;
+	int top = margin;
+	m_lbEdit->setGeometry(left, top, width() - 2 * left, 22);
+
+	m_btnOk->setGeometry(width() - 90, height() - 30, 70, 24);
 }

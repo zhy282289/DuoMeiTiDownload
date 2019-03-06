@@ -23,6 +23,7 @@ public:
 	bool DownladContain(QString id);
 	bool DownladInsert(TaskInfo *info);
 	bool DownladRemove(QString id);
+	bool DownlodUpdate(TaskInfo *info);
 	TaskInfos DownladGet(int count, int videoType, bool order = true);
 
 
