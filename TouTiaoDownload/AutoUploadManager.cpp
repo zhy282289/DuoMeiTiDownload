@@ -2,6 +2,7 @@
 #include "AutoUploadManager.h"
 
 #include <thread>
+#include "NetworkCookie.h"
 
 AutoUploadManager::AutoUploadManager(QObject *parent)
 	: QObject(parent)
@@ -10,7 +11,6 @@ AutoUploadManager::AutoUploadManager(QObject *parent)
 	m_url = "https://mp.toutiao.com/profile_v3/xigua/upload-video";
 	m_tryLoadUpload = 0;
 	m_tryLoadFinish = 0;
-	m_bLogin = false;
 	m_bUploading = false;
 	m_bInDialog = false;
 }
@@ -19,26 +19,24 @@ AutoUploadManager::~AutoUploadManager()
 {
 }
 
-bool AutoUploadManager::Login()
+bool AutoUploadManager::Login(int index)
 {
-	CreateWebView();
-	m_bLogin = true;
+	CreateWebView(index);
 	m_view->load(m_url);
 	return true;
 }
 
-bool AutoUploadManager::StartUpload(TaskInfoPtr info)
+bool AutoUploadManager::StartUpload(TaskInfoPtr info, int index)
 {
-	m_bLogin = false;
 	m_bUploading = true;
 
 	m_info = info;
 
 	LOG((TR("开始上传任务")));
-	CreateWebView();
+	CreateWebView(index);
+	connect(m_view, &QWebEngineView::loadFinished, this, &AutoUploadManager::LoadFinished, Qt::UniqueConnection);
 
 	m_view->load(m_url);
-
 
 	std::thread t([=]() {
 
@@ -83,9 +81,6 @@ bool AutoUploadManager::StopUpload()
 
 void AutoUploadManager::LoadFinished()
 {
-	if (m_bLogin)
-		return;
-
 	if (++m_tryLoadUpload <= 30)
 	{
 		m_view->page()->runJavaScript(
@@ -130,15 +125,15 @@ void AutoUploadManager::LoadFinished()
 
 
 
-void AutoUploadManager::CreateWebView()
+void AutoUploadManager::CreateWebView(int index)
 {
 	if (m_view == nullptr)
 	{
-
 		m_view = GET_TEST_WEBVIEW()
 		m_view->showMaximized();
+
+		auto cookie = new NetworkCookie(m_view, index, "https://mp.toutiao.com");
 	}
-	connect(m_view, &QWebEngineView::loadFinished, this, &AutoUploadManager::LoadFinished, Qt::UniqueConnection);
 
 }
 
@@ -298,9 +293,6 @@ void AutoUploadManager::UploadFileFinishEx()
 							gKeybdEvent(VK_DOWN);
 
 						gKeybdEvent(VK_RETURN);
-
-
-						m_bLogin = true;
 
 						QTimer::singleShot(2000, [=]() {
 							Submit();

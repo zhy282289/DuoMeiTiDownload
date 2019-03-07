@@ -190,6 +190,7 @@ void TaskWnd::SetEnabled(bool enabled)
 	m_leTaskNum->setEnabled(enabled);
 	m_btnTaskNum->setEnabled(enabled);
 	m_ckbLoop->setEnabled(enabled);
+	m_cmbVideoType->setEnabled(enabled);
 }
 
 void TaskWnd::slotNewInfo(TaskInfoPtr info)

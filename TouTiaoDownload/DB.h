@@ -48,7 +48,10 @@ private:
 	bool _Insert(TaskInfo *info, QString table);
 	bool _Remove(QString id, QString table);
 	TaskInfos _GetUrls(QString table, int count, int videoType, bool order = true);
+
+private:
 	TaskInfos _DowloadGetUrls(QString table, int count, int videoType, bool order = true);
+	bool _DowloadInsert(TaskInfo *info, QString table);
 
 private:
 	bool m_isOpen;

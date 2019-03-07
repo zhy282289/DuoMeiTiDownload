@@ -43,7 +43,7 @@ private:
 	void StartAutoUpload();
 	void StopUploadTask();
 	void NextUploadTask();
-
+	void GetAndRemoveFromDBTaskCount(int count);
 protected:
 	void resizeEvent(QResizeEvent *event);
 
@@ -56,8 +56,10 @@ private:
 	QPushButton *m_btnAllTaskNum;
 	QComboBox *m_cmbVideoType;
 
-	//////////////////////////////////////////////////////////////////////////
-	
+	QComboBox *m_cmbLoginType;
+	QLabel *m_lbUploadNum;
+	QLineEdit *m_leUploadNum;
+
 	QPushButton *m_btnAutoUploadLogin;
 	QPushButton *m_btnAutoUpload;
 	QPushButton *m_btnAutoUploadStop;

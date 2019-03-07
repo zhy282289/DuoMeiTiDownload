@@ -24,11 +24,30 @@ DownloadTaskWnd::DownloadTaskWnd(QWidget *parent)
 
 	m_cmbVideoType = gCreateVideoTypeComboBox(this);
 
-	m_btnAutoUploadLogin = new QPushButton(TR("自动上传登陆"), this);
+	m_cmbLoginType = new QComboBox(this);
+	auto CreateLoginTypeFun = [=](int i) {
+		m_cmbLoginType->addItem(QString(TR("账号%1")).arg(i), i);
+
+	};
+	CreateLoginTypeFun(1);
+	CreateLoginTypeFun(2);
+	CreateLoginTypeFun(3);
+	CreateLoginTypeFun(4);
+	CreateLoginTypeFun(5);
+
+	m_btnAutoUploadLogin = new QPushButton(TR("登陆"), this);
 	m_btnAutoUpload = new QPushButton(TR("自动上传"), this);
 	m_btnAutoUploadStop = new QPushButton(TR("停止自动上传"), this);
 
+	m_lbUploadNum = new QLabel(TR("上传总数:"), this);
+	m_leUploadNum = new QLineEdit(this);
+
+	m_leUploadNum->setText("60");
+
+
 	m_autoUpload = new AutoUploadManager(this);
+
+	
 
 	InitUI();
 
@@ -50,7 +69,7 @@ DownloadTaskWnd::DownloadTaskWnd(QWidget *parent)
 
 	connect(this, &DownloadTaskWnd::sigUploadStart, this, [=]()
 	{
-		//SetEnabled(false);
+		SetEnabled(false);
 	});
 	connect(this, &DownloadTaskWnd::sigUploadStop, this, [=]()
 	{
@@ -109,7 +128,13 @@ void DownloadTaskWnd::SetEnabled(bool enabled)
 	m_ckbTop->setEnabled(enabled);
 	m_leTaskNum->setEnabled(enabled);
 	m_btnTaskNum->setEnabled(enabled);
+
+	m_cmbVideoType->setEnabled(enabled);
+	m_leUploadNum->setEnabled(enabled);
+	m_cmbLoginType->setEnabled(enabled);
 	m_btnAutoUpload->setEnabled(enabled);
+	m_btnAutoUploadLogin->setEnabled(enabled);
+	m_btnAutoUploadStop->setEnabled(enabled);
 }
 
 void DownloadTaskWnd::slotSearchTaskNumber()
@@ -145,13 +170,22 @@ void DownloadTaskWnd::slotBigIconChanged(int state)
 
 void DownloadTaskWnd::slotLoginUpload()
 {
-	m_autoUpload->Login();
+	m_autoUpload->Login(m_cmbLoginType->currentData().toInt());
 }
 
 void DownloadTaskWnd::slotStartUpload()
 {
+
+	if (!CheckUI())
+	{
+		QMessageBox::warning(this, TR("参数设置错误"), TR("参数设置错误"));
+		return;
+	}
 	m_bUploading = true;
+	m_uploadCount = 0;
+
 	emit sigUploadStart();
+	m_btnAutoUploadStop->setEnabled(true);
 
 	StartAutoUpload();
 }
@@ -160,7 +194,7 @@ void DownloadTaskWnd::slotStopUpload()
 {
 	m_bUploading = false;
 	m_autoUpload->StopUpload();
-
+	StopUploadTask();
 }
 
 void DownloadTaskWnd::InitUI()
@@ -176,6 +210,8 @@ bool DownloadTaskWnd::CheckUI()
 	m_leTaskNum->text().toInt(&bok);
 	if (!bok) return false;
 
+	m_leUploadNum->text().toInt(&bok);
+	if (!bok) return false;
 
 	return true;
 }
@@ -239,12 +275,9 @@ void DownloadTaskWnd::FinishUpload(bool ret, TaskInfoPtr info)
 			
 		int time = qrand() % 30;
 		QTimer::singleShot(time * 1000, this, &DownloadTaskWnd::NextUploadTask);
-
-
 		//QTimer::singleShot(5 * 60 * 1000, this, &DownloadTaskWnd::NextUploadTask);
 		//NextUploadTask();
-		
-
+	
 	}
 	else
 	{
@@ -257,39 +290,47 @@ void DownloadTaskWnd::FinishUpload(bool ret, TaskInfoPtr info)
 
 void DownloadTaskWnd::StartAutoUpload()
 {
-
-	if (m_listWnd->count() > 0)
+	if (m_uploadCount < m_leUploadNum->text().toInt())
 	{
-
-		TaskWndListItem *taksItem = qobject_cast<TaskWndListItem*>(m_listWnd->itemWidget(m_listWnd->item(0)));
-		auto info = taksItem->GetInfo();
-		if (QFile::exists(info->localPath))
+		if (m_listWnd->count() > 0)
 		{
-			connect(m_autoUpload, &AutoUploadManager::sigFinish, this, &DownloadTaskWnd::FinishUpload, Qt::UniqueConnection);
-			m_autoUpload->StartUpload(info);
+
+			TaskWndListItem *taksItem = qobject_cast<TaskWndListItem*>(m_listWnd->itemWidget(m_listWnd->item(0)));
+			auto info = taksItem->GetInfo();
+			if (QFile::exists(info->localPath))
+			{
+				connect(m_autoUpload, &AutoUploadManager::sigFinish, this, &DownloadTaskWnd::FinishUpload, Qt::UniqueConnection);
+				m_autoUpload->StartUpload(info, m_cmbLoginType->currentData().toInt());
+			}
+			else
+			{
+				Convert2Task(info);
+				QTimer::singleShot(1000, this, &DownloadTaskWnd::StartAutoUpload);
+			}
 		}
 		else
 		{
-			Convert2Task(info);
-			QTimer::singleShot(1000, this, &DownloadTaskWnd::StartAutoUpload);
+			//m_autoUpload->StopUpload();
+
+			GetAndRemoveFromDBTaskCount(1);
+			if (m_listWnd->count() > 0)
+			{
+				NextUploadTask();
+			}
+			else
+			{
+				LOG(TR("无转码任务 1分钟后再获取任务"));
+				QTimer::singleShot(60 * 1000, this, &DownloadTaskWnd::StartAutoUpload);
+
+			}
+
 		}
+
 	}
 	else
 	{
-		m_autoUpload->StopUpload();
-		//LOG(TR("无转码任务，获取数据库数据"));
-		//slotSearchTaskNumber();
-		//if (m_listWnd->count() > 0)
-		//{
-		//	NextUploadTask();
-		//}
-		//else
-		//{
-		//	LOG(TR("无转码任务 1分钟后再获取任务"));
-		//	QTimer::singleShot(60 * 1000, this, &DownloadTaskWnd::StartAutoUpload);
+		LOG(TR("上传任务完成"));
 
-		//}
-		
 	}
 
 }
@@ -306,6 +347,20 @@ void DownloadTaskWnd::NextUploadTask()
 	}
 }
 
+void DownloadTaskWnd::GetAndRemoveFromDBTaskCount(int count)
+{
+	m_listWnd->clear();
+	bool order = m_ckbTop->isChecked();
+	TaskInfos infos = MY_DB->DownladGet(count, DownloadFinishConfig::VideoType(), order);
+
+	for (auto info : infos)
+	{
+
+		//MY_DB->DownladRemove(info->id);
+		AddItem(info);
+	}
+}
+
 void DownloadTaskWnd::StopUploadTask()
 {
 	emit sigUploadStop();
@@ -313,7 +368,7 @@ void DownloadTaskWnd::StopUploadTask()
 
 void DownloadTaskWnd::resizeEvent(QResizeEvent *event)
 {
-	const int toolbarHeight = 60;
+	const int toolbarHeight = 80;
 	const int margins = 10;
 	const int btnw = 70;
 	const int btnh = 24;
@@ -338,7 +393,17 @@ void DownloadTaskWnd::resizeEvent(QResizeEvent *event)
 	m_btnAllTaskNum->setGeometry(left, top, btnw, btnh);
 	left = m_btnAllTaskNum->geometry().right() + margins;
 	m_cmbVideoType->setGeometry(left, top, 100, btnh);
-	left = m_btnAllTaskNum->geometry().right() + margins;
+	left = m_cmbVideoType->geometry().right() + margins;
+
+	left = margins;
+	top = m_cmbVideoType->geometry().bottom() + margins;
+	m_lbUploadNum->setGeometry(left, top, 80, btnh);
+	left = m_lbUploadNum->geometry().right() + margins;
+	m_leUploadNum->setGeometry(left, top, 80, btnh);
+	left = m_leUploadNum->geometry().right() + margins;
+
+	m_cmbLoginType->setGeometry(left, top, 100, btnh);
+	left = m_cmbLoginType->geometry().right() + margins;
 	m_btnAutoUploadLogin->setGeometry(left, top, 100, btnh);
 	left = m_btnAutoUploadLogin->geometry().right() + margins;
 	m_btnAutoUpload->setGeometry(left, top, 100, btnh);

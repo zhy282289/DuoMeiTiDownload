@@ -48,10 +48,13 @@ TouTiaoDownload::TouTiaoDownload(QWidget *parent)
 	{
 		//m_tabWidget->setCurrentIndex(1);
 		taskWnd->StartScan();
+		downloadWnd->SetEnabled(false);
 	});
 	connect(scanWnd, &ScanWnd::sigStopScan, taskWnd, [=]() 
 	{
 		taskWnd->StopScan();
+		downloadWnd->SetEnabled(true);
+
 
 	});
 	connect(scanWnd, &ScanWnd::sigNewInfo, taskWnd, [=](TaskInfoPtr info)
@@ -67,10 +70,13 @@ TouTiaoDownload::TouTiaoDownload(QWidget *parent)
 	connect(taskWnd, &TaskWnd::sigDownloadStart, this, [=]()
 	{
 		scanWnd->SetEnabled(false);
+		downloadWnd->SetEnabled(false);
+
 	});
 	connect(taskWnd, &TaskWnd::sigDownloadStop, this, [=]()
 	{
 		scanWnd->ResetUI();
+		downloadWnd->SetEnabled(true);
 	});
 	connect(taskWnd, &TaskWnd::sigDownloadFinish, this, [=]()
 	{
@@ -94,6 +100,17 @@ TouTiaoDownload::TouTiaoDownload(QWidget *parent)
 	{
 		historyWnd->AddItem(info);
 	});
+	connect(taskWnd, &TaskWnd::sigDownloadStart, this, [=]()
+	{
+		scanWnd->SetEnabled(false);
+		taskWnd->SetEnabled(false);
+	});
+	connect(taskWnd, &TaskWnd::sigDownloadStop, this, [=]()
+	{
+		scanWnd->ResetUI();
+		taskWnd->SetEnabled(true);
+	});
+
 
 	// HistoryWnd
 	connect(historyWnd, &HistoryWnd::sigConvert2Task, this, [=](TaskInfoPtr info)
@@ -104,6 +121,8 @@ TouTiaoDownload::TouTiaoDownload(QWidget *parent)
 	{
 		downloadWnd->AddItem(info);
 	});
+
+
 
 }
 
