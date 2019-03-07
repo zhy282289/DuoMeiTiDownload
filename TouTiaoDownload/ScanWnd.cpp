@@ -131,7 +131,7 @@ void ScanWnd::SetEnabled(bool enabled)
 	m_ckbLoop->setEnabled(enabled);
 	m_leScanType->setEnabled(enabled);
 
-
+	m_cmbVideoType->setEnabled(enabled);
 }
 
 void ScanWnd::resizeEvent(QResizeEvent *event)

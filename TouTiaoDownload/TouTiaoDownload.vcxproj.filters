@@ -87,6 +87,9 @@
     <ClCompile Include="ReplaceWordsManager.cpp">
       <Filter>Infos</Filter>
     </ClCompile>
+    <ClCompile Include="NetworkCookie.cpp">
+      <Filter>Infos</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -141,6 +144,9 @@
     </QtMoc>
     <QtMoc Include="ReplaceWnd.h">
       <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="NetworkCookie.h">
+      <Filter>Infos</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>

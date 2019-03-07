@@ -228,6 +228,40 @@ TaskInfos DB::_DowloadGetUrls(QString table, int count, int videoType, bool orde
 	return infos;
 }
 
+bool DB::_DowloadInsert(TaskInfo *info, QString table)
+{
+	DB_IS_OPEN;
+	DB_LOCK;
+
+	QSqlQuery sql_query;
+	QString insert_sql = QString("insert into %1 values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").arg(table);
+	sql_query.prepare(insert_sql);
+	sql_query.addBindValue(info->id);
+	sql_query.addBindValue(info->title);
+	sql_query.addBindValue(info->url);
+	sql_query.addBindValue(info->origin);
+	sql_query.addBindValue(info->playCount);
+	sql_query.addBindValue(info->videoUrl);
+	sql_query.addBindValue(info->userName);
+	sql_query.addBindValue(info->userUrl);
+	sql_query.addBindValue(info->localPath);
+	sql_query.addBindValue(info->videoType);
+	sql_query.addBindValue(info->titleModify);
+
+	if (!sql_query.exec())
+	{
+		qDebug() << sql_query.lastError();
+		QString code = sql_query.lastError().nativeErrorCode();
+		if (code == "19")
+			return true;
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
+
 int DB::TaskCount()
 {
 	return _Count("urls");
@@ -291,7 +325,9 @@ bool DB::DownladContain(QString id)
 
 bool DB::DownladInsert(TaskInfo *info)
 {
-	return _Insert(info, "downloadurls");
+	//return _DowloadInsert("downloadurls", count, videoType, order);
+	//return _Insert(info, "downloadurls");
+	return _DowloadInsert(info, "downloadurls");
 }
 
 bool DB::DownladRemove(QString id)
