@@ -277,7 +277,7 @@ void DownloadTaskWnd::FinishUpload(bool ret, TaskInfoPtr info)
 		QTimer::singleShot(time * 1000, this, &DownloadTaskWnd::NextUploadTask);
 		//QTimer::singleShot(5 * 60 * 1000, this, &DownloadTaskWnd::NextUploadTask);
 		//NextUploadTask();
-	
+		++m_uploadCount;
 	}
 	else
 	{

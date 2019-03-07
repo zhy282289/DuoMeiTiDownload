@@ -103,7 +103,7 @@ TouTiaoDownload::TouTiaoDownload(QWidget *parent)
 	connect(taskWnd, &TaskWnd::sigDownloadStart, this, [=]()
 	{
 		scanWnd->SetEnabled(false);
-		taskWnd->SetEnabled(false);
+		downloadWnd->SetEnabled(false);
 	});
 	connect(taskWnd, &TaskWnd::sigDownloadStop, this, [=]()
 	{

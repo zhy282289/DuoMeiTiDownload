@@ -34,9 +34,7 @@ bool AutoUploadManager::StartUpload(TaskInfoPtr info, int index)
 
 	LOG((TR("开始上传任务")));
 	CreateWebView(index);
-	connect(m_view, &QWebEngineView::loadFinished, this, &AutoUploadManager::LoadFinished, Qt::UniqueConnection);
-
-	m_view->load(m_url);
+	LoadURL();
 
 	std::thread t([=]() {
 
@@ -81,6 +79,7 @@ bool AutoUploadManager::StopUpload()
 
 void AutoUploadManager::LoadFinished()
 {
+	DisConnect();
 	if (++m_tryLoadUpload <= 30)
 	{
 		m_view->page()->runJavaScript(
@@ -118,7 +117,7 @@ void AutoUploadManager::LoadFinished()
 		// 重新刷新网页
 		LOG((TR("获取不到上传文件按钮，重新刷新网页")));
 		m_tryLoadUpload = 0;
-		m_view->load(m_url);
+		LoadURL();
 	}
 
 }
@@ -237,7 +236,7 @@ void AutoUploadManager::MonitorUploadFileFinish()
 		m_tryLoadFinish = 0;
 		// 重新刷新网页
 		LOG((TR("等不到上传文件完成，重新刷新网页")));
-		m_view->load(m_url);
+		LoadURL();
 
 	}
 
@@ -333,11 +332,26 @@ void AutoUploadManager::Submit()
 			{
 				LOG((TR("任务成功失败 找不到提交按钮")));
 			}
-			if (m_view)
-				disconnect(m_view, &QWebEngineView::loadFinished, this, &AutoUploadManager::LoadFinished);
 			emit sigFinish(ret, m_info);
 		});
 
 
 	});
+}
+
+void AutoUploadManager::LoadURL()
+{
+	Connect();
+	m_view->load(m_url);
+}
+
+void AutoUploadManager::Connect()
+{
+	connect(m_view, &QWebEngineView::loadFinished, this, &AutoUploadManager::LoadFinished, Qt::UniqueConnection);
+}
+
+void AutoUploadManager::DisConnect()
+{
+	disconnect(m_view, &QWebEngineView::loadFinished, this, &AutoUploadManager::LoadFinished);
+
 }

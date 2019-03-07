@@ -29,6 +29,10 @@ private:
 	void MonitorUploadFileFinish();
 	void UploadFileFinishEx();
 	void Submit();
+
+	void LoadURL();
+	void Connect();
+	void DisConnect();
 private:
 	QWebEngineView *m_view;
 	QString m_url;

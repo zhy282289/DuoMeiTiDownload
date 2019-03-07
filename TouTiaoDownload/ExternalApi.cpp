@@ -59,7 +59,7 @@ QComboBox* gCreateVideoTypeComboBox(QWidget *parent)
 	cmbVideoType->addItem(TR("影视"), YingShi);
 	cmbVideoType->addItem(TR("音乐"), YinYue);
 	cmbVideoType->addItem(TR("时尚"), ShiShang);
-	cmbVideoType->addItem(TR("美食"), MeiShi);
+	cmbVideoType->addItem(TR("育儿"), MeiShi);
 	cmbVideoType->addItem(TR("文化"), WenHua);
 
 	return cmbVideoType;
