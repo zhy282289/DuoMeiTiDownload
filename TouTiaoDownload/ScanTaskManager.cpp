@@ -319,9 +319,7 @@ void ScanTaskManager::GetMore()
 	else
 	{
 		LOG("get more");
-		m_view->page()->runJavaScript(
-			"window.scrollTo(0,document.body.scrollHeight);"
-			, [=](QVariant)
+		gWebViewScrollBottom(m_view->page(), [=](QVariant)
 		{
 			QTimer::singleShot(2000, [=]()
 			{

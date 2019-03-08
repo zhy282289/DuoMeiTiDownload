@@ -21,7 +21,12 @@ struct TaskInfo : public Ref
 
 	int errorCode; // 临时使用，不存入数据库
 
-
+	TaskInfo() {
+		origin = false;
+		videoType = 0;
+		titleModify = false;
+		errorCode = 0;
+	}
 };
 
 typedef AutoRefPtr<TaskInfo> TaskInfoPtr;

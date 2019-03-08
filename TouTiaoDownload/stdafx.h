@@ -18,4 +18,5 @@
 #include "Def.h"
 #include "WebViewWnd.h"
 #include "ReplaceWordsManager.h"
+#include "ProcessLockManager.h"
 

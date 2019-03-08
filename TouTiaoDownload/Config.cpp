@@ -219,6 +219,30 @@ void DownloadFinishConfig::SetVideoType(int type)
 
 }
 
+int DownloadFinishConfig::UploadNumber()
+{
+	return CONFIG_INT_DEF("downloadfinish/uploadnumber", 60);
+
+}
+
+void DownloadFinishConfig::SetUploadNumber(int number)
+{
+	CONFIG_SET("downloadfinish/uploadnumber", number);
+
+}
+bool DownloadFinishConfig::UploadLoop()
+{
+
+	return CONFIG_BOOL_DEF("downloadfinish/uploadloop", false);
+}
+
+void DownloadFinishConfig::SetUploadLoop(bool loop)
+{
+	CONFIG_SET("downloadfinish/uploadloop", loop);
+
+}
+
+//////////////////////////////////////////////////////////////////////////
 bool HistoryConfig::Order()
 {
 	return CONFIG_BOOL_DEF("hisotry/order", true);
