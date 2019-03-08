@@ -7,9 +7,12 @@ class TouTiaoDownload : public QWidget
 
 public:
 	TouTiaoDownload(QWidget *parent = Q_NULLPTR);
+	~TouTiaoDownload();
 
 protected:
 	void resizeEvent(QResizeEvent *event);
+	void closeEvent(QCloseEvent *event);
+
 private:
 
 	QTabWidget *m_tabWidget;

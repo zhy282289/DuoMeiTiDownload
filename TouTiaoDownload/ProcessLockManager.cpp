@@ -1,8 +1,7 @@
 #include "stdafx.h"
 #include "ProcessLockManager.h"
 
-ProcessLockManager::ProcessLockManager(QObject *parent)
-	: QObject(parent)
+ProcessLockManager::ProcessLockManager()
 {
 }
 
@@ -27,6 +26,7 @@ bool ProcessLockManager::Lock(QString name)
 	{
 		QSharedMemory *shared = new QSharedMemory(name);
 		shared->create(1);
+		shared->attach();
 		MemoryData *data = new MemoryData;
 		data->shared = shared;
 		m_memory[name] = data;

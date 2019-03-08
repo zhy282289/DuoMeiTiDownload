@@ -4,12 +4,10 @@
 #include <QString>
 #include <QSharedMemory>
 
-class ProcessLockManager : public QObject
+class ProcessLockManager
 {
-	Q_OBJECT
-
 public:
-	ProcessLockManager(QObject *parent =nullptr);
+	ProcessLockManager();
 	~ProcessLockManager();
 
 	static ProcessLockManager* GetInstance();

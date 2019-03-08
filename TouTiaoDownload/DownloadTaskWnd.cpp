@@ -135,7 +135,7 @@ void DownloadTaskWnd::SetEnabled(bool enabled)
 
 	m_cmbVideoType->setEnabled(enabled);
 	m_leUploadNum->setEnabled(enabled);
-	m_cmbLoginType->setEnabled(enabled);
+	//m_cmbLoginType->setEnabled(enabled);
 	m_btnAutoUpload->setEnabled(enabled);
 	m_btnAutoUploadLogin->setEnabled(enabled);
 	m_btnAutoUploadStop->setEnabled(enabled);
@@ -174,6 +174,7 @@ void DownloadTaskWnd::slotBigIconChanged(int state)
 
 void DownloadTaskWnd::slotLoginUpload()
 {
+	m_cmbLoginType->setEnabled(false);
 	m_autoUpload->Login(m_cmbLoginType->currentData().toInt());
 }
 
@@ -193,7 +194,7 @@ void DownloadTaskWnd::slotStartUpload()
 
 	emit sigUploadStart();
 	m_btnAutoUploadStop->setEnabled(true);
-
+	m_cmbLoginType->setEnabled(false);
 	StartAutoUpload();
 }
 
@@ -284,13 +285,11 @@ void DownloadTaskWnd::FinishUpload(bool ret, TaskInfoPtr info)
 {
 	if (ret)
 	{
-		LOG(TR("上传成功，60秒后一个上传任务"));
-		Convert2Hsitory(info);
-			
+		Convert2Hsitory(info);	
 		int time = qrand() % 30;
+		LOG(QString(TR("上传成功，%1秒后下一个上传任务")).arg(time));
+
 		QTimer::singleShot(time * 1000, this, &DownloadTaskWnd::NextUploadTask);
-		//QTimer::singleShot(5 * 60 * 1000, this, &DownloadTaskWnd::NextUploadTask);
-		//NextUploadTask();
 		++m_uploadCount;
 	}
 	else
@@ -315,6 +314,9 @@ void DownloadTaskWnd::StartAutoUpload()
 			auto info = taksItem->GetInfo();
 			if (QFile::exists(info->localPath))
 			{
+
+				LOG(QString(TR("开始第%1个上传任务，总任务数：%2")).arg(m_uploadCount+1).arg(m_leUploadNum->text().toInt()));
+
 				connect(m_autoUpload, &AutoUploadManager::sigFinish, this, &DownloadTaskWnd::FinishUpload, Qt::UniqueConnection);
 				connect(m_autoUpload, &AutoUploadManager::sigStop, this, &DownloadTaskWnd::StopUploadTask, Qt::UniqueConnection);
 				m_autoUpload->StartUpload(info, m_cmbLoginType->currentData().toInt());

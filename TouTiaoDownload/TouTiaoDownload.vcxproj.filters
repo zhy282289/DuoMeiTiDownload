@@ -93,6 +93,9 @@
     <ClCompile Include="ProcessLockManager.cpp">
       <Filter>Infos</Filter>
     </ClCompile>
+    <ClCompile Include="MouseKeyboardForbid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -112,6 +115,12 @@
     </ClInclude>
     <ClInclude Include="ReplaceWordsManager.h">
       <Filter>Infos</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessLockManager.h">
+      <Filter>Infos</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseKeyboardForbid.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -149,9 +158,6 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="NetworkCookie.h">
-      <Filter>Infos</Filter>
-    </QtMoc>
-    <QtMoc Include="ProcessLockManager.h">
       <Filter>Infos</Filter>
     </QtMoc>
   </ItemGroup>

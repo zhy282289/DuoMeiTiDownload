@@ -113,7 +113,7 @@ bool ReplaceWordsManager::BaseReplace(QString &text, const Word &word)
 
 bool ReplaceWordsManager::DouHaoReplace(QString &text)
 {
-	text.replace(" ", "£¬");
+	text.replace(" ", TR("£¬"));
 
 	return true;
 }

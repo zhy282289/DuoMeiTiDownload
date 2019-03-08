@@ -19,6 +19,10 @@ AutoUploadManager::AutoUploadManager(QObject *parent)
 
 AutoUploadManager::~AutoUploadManager()
 {
+	if (m_view)
+	{
+		delete m_view;
+	}
 }
 
 bool AutoUploadManager::Login(int index)
@@ -114,6 +118,7 @@ void AutoUploadManager::LoadFinished()
 				LOG((TR("取到视频输入框，上传文件")));
 
 				PROCESS_LOCK->Lock(AUTOUPLOAD);
+				MOUSEKEYBOARD_FORBID_ENABLED;
 
 				m_tryLoadUpload = 0;
 				m_view->activateWindow();
@@ -140,9 +145,10 @@ void AutoUploadManager::CreateWebView(int index)
 	if (m_view == nullptr)
 	{
 		m_view = GET_TEST_WEBVIEW()
+		//m_view->setWindowFlags(Qt::CustomizeWindowHint | Qt::Dialog | Qt::WindowTitleHint);
 		m_view->showMaximized();
 
-		//auto cookie = new NetworkCookie(m_view, index, "https://mp.toutiao.com");
+		auto cookie = new NetworkCookie(m_view, index, "https://mp.toutiao.com");
 	}
 
 }
@@ -152,7 +158,6 @@ void AutoUploadManager::UploadFile()
 	m_bInDialog = true;
 	QTimer::singleShot(3000, [=]()
 	{
-		PROCESS_LOCK->Lock(AUTOUPLOAD);
 		auto dlg = m_view->findChild<QDialog*>();
 		if (dlg)
 		{
@@ -174,12 +179,15 @@ void AutoUploadManager::UploadFile()
 			{
 				QTimer::singleShot(1000, [=]() {
 					::SendMessage(dlgHwnd, WM_COMMAND, 1, (LPARAM)button); // # 按button
+
 					LOG((TR("开始上传文件")));
+					PROCESS_LOCK->UnLock(AUTOUPLOAD);
+					MOUSEKEYBOARD_FORBID_DISABLED;
+
 					MonitorUploadFileFinish();
 					m_bInDialog = false;
 				});
 			}
-			PROCESS_LOCK->UnLock(AUTOUPLOAD);
 
 		}
 		else
@@ -253,6 +261,7 @@ void AutoUploadManager::MonitorUploadFileFinish()
 void AutoUploadManager::UploadFileFinishEx()
 {
 	PROCESS_LOCK->Lock(AUTOUPLOAD);
+	MOUSEKEYBOARD_FORBID_ENABLED;
 
 
 	QString title = REPLACEWORDS_MANAGER->Replace(m_info->title);
@@ -311,6 +320,7 @@ void AutoUploadManager::UploadFileFinishEx()
 							QTimer::singleShot(1000, [=]() {
 
 								PROCESS_LOCK->UnLock(AUTOUPLOAD);
+								MOUSEKEYBOARD_FORBID_DISABLED;
 								Submit();
 
 							});
