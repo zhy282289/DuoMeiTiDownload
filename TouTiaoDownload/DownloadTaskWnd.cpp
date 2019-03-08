@@ -181,6 +181,9 @@ void DownloadTaskWnd::slotStartUpload()
 		QMessageBox::warning(this, TR("参数设置错误"), TR("参数设置错误"));
 		return;
 	}
+
+	SaveUI();
+
 	m_bUploading = true;
 	m_uploadCount = 0;
 
