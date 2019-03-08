@@ -35,6 +35,10 @@ DownloadTaskWnd::DownloadTaskWnd(QWidget *parent)
 	CreateLoginTypeFun(4);
 	CreateLoginTypeFun(5);
 
+
+	m_ckbUploadLoop = new QCheckBox(TR("无限上传"), this);
+
+
 	m_btnAutoUploadLogin = new QPushButton(TR("登陆"), this);
 	m_btnAutoUpload = new QPushButton(TR("自动上传"), this);
 	m_btnAutoUploadStop = new QPushButton(TR("停止自动上传"), this);
@@ -202,6 +206,10 @@ void DownloadTaskWnd::InitUI()
 	m_ckbTop->setChecked(DownloadFinishConfig::Order());
 	m_leTaskNum->setText(QString("%1").arg(DownloadFinishConfig::Number()));
 	m_cmbVideoType->setCurrentIndex(m_cmbVideoType->findData(DownloadFinishConfig::VideoType()));
+	m_leUploadNum->setText(QString("%1").arg(DownloadFinishConfig::UploadNumber()));
+	m_ckbUploadLoop->setChecked(DownloadFinishConfig::UploadLoop());
+
+
 }
 
 bool DownloadTaskWnd::CheckUI()
@@ -221,6 +229,9 @@ void DownloadTaskWnd::SaveUI()
 	DownloadFinishConfig::SetOrder(m_ckbTop->isChecked());
 	DownloadFinishConfig::SetNumber(m_leTaskNum->text().toInt());
 	DownloadFinishConfig::SetVideoType(m_cmbVideoType->currentData().toInt());
+	DownloadFinishConfig::SetUploadNumber(m_leUploadNum->text().toInt());
+	DownloadFinishConfig::SetUploadLoop(m_ckbUploadLoop->isChecked());
+
 }
 
 
@@ -290,7 +301,9 @@ void DownloadTaskWnd::FinishUpload(bool ret, TaskInfoPtr info)
 
 void DownloadTaskWnd::StartAutoUpload()
 {
-	if (m_uploadCount < m_leUploadNum->text().toInt())
+	if (m_uploadCount < m_leUploadNum->text().toInt() 
+		// 无限上传
+		|| m_ckbUploadLoop->isChecked())
 	{
 		if (m_listWnd->count() > 0)
 		{
@@ -300,12 +313,15 @@ void DownloadTaskWnd::StartAutoUpload()
 			if (QFile::exists(info->localPath))
 			{
 				connect(m_autoUpload, &AutoUploadManager::sigFinish, this, &DownloadTaskWnd::FinishUpload, Qt::UniqueConnection);
+				connect(m_autoUpload, &AutoUploadManager::sigStop, this, &DownloadTaskWnd::StopUploadTask, Qt::UniqueConnection);
 				m_autoUpload->StartUpload(info, m_cmbLoginType->currentData().toInt());
 			}
 			else
 			{
-				Convert2Task(info);
-				QTimer::singleShot(1000, this, &DownloadTaskWnd::StartAutoUpload);
+				LOG(TR("文件路径不存在，1分钟后重新获取上传任务"));
+				//Convert2Task(info);
+				GetAndRemoveFromDBTaskCount(1);
+				QTimer::singleShot(60 * 1000, this, &DownloadTaskWnd::StartAutoUpload);
 			}
 		}
 		else
@@ -329,8 +345,7 @@ void DownloadTaskWnd::StartAutoUpload()
 	}
 	else
 	{
-		LOG(TR("上传任务完成"));
-
+		StopUploadTask();
 	}
 
 }
@@ -363,6 +378,7 @@ void DownloadTaskWnd::GetAndRemoveFromDBTaskCount(int count)
 
 void DownloadTaskWnd::StopUploadTask()
 {
+	LOG(TR("上传任务完成"));
 	emit sigUploadStop();
 }
 
@@ -401,7 +417,10 @@ void DownloadTaskWnd::resizeEvent(QResizeEvent *event)
 	left = m_lbUploadNum->geometry().right() + margins;
 	m_leUploadNum->setGeometry(left, top, 80, btnh);
 	left = m_leUploadNum->geometry().right() + margins;
+	m_ckbUploadLoop->setGeometry(left, top, 80, btnh);
+	left = m_ckbUploadLoop->geometry().right() + margins;
 
+	
 	m_cmbLoginType->setGeometry(left, top, 100, btnh);
 	left = m_cmbLoginType->geometry().right() + margins;
 	m_btnAutoUploadLogin->setGeometry(left, top, 100, btnh);

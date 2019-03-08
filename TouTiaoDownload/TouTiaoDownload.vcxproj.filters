@@ -90,6 +90,9 @@
     <ClCompile Include="NetworkCookie.cpp">
       <Filter>Infos</Filter>
     </ClCompile>
+    <ClCompile Include="ProcessLockManager.cpp">
+      <Filter>Infos</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -146,6 +149,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="NetworkCookie.h">
+      <Filter>Infos</Filter>
+    </QtMoc>
+    <QtMoc Include="ProcessLockManager.h">
       <Filter>Infos</Filter>
     </QtMoc>
   </ItemGroup>

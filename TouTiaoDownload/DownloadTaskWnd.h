@@ -59,6 +59,7 @@ private:
 	QComboBox *m_cmbLoginType;
 	QLabel *m_lbUploadNum;
 	QLineEdit *m_leUploadNum;
+	QCheckBox *m_ckbUploadLoop;
 
 	QPushButton *m_btnAutoUploadLogin;
 	QPushButton *m_btnAutoUpload;

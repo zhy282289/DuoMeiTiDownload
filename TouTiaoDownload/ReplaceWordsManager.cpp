@@ -113,7 +113,7 @@ bool ReplaceWordsManager::BaseReplace(QString &text, const Word &word)
 
 bool ReplaceWordsManager::DouHaoReplace(QString &text)
 {
-	text.remove(" ");
+	text.replace(" ", "£¬");
 
 	return true;
 }
@@ -203,6 +203,7 @@ QString ReplaceWordsManager::Replace(QString text)
 
 	RotateReplace(text);
 	int count = 0;
+
 	for (auto &word : m_words)
 	{
 		bool ret = BaseReplace(text, word);

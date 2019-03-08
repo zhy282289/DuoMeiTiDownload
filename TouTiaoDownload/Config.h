@@ -84,6 +84,12 @@ public:
 	static int VideoType();
 	static void SetVideoType(int type);
 
+	static int UploadNumber();
+	static void SetUploadNumber(int number);
+
+	static bool UploadLoop();
+	static void SetUploadLoop(bool loop);
+
 };
 
 class HistoryConfig

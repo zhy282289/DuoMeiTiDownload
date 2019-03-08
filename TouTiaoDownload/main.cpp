@@ -10,8 +10,6 @@ int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
 
-	//test();
-
 	if (!MY_DB->Init())
 	{
 		QMessageBox::information(0, TR("错误"), TR("初始化数据库失败，程序退出！"));

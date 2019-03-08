@@ -19,6 +19,7 @@ public:
 
 Q_SIGNALS:
 	void sigFinish(bool bok, TaskInfoPtr info);
+	void sigStop();
 
 private:
 	void CreateWebView(int index);
@@ -33,6 +34,8 @@ private:
 	void LoadURL();
 	void Connect();
 	void DisConnect();
+	void ReLoadURL(bool ret);
+
 private:
 	QWebEngineView *m_view;
 	QString m_url;
