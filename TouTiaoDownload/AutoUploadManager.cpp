@@ -198,7 +198,6 @@ void AutoUploadManager::MonitorUploadFileFinish()
 {
 	if (++m_tryLoadFinish < 30 * 10)
 	{
-
 		QTimer::singleShot(2 * 1000, [=]()
 		{
 			m_view->page()->runJavaScript(
@@ -255,7 +254,6 @@ void AutoUploadManager::UploadFileFinishEx()
 {
 	PROCESS_LOCK->Lock(AUTOUPLOAD);
 
-	m_view->activateWindow();
 
 	QString title = REPLACEWORDS_MANAGER->Replace(m_info->title);
 
@@ -267,60 +265,68 @@ void AutoUploadManager::UploadFileFinishEx()
 #define INTERNAL_TIME 400
 
 	QApplication::clipboard()->setText(title);
-	gMoveCursorAndClick(m_view->mapToGlobal(QPoint(870, 477)));
-	gKeybdEvent_CTL('A');
-	gKeybdEvent_CTL('V');
 
-	QTimer::singleShot(INTERNAL_TIME, [=]() {
 
-		gKeybdEvent(VK_TAB);
+	gWebViewScrollTop(m_view->page(), [=](QVariant html) {
+		m_view->activateWindow();
+
+		gMoveCursorAndClick(m_view->mapToGlobal(QPoint(870, 477)));
 		gKeybdEvent_CTL('A');
 		gKeybdEvent_CTL('V');
 
-		gKeybdEvent(VK_TAB);
-		gKeybdEvent(VK_TAB);
-		gKeybdEvent(VK_TAB);
-
 		QTimer::singleShot(INTERNAL_TIME, [=]() {
-			QApplication::clipboard()->setText(TR("搞笑"));
+
+			gKeybdEvent(VK_TAB);
+			gKeybdEvent_CTL('A');
 			gKeybdEvent_CTL('V');
-			gKeybdEvent_CTL(VK_RETURN);
+
+			gKeybdEvent(VK_TAB);
+			gKeybdEvent(VK_TAB);
+			gKeybdEvent(VK_TAB);
 
 			QTimer::singleShot(INTERNAL_TIME, [=]() {
-				QApplication::clipboard()->setText(TR("影视"));
+				QApplication::clipboard()->setText(TR("搞笑"));
 				gKeybdEvent_CTL('V');
 				gKeybdEvent_CTL(VK_RETURN);
 
-				QTimer::singleShot(1000, [=]() {
-					gKeybdEvent(VK_TAB);
-					gKeybdEvent(VK_TAB);
-					gKeybdEvent(VK_TAB);
-					gKeybdEvent(VK_TAB);
-					gKeybdEvent(VK_TAB);
-					gKeybdEvent(VK_RETURN);
+				QTimer::singleShot(INTERNAL_TIME, [=]() {
+					QApplication::clipboard()->setText(TR("影视"));
+					gKeybdEvent_CTL('V');
+					gKeybdEvent_CTL(VK_RETURN);
 
-					QTimer::singleShot(INTERNAL_TIME, [=]() {
-						for (int i = 0; i < 12; ++i)
-							gKeybdEvent(VK_DOWN);
-
+					QTimer::singleShot(1000, [=]() {
+						gKeybdEvent(VK_TAB);
+						gKeybdEvent(VK_TAB);
+						gKeybdEvent(VK_TAB);
+						gKeybdEvent(VK_TAB);
+						gKeybdEvent(VK_TAB);
 						gKeybdEvent(VK_RETURN);
 
-						QTimer::singleShot(1000, [=]() {
+						QTimer::singleShot(INTERNAL_TIME, [=]() {
+							for (int i = 0; i < 12; ++i)
+								gKeybdEvent(VK_DOWN);
 
-							PROCESS_LOCK->UnLock(AUTOUPLOAD);
-							Submit();
+							gKeybdEvent(VK_RETURN);
 
+							QTimer::singleShot(1000, [=]() {
+
+								PROCESS_LOCK->UnLock(AUTOUPLOAD);
+								Submit();
+
+							});
 						});
+
 					});
+
 
 				});
 
 
 			});
-
-
 		});
+
 	});
+
 
 
 }

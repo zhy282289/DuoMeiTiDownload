@@ -107,3 +107,17 @@ void gMoveCursorAndClick(QPoint point)
 
 }
 
+void gWebViewScrollBottom(QWebEnginePage *page, std::function<void(QVariant)> callback)
+{
+	page->runJavaScript(
+		"window.scrollTo(0,document.body.scrollHeight);"
+		, callback);
+}
+
+void gWebViewScrollTop(QWebEnginePage *page, std::function<void(QVariant)> callback)
+{
+	page->runJavaScript(
+		"window.scrollTo(0,0);"
+		, callback);
+}
+

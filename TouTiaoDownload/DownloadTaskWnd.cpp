@@ -336,7 +336,7 @@ void DownloadTaskWnd::StartAutoUpload()
 			else
 			{
 				LOG(TR("无转码任务 1分钟后再获取任务"));
-				QTimer::singleShot(60 * 1000, this, &DownloadTaskWnd::StartAutoUpload);
+				QTimer::singleShot(60 * 1000, this, &DownloadTaskWnd::NextUploadTask);
 
 			}
 
