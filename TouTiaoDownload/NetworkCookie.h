@@ -31,6 +31,7 @@ private:
 	QWebEngineView *m_view;
 	QList<QNetworkCookie> m_cookies;
 	QString m_cookieURL;
+	bool m_bSave;
 };
 
 QDataStream &operator << (QDataStream& stream, const QNetworkCookie& image);

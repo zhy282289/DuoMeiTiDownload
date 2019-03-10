@@ -33,6 +33,7 @@ private:
 	void slotStopDownload();
 	void slotSearchTaskNumber();
 	void slotBigIconChanged(int state);
+	void slotDownloadPath();
 
 private:
 	void InitUI();
@@ -66,6 +67,9 @@ private:
 
 	QCheckBox *m_ckbLoop;
 	QComboBox *m_cmbVideoType;
+	
+	QLineEdit *m_leDownloadPath;
+	QPushButton *m_btnDownloadPath;
 
 	int m_tryConvertCount;
 	int tryConvertDeleteTaskCount;

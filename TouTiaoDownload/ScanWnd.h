@@ -24,6 +24,15 @@ private:
 	void InitUI();
 	bool CheckUI();
 	void SaveUI();
+	void TaskStopScan();
+
+	void StartScan();
+	void StopScan();
+
+	void SearchStartScan();
+	void SearchStopScan();
+	void SearchOpenSearch();
+
 protected:
 	void resizeEvent(QResizeEvent *event);
 
@@ -49,5 +58,12 @@ private:
 	QLineEdit *m_leScanType;
 
 	QComboBox *m_cmbVideoType;
+
+
+	QLineEdit *m_leSearch;
+	QPushButton *m_btnSearch;
+	QPushButton *m_btnStartSearch;
+	QPushButton *m_btnStopSearch;
+
 
 };

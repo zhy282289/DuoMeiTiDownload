@@ -70,6 +70,11 @@ public:
 
 	static int VideoType();
 	static void SetVideoType(int type);
+
+	static QString DownloadPath();
+	static void SetDownloadPath(QString path);
+
+
 };
 
 class DownloadFinishConfig
@@ -81,14 +86,23 @@ public:
 	static int Number();
 	static void SetNumber(int number);
 
-	static int VideoType();
-	static void SetVideoType(int type);
+	static int VideoType(int index);
+	static void SetVideoType(int index, int type);
 
-	static int UploadNumber();
-	static void SetUploadNumber(int number);
+	static int UploadNumber(int index);
+	static void SetUploadNumber(int index, int number);
 
-	static bool UploadLoop();
-	static void SetUploadLoop(bool loop);
+	static bool UploadLoop(int index);
+	static void SetUploadLoop(int index, bool loop);
+
+	static int UploadInternalTime(int index);
+	static void SetUploadInternalTime(int index, int time);
+
+	static QString KeyWords(int index);
+	static void SetKeyWords(int index, QString words);
+
+	static int MajorKeyWord(int index);
+	static void SetMajorKeyWord(int index, int number);
 
 };
 

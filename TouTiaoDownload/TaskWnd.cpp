@@ -32,6 +32,10 @@ TaskWnd::TaskWnd(QWidget *parent)
 
 	m_cmbVideoType = gCreateVideoTypeComboBox(this);
 
+	m_leDownloadPath = new QLineEdit(this);
+	m_btnDownloadPath = new QPushButton(TR("ÏÂÔØÄ¿Â¼"), this);
+
+	m_leDownloadPath->setReadOnly(true);
 
 	InitUI();
 
@@ -59,6 +63,7 @@ TaskWnd::TaskWnd(QWidget *parent)
 		SetEnabled(true);
 	});
 
+	connect(m_btnDownloadPath, &QPushButton::clicked, this, &TaskWnd::slotDownloadPath);
 
 }
 
@@ -133,6 +138,7 @@ void TaskWnd::InitUI()
 	m_ckbDownloadFromDB->setChecked(DownloadConfig::OnlyDownloadList());
 	m_ckbLoop->setChecked(DownloadConfig::Loop());
 	m_cmbVideoType->setCurrentIndex(m_cmbVideoType->findData(DownloadConfig::VideoType()));
+	m_leDownloadPath->setText(DownloadConfig::DownloadPath());
 
 }
 
@@ -152,6 +158,7 @@ void TaskWnd::SaveUI()
 	DownloadConfig::SetOnlyDownloadList(m_ckbDownloadFromDB->isChecked());
 	DownloadConfig::SetLoop(m_ckbLoop->isChecked());
 	DownloadConfig::SetVideoType(m_cmbVideoType->currentData().toInt());
+	DownloadConfig::SetDownloadPath(m_leDownloadPath->text());
 
 }
 
@@ -191,6 +198,7 @@ void TaskWnd::SetEnabled(bool enabled)
 	m_btnTaskNum->setEnabled(enabled);
 	m_ckbLoop->setEnabled(enabled);
 	m_cmbVideoType->setEnabled(enabled);
+	m_btnDownloadPath->setEnabled(enabled);
 }
 
 void TaskWnd::slotNewInfo(TaskInfoPtr info)
@@ -399,6 +407,16 @@ void TaskWnd::slotBigIconChanged(int state)
 	}
 }
 
+void TaskWnd::slotDownloadPath()
+{
+	QString dir = QFileDialog::getExistingDirectory(this, TR("Open"), m_leDownloadPath->text());
+	if (!dir.isEmpty())
+	{
+		m_leDownloadPath->setText(dir);
+		DownloadConfig::SetDownloadPath(dir);
+	}
+}
+
 void TaskWnd::NextDownload()
 {
 	if (m_bDownloading)
@@ -414,7 +432,7 @@ void TaskWnd::NextDownload()
 
 void TaskWnd::resizeEvent(QResizeEvent *event)
 {
-	const int toolbarHeight = 60;
+	const int toolbarHeight = 80;
 	const int margins = 10;
 	const int btnw = 70;
 	const int btnh = 24;
@@ -443,6 +461,13 @@ void TaskWnd::resizeEvent(QResizeEvent *event)
 	m_ckbLoop->setGeometry(left, top, 100, btnh);
 	left = m_ckbLoop->geometry().right() + margins;
 	m_cmbVideoType->setGeometry(left, top, 100, btnh);
+
+	top = m_cmbVideoType->geometry().bottom() + margins;
+	left = margins;
+	int w = width() - 2 * btnw - 5* margins;
+	m_leDownloadPath->setGeometry(left, top, w, btnh);
+	left = m_leDownloadPath->geometry().right() + margins;
+	m_btnDownloadPath->setGeometry(left, top, 100, btnh);
 
 
 

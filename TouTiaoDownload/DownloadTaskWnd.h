@@ -21,6 +21,8 @@ Q_SIGNALS:
 	void sigConvert2History(TaskInfoPtr info);
 	void sigUploadStart();
 	void sigUploadStop();
+private slots:
+	void slotLoginTypeChanged(int index);
 private:
 	void slotSearchTaskNumber();
 	void slotBigIconChanged(int state);
@@ -31,6 +33,8 @@ private:
 	void InitUI();
 	bool CheckUI();
 	void SaveUI();
+
+	bool SyncUIData();
 
 	void RemoveItemByWidget(QWidget *widget);
 	void RemoveItemByInfo(TaskInfoPtr info);
@@ -44,6 +48,8 @@ private:
 	void StopUploadTask();
 	void NextUploadTask();
 	void GetAndRemoveFromDBTaskCount(int count);
+	bool ContinueTask();
+	int LoginIndex();
 protected:
 	void resizeEvent(QResizeEvent *event);
 
@@ -64,6 +70,16 @@ private:
 	QPushButton *m_btnAutoUploadLogin;
 	QPushButton *m_btnAutoUpload;
 	QPushButton *m_btnAutoUploadStop;
+
+	QLabel *m_lbUploadInternalTime;
+	QLineEdit *m_leUploadInternalTime;
+
+	QLabel *m_lbKeyWords;
+	QLineEdit *m_leKeyWords;
+
+	QComboBox *m_cmbMajorKeyWord;
+
+	QPushButton *m_btnSaveSettings;
 
 	AutoUploadManager *m_autoUpload;
 	bool m_bUploading;

@@ -183,6 +183,17 @@ void DownloadConfig::SetVideoType(int type)
 
 }
 
+QString DownloadConfig::DownloadPath()
+{
+	return CONFIG_STR_DEF("download/downloadpath", gGetTouTiaoResource());
+
+}
+
+void DownloadConfig::SetDownloadPath(QString path)
+{
+	CONFIG_SET("download/downloadpath", path);
+}
+
 bool DownloadFinishConfig::Order()
 {
 	return CONFIG_BOOL_DEF("downloadfinish/order", true);
@@ -207,38 +218,86 @@ void DownloadFinishConfig::SetNumber(int number)
 
 }
 
-int DownloadFinishConfig::VideoType()
+int DownloadFinishConfig::VideoType(int index)
 {
-	return CONFIG_INT_DEF("hisotry/videotype", "0");
+	QString key = QString("downloadfinish/videotype%1").arg(index);
+	return CONFIG_INT_DEF(key, 0);
 
 }
 
-void DownloadFinishConfig::SetVideoType(int type)
+void DownloadFinishConfig::SetVideoType(int index, int type)
 {
-	CONFIG_SET("hisotry/videotype", type);
+	QString key = QString("downloadfinish/videotype%1").arg(index);
+	CONFIG_SET(key, type);
 
 }
 
-int DownloadFinishConfig::UploadNumber()
+int DownloadFinishConfig::UploadNumber(int index)
 {
-	return CONFIG_INT_DEF("downloadfinish/uploadnumber", 60);
+	QString key = QString("downloadfinish/uploadnumber%1").arg(index);
+	return CONFIG_INT_DEF(key, 60);
 
 }
 
-void DownloadFinishConfig::SetUploadNumber(int number)
+void DownloadFinishConfig::SetUploadNumber(int index, int number)
 {
-	CONFIG_SET("downloadfinish/uploadnumber", number);
+	QString key = QString("downloadfinish/uploadnumber%1").arg(index);
+	CONFIG_SET(key, number);
 
 }
-bool DownloadFinishConfig::UploadLoop()
+bool DownloadFinishConfig::UploadLoop(int index)
 {
 
-	return CONFIG_BOOL_DEF("downloadfinish/uploadloop", false);
+	QString key = QString("downloadfinish/uploadloop%1").arg(index);
+	return CONFIG_BOOL_DEF(key, false);
 }
 
-void DownloadFinishConfig::SetUploadLoop(bool loop)
+void DownloadFinishConfig::SetUploadLoop(int index, bool loop)
 {
-	CONFIG_SET("downloadfinish/uploadloop", loop);
+	QString key = QString("downloadfinish/uploadloop%1").arg(index);
+	CONFIG_SET(key, loop);
+
+}
+
+int DownloadFinishConfig::UploadInternalTime(int index)
+{
+	QString key = QString("downloadfinish/uploadinternaltime%1").arg(index);
+	return CONFIG_INT_DEF(key, 10);
+
+}
+
+void DownloadFinishConfig::SetUploadInternalTime(int index, int time)
+{
+	QString key = QString("downloadfinish/uploadinternaltime%1").arg(index);
+	CONFIG_SET(key, time);
+
+}
+
+QString DownloadFinishConfig::KeyWords(int index)
+{
+	QString key = QString("downloadfinish/keywords%1").arg(index);
+	return CONFIG_STR_DEF(key, TR("∏„–¶ ”∞ ”"));
+
+}
+
+void DownloadFinishConfig::SetKeyWords(int index, QString words)
+{
+	QString key = QString("downloadfinish/keywords%1").arg(index);
+	CONFIG_SET(key, words);
+
+}
+
+int DownloadFinishConfig::MajorKeyWord(int index)
+{
+	QString key = QString("downloadfinish/majorkeyword%1").arg(index);
+	return CONFIG_INT_DEF(key, 12);
+
+}
+
+void DownloadFinishConfig::SetMajorKeyWord(int index, int number)
+{
+	QString key = QString("downloadfinish/majorkeyword%1").arg(index);
+	CONFIG_SET(key, number);
 
 }
 

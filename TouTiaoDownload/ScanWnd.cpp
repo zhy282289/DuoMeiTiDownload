@@ -28,50 +28,30 @@ ScanWnd::ScanWnd(QWidget *parent)
 	m_cmbVideoType = gCreateVideoTypeComboBox(this);
 
 
+	m_leSearch = new QLineEdit(this);
+	m_btnSearch = new QPushButton(TR("搜索"), this);
+	m_btnStartSearch = new QPushButton(TR("开始扫描"), this);
+	m_btnStopSearch = new QPushButton(TR("停止扫描"), this);
 
-	m_task = new ScanTaskManager(this);
-	connect(m_task, &ScanTaskManager::sigNewInfo, this, &ScanWnd::sigNewInfo);
-	connect(m_task, &ScanTaskManager::sigStopScan, this, [=]() {
-		sigStopScan();
-		ResetUI();
-
-	});
-	connect(m_task, &ScanTaskManager::sigScanFinish, this, [=]()
-	{
-		emit sigScanFinish();
-		ResetUI();
-
-	});
-
+	m_leSearch->setText(TR("https://www.ixigua.com/search/?keyword="));
 
 	InitUI();
 
-	connect(m_btnScan, &QPushButton::clicked, this, [=]()
-	{
-		if (CheckUI())
-		{
-			SaveUI();
-			SetEnabled(false);
-			m_btnStopScan->setEnabled(true);
+	connect(m_btnScan, &QPushButton::clicked, this, &ScanWnd::StartScan);
+	connect(m_btnStopScan, &QPushButton::clicked, this, &ScanWnd::StopScan);
 
-			m_task->StartScan();
-			sigStartScan();
-		}
-		else
-		{
-			QMessageBox::warning(this, TR("参数设置错误"), TR("参数设置错误"));
-		}
-	});
+	m_task = new ScanTaskManager(this);
+	connect(m_task, &ScanTaskManager::sigNewInfo, this, &ScanWnd::sigNewInfo);
+	connect(m_task, &ScanTaskManager::sigStopScan, this, &ScanWnd::TaskStopScan);
+	connect(m_task, &ScanTaskManager::sigScanFinish, this, &ScanWnd::TaskStopScan);
 
 
-	connect(m_btnStopScan, &QPushButton::clicked, this, [=]()
-	{
-		//SetEnabled(true);
-		m_btnStopScan->setEnabled(false);
 
-		m_task->StopScan();
+	connect(m_btnSearch, &QPushButton::clicked, this, &ScanWnd::SearchOpenSearch);
+	connect(m_btnStartSearch, &QPushButton::clicked, this, &ScanWnd::SearchStartScan);
+	connect(m_btnStopSearch, &QPushButton::clicked, this, &ScanWnd::SearchStopScan);
 
-	});
+
 
 }
 
@@ -120,6 +100,52 @@ void ScanWnd::SaveUI()
 
 }
 
+
+void ScanWnd::TaskStopScan()
+{
+	emit sigScanFinish();
+	ResetUI();
+}
+
+void ScanWnd::StartScan()
+{
+	if (CheckUI())
+	{
+		SaveUI();
+		SetEnabled(false);
+		m_btnStopScan->setEnabled(true);
+
+		m_task->StartScan();
+		sigStartScan();
+	}
+	else
+	{
+		QMessageBox::warning(this, TR("参数设置错误"), TR("参数设置错误"));
+	}
+}
+
+void ScanWnd::StopScan()
+{
+	//SetEnabled(true);
+	m_btnStopScan->setEnabled(false);
+	m_task->StopScan();
+
+}
+
+void ScanWnd::SearchStartScan()
+{
+
+}
+
+void ScanWnd::SearchStopScan()
+{
+
+}
+
+void ScanWnd::SearchOpenSearch()
+{
+
+}
 
 void ScanWnd::SetEnabled(bool enabled)
 {
@@ -176,6 +202,21 @@ void ScanWnd::resizeEvent(QResizeEvent *event)
 	m_leScanType->setGeometry(left, top, btnw, btnh);
 	left = m_leScanType->geometry().right() + margins2;
 	m_cmbVideoType->setGeometry(left, top, 100, btnh);
+
+
+	left = margins;
+	top = m_cmbVideoType->geometry().bottom() + 20;
+
+	int searchw = width() - margins - 3 * (btnw + margins);
+	m_leSearch->setGeometry(left, top, searchw ,btnh);
+	left = m_leSearch->geometry().right() + margins2;
+	m_btnSearch->setGeometry(left, top, btnw, btnh);
+	left = m_btnSearch->geometry().right() + margins2;
+	m_btnStartSearch->setGeometry(left, top, btnw, btnh);
+	left = m_btnStartSearch->geometry().right() + margins2;
+	m_btnStopSearch->setGeometry(left, top, btnw, btnh);
+	left = m_btnStopSearch->geometry().right() + margins2;
+
 
 
 }

@@ -3,7 +3,7 @@
 #include <QObject>
 
 class QWebEngineView;
-
+class NetworkCookie;
 class AutoUploadManager : public QObject
 {
 	Q_OBJECT
@@ -36,6 +36,8 @@ private:
 	void DisConnect();
 	void ReLoadURL(bool ret);
 
+	void SetKeyWorks(QStringList works);
+
 private:
 	QWebEngineView *m_view;
 	QString m_url;
@@ -45,4 +47,7 @@ private:
 	TaskInfoPtr m_info;
 	bool m_bUploading;
 	bool m_bInDialog;
+
+	NetworkCookie *m_cookie;
+	int m_index;
 };

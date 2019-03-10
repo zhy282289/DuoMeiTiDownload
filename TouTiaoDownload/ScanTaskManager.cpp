@@ -207,32 +207,27 @@ void ScanTaskManager::ParseMainPage()
 void ScanTaskManager::_ParseMainPage()
 {
 	// 切换类型
-	const int delayTime = 5000;
+	const int delayTime = 6000;
 
 
 	LOG(QString(TR("切换类型:%1")).arg(ScanConfig::ScanType()));
 	QTimer::singleShot(delayTime, [=]() {
-		//m_view->page()->toHtml([=](const QString &text)
-		//{
-			m_view->page()->runJavaScript(QString(
-				"var es = document.getElementsByClassName('channel-item');"
-				"if (es.length > 0)"
-				"{es[%1].click();}"
-			).arg(ScanConfig::ScanType())
-				, [=](QVariant v)
-			{
-				LOG(TR("开始解析主页数据！"));
-				QTimer::singleShot(delayTime, [=]() {
-					ParseMainPage();
-
-				});
-
+		m_view->page()->runJavaScript(QString(
+			"var es = document.getElementsByClassName('channel-item');"
+			"if (es.length > 0)"
+			"{es[%1].click();}"
+		).arg(ScanConfig::ScanType())
+			, [=](QVariant v)
+		{
+			LOG(TR("开始解析主页数据！"));
+			QTimer::singleShot(delayTime, [=]() {
+				ParseMainPage();
 
 			});
 
 
+		});
 
-		//});
 	});
 
 }
@@ -261,52 +256,56 @@ void ScanTaskManager::NextDownload()
 
 void ScanTaskManager::NextUrl()
 {
-	QString taskUrl;
-	while (!m_mainNewUrlist.isEmpty())
-	{
-		QString url = m_mainNewUrlist.takeFirst();
-		if (!m_mainOldUrlist.contains(url))
+	QTimer::singleShot(10*1000, [=]() {
+
+		QString taskUrl;
+		while (!m_mainNewUrlist.isEmpty())
 		{
-			m_mainOldUrlist.push_back(url);
-			if (!IsUrlExistInDB(url))
+			QString url = m_mainNewUrlist.takeFirst();
+			if (!m_mainOldUrlist.contains(url))
 			{
-				taskUrl = url;
-				break;
+				m_mainOldUrlist.push_back(url);
+				if (!IsUrlExistInDB(url))
+				{
+					taskUrl = url;
+					break;
+				}
 			}
 		}
-	}
-	if (!taskUrl.isEmpty())
-	{
-		ParseVideoPage(taskUrl);
-	}
-	else
-	{
-		if (++m_tryGetMoreCount < 10)
+		if (!taskUrl.isEmpty())
 		{
-			if (m_mainOldUrlist.size() < 200)
+			ParseVideoPage(taskUrl);
+		}
+		else
+		{
+			if (++m_tryGetMoreCount < 10)
 			{
-				m_tryGetMoreCount = 0;
-				// 刷新主页
-				GetMore();
+				if (m_mainOldUrlist.size() < 200)
+				{
+					m_tryGetMoreCount = 0;
+					// 刷新主页
+					GetMore();
+				}
+				else
+				{
+					m_mainOldUrlist.clear();
+					// 重新加载主页
+					LOG(TR("重新加载主页！"));
+					m_view->load(m_url);
+				}
 			}
 			else
 			{
-				m_mainOldUrlist.clear();
+				m_tryGetMoreCount = 0;
 				// 重新加载主页
 				LOG(TR("重新加载主页！"));
 				m_view->load(m_url);
 			}
-		}
-		else
-		{
-			m_tryGetMoreCount = 0;
-			// 重新加载主页
-			LOG(TR("重新加载主页！"));
-			m_view->load(m_url);
-		}
 
 
-	}
+		}
+	});
+
 }
 
 void ScanTaskManager::GetMore()
@@ -373,8 +372,12 @@ void ScanTaskManager::_StopScan()
 {
 	LOG(TR("停止扫描任务！"));
 	m_scaning = false;
-	m_detailView->deleteLater();
-	m_detailView = nullptr;
+	if (m_detailView)
+	{
+		m_detailView->deleteLater();
+		m_detailView = nullptr;
+	}
+
 	emit sigStopScan();
 }
 
@@ -387,52 +390,51 @@ void ScanTaskManager::ParseVideoPage(const QString &url)
 
 		connect(m_detailView, &QWebEngineView::loadFinished, this, [=]()
 		{
-			//m_detailView->page()->toHtml([=](const QString &text)
-			//{
-				m_detailView->page()->runJavaScript(
-					"var es = document.getElementsByClassName('bui-left index-content');"
-					"if (es.length > 0)"
-					"{es[0].innerHTML;}"
-					, [=](QVariant v)
+
+			m_detailView->page()->runJavaScript(
+				"var es = document.getElementsByClassName('bui-left index-content');"
+				"if (es.length > 0)"
+				"{es[0].innerHTML;}"
+				, [=](QVariant v)
+			{
+
+				QString html = v.toString();
+				if (!html.isEmpty())
 				{
-
-					QString html = v.toString();
-					if (!html.isEmpty())
+					IPython_Exe *pyExe = IPython_Exe::GetInstance();
+					bool ret = pyExe->Simple_Call("toutiao", "parseTouTiaoDetail", "(s)", html.toUtf8().data());
+					string retString = pyExe->ReturnString();
+					if (!retString.empty())
 					{
-						IPython_Exe *pyExe = IPython_Exe::GetInstance();
-						bool ret = pyExe->Simple_Call("toutiao", "parseTouTiaoDetail", "(s)", html.toUtf8().data());
-						string retString = pyExe->ReturnString();
-						if (!retString.empty())
-						{
-							_ParseVideoPage(retString);
-						}
-						else
-						{ 
-							LOG("error: parseTouTiaoDetail return empty");
-							m_stoping = true;
-							NextDownload();
-						}
+						_ParseVideoPage(retString);
+					}
+					else
+					{ 
+						LOG("error: parseTouTiaoDetail return empty");
+						m_stoping = true;
+						NextDownload();
+					}
 
+				}
+				else
+				{
+					LOG(QString("error: document.getElementsByClassName('bui-left index-content')"));
+					LOG(TR("获取视频详细信息失败，可能网络访问被限！"));
+
+					if (ScanConfig::Loop())
+					{
+						LOG(TR("设置了无限扫描，60秒后继续扫描任务！"));
+						QTimer::singleShot(1000 * 60, this, &ScanTaskManager::NextDownload);
 					}
 					else
 					{
-						LOG(QString("error: document.getElementsByClassName('bui-left index-content')"));
-						LOG(TR("获取视频详细信息失败，可能网络访问被限！"));
-
-						if (ScanConfig::Loop())
-						{
-							LOG(TR("设置了无限扫描，60秒后继续扫描任务！"));
-							QTimer::singleShot(1000 * 60, this, &ScanTaskManager::NextDownload);
-						}
-						else
-						{
-							_StopScan();
-						}
-
-
+						_StopScan();
 					}
-				});
-			//});
+
+
+				}
+			});
+
 		});
 
 
@@ -511,5 +513,104 @@ void ScanTaskManager::_ParseVideoPage(const string& retString)
 		LOG("error: insert db fail");
 	}
 
+	LOG(QString(TR("扫描到第%1条数据！")).arg(m_curCount));
+
+
 	NextDownload();
+}
+
+//////////////////////////////////////////////////////////////////////////
+KeyWordSearchScanTaskManager::KeyWordSearchScanTaskManager(QObject *parent /*= nullptr*/)
+	:ScanTaskManager(parent)
+{
+
+}
+
+KeyWordSearchScanTaskManager::~KeyWordSearchScanTaskManager()
+{
+
+}
+
+bool KeyWordSearchScanTaskManager::StartScan()
+{
+	if (m_scaning)
+	{
+		LOG(TR("正在扫描中！"));
+		return true;
+	}
+
+	LOG(TR("开始扫描任务"));
+
+	m_scaning = true;
+	m_stoping = false;
+	m_tryGetMoreCount = 0;
+
+	//m_url = ScanConfig::Url();
+	m_count = ScanConfig::Number();
+	m_curCount = 1;
+
+	if (m_view == nullptr)
+	{
+		//if (ScanConfig::ScanType() == 0)
+		{
+		//	m_view = GET_UNIQUEN_WEBVIEW()
+		}
+		//else
+		//{
+			m_view = GET_TEST_WEBVIEW()
+		//}
+
+		connect(m_view, &QWebEngineView::loadFinished, this, &KeyWordSearchScanTaskManager::ParseMainPage);
+
+		m_view->show();
+	}
+	m_view->load(m_url);
+
+
+	return false;
+}
+
+bool KeyWordSearchScanTaskManager::StopScan()
+{
+	return false;
+}
+
+void KeyWordSearchScanTaskManager::ParseMainPage()
+{
+	m_view->page()->runJavaScript(
+		"var es = document.getElementsByClassName('tt-tab-pane');"
+		"if (es.length > 0)"
+		"{es[0].innerHTML;}"
+		, [=](QVariant v)
+	{
+		bool bData = false;
+		QString html = v.toString();
+		if (!html.isEmpty())
+		{
+			IPython_Exe *pyExe = IPython_Exe::GetInstance();
+			bool ret = pyExe->Simple_Call("toutiao", "parseTouTiaoFromMain", "(s)", html.toUtf8().data());
+			string retString = pyExe->ReturnString();
+			if (!retString.empty())
+			{
+				bData = true;
+				QString retStringUtf8 = QString::fromUtf8(retString.c_str());
+				m_mainNewUrlist = retStringUtf8.split(";", QString::SkipEmptyParts);
+				LOG(QString(TR("获取主页总条数：%2")).arg(m_mainNewUrlist.size()));
+				NextUrl();
+
+			}
+
+		}
+		if (!bData)
+		{
+			LOG("error: document.getElementsByClassName('feed-infinite-wrapper');");
+			//QThread::sleep(1);
+			if (m_stoping)
+				_StopScan();
+			else
+				ParseMainPage();
+
+		}
+
+	});
 }

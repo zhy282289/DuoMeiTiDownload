@@ -5,6 +5,7 @@ NetworkCookie::NetworkCookie(QWebEngineView *view, int viewIndex, QString cookie
 	: QObject(nullptr)
 	, m_view(view)
 	, m_cookieURL(cookieURL)
+	, m_bSave(true)
 {
 	QString dirName = cookieURL;
 	dirName.remove("https://");
@@ -17,7 +18,7 @@ NetworkCookie::NetworkCookie(QWebEngineView *view, int viewIndex, QString cookie
 
 	qRegisterMetaTypeStreamOperators<QList<QNetworkCookie> >("QList<QNetworkCookie>");
 	LoadCookie();
-
+	m_bSave = m_cookies.isEmpty();
 	SetView(m_view);
 }
 
@@ -38,7 +39,7 @@ void NetworkCookie::SetView(QWebEngineView *view)
 	{
 		store->setCookie(m_cookies[i], QUrl(m_cookieURL));
 	}
-
+	
 	connect(store, &QWebEngineCookieStore::cookieAdded, this, &NetworkCookie::CookieAdded, Qt::UniqueConnection);
 	connect(store, &QWebEngineCookieStore::cookieRemoved, this, &NetworkCookie::CookieRemoved, Qt::UniqueConnection);
 
@@ -62,15 +63,17 @@ void NetworkCookie::LoadCookie()
 {
 	QSettings cookieSettings(m_cookiesPath, QSettings::IniFormat);
 	m_cookies = qvariant_cast<QList<QNetworkCookie>>(cookieSettings.value(("cookies")));
-
 }
 
 void NetworkCookie::SaveCookie()
 {
-	qDebug() << m_cookiesPath;
-	QSettings cookieSettings(m_cookiesPath, QSettings::IniFormat);
-	cookieSettings.setValue(("cookies"), QVariant::fromValue<QList<QNetworkCookie>>(m_cookies));
-	
+	if (m_bSave)
+	{
+		QSettings cookieSettings(m_cookiesPath, QSettings::IniFormat);
+		cookieSettings.setValue(("cookies"), QVariant::fromValue<QList<QNetworkCookie>>(m_cookies));
+
+	}
+
 }
 
 void NetworkCookie::RemoveSaveCookie(const QNetworkCookie &cookie)

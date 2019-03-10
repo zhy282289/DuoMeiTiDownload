@@ -19,5 +19,4 @@
 #include "WebViewWnd.h"
 #include "ReplaceWordsManager.h"
 #include "ProcessLockManager.h"
-#include "MouseKeyboardForbid.h"
 

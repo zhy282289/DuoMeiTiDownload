@@ -41,9 +41,8 @@ bool DownloadManager::Download(TaskInfoPtr info)
 		if (QFile::exists(localPath))
 			QFile::remove(localPath);
 		
-
 		localPath = gGetTouTiaoTodaySourcePath();
-		LOG(TR("开始下载视频"));
+		LOG(QString(TR("开始下载视频：%1")).arg(localPath));
 		ret = DownloadFun(url, localPath);
 
 		if (ret == ERROR_CODE_NETWORK_ERROR)

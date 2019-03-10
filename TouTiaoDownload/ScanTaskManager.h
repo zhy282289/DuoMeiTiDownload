@@ -53,7 +53,7 @@ Q_SIGNALS:
 	void sigScanFinish();
 	void sigStopScan();
 protected:
-	void ParseMainPage();
+	virtual void ParseMainPage();
 	void _ParseMainPage();
 	void ParseVideoPage(const QString &url);
 	void _ParseVideoPage(const std::string &retString);
@@ -66,7 +66,7 @@ protected:
 	bool IsUrlExistInDB(const QString &url);
 
 	void _StopScan();
-private:
+protected:
 	bool m_scaning;
 	bool m_stoping;
 	TaskInfos m_infos;
@@ -81,4 +81,25 @@ private:
 	QStringList m_mainOldUrlist; 
 
 	int m_tryGetMoreCount;
+};
+
+
+class KeyWordSearchScanTaskManager : public ScanTaskManager
+{
+	Q_OBJECT
+public:
+	KeyWordSearchScanTaskManager(QObject *parent = nullptr);
+	~KeyWordSearchScanTaskManager();
+
+
+	bool StartScan();
+	bool StopScan();
+
+Q_SIGNALS :
+	void sigNewInfo(TaskInfoPtr info);
+	//void sigScanFinish();
+	//void sigStopScan();
+
+private:
+	void ParseMainPage();
 };

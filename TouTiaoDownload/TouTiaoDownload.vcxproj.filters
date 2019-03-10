@@ -93,9 +93,6 @@
     <ClCompile Include="ProcessLockManager.cpp">
       <Filter>Infos</Filter>
     </ClCompile>
-    <ClCompile Include="MouseKeyboardForbid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -118,9 +115,6 @@
     </ClInclude>
     <ClInclude Include="ProcessLockManager.h">
       <Filter>Infos</Filter>
-    </ClInclude>
-    <ClInclude Include="MouseKeyboardForbid.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

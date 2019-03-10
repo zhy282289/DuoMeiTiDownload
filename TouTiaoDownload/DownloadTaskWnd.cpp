@@ -51,7 +51,20 @@ DownloadTaskWnd::DownloadTaskWnd(QWidget *parent)
 
 	m_autoUpload = new AutoUploadManager(this);
 
-	
+	m_lbUploadInternalTime = new QLabel(TR("上传间隔时间:"), this);
+	m_leUploadInternalTime = new QLineEdit(this);
+
+	m_lbKeyWords = new QLabel(TR("关键词:"), this);
+	m_leKeyWords = new QLineEdit(this);
+
+	m_cmbMajorKeyWord = new QComboBox(this);
+	m_cmbMajorKeyWord->addItem(TR("搞笑"), 12);
+	m_cmbMajorKeyWord->addItem(TR("影视"), 1);
+	m_cmbMajorKeyWord->addItem(TR("娱乐"), 13);
+	m_cmbMajorKeyWord->addItem(TR("儿童"), 8);
+	m_cmbMajorKeyWord->addItem(TR("亲子"), 9);
+
+	m_btnSaveSettings = new QPushButton(TR("S"), this);
 
 	InitUI();
 
@@ -66,10 +79,11 @@ DownloadTaskWnd::DownloadTaskWnd(QWidget *parent)
 		});
 		t.detach();
 	});
-
+	 
 	connect(m_btnAutoUploadLogin, &QPushButton::clicked, this, &DownloadTaskWnd::slotLoginUpload);
 	connect(m_btnAutoUpload, &QPushButton::clicked, this, &DownloadTaskWnd::slotStartUpload);
 	connect(m_btnAutoUploadStop, &QPushButton::clicked, this, &DownloadTaskWnd::slotStopUpload);
+	connect(m_btnSaveSettings, &QPushButton::clicked, this, &DownloadTaskWnd::SyncUIData);
 
 	connect(this, &DownloadTaskWnd::sigUploadStart, this, [=]()
 	{
@@ -79,6 +93,9 @@ DownloadTaskWnd::DownloadTaskWnd(QWidget *parent)
 	{
 		SetEnabled(true);
 	});
+
+	connect(m_cmbLoginType, SIGNAL(currentIndexChanged(int)), this, SLOT(slotLoginTypeChanged(int)));
+
 }
 
 DownloadTaskWnd::~DownloadTaskWnd()
@@ -141,26 +158,27 @@ void DownloadTaskWnd::SetEnabled(bool enabled)
 	m_btnAutoUploadStop->setEnabled(enabled);
 }
 
+void DownloadTaskWnd::slotLoginTypeChanged(int index)
+{
+	InitUI();
+}
+
 void DownloadTaskWnd::slotSearchTaskNumber()
 {
-	if (CheckUI())
-	{
-		SaveUI();
+	if (!SyncUIData())
+		return;
 
-		m_listWnd->clear();
 
-		int count = m_leTaskNum->text().toInt();
-		bool order = m_ckbTop->isChecked();
-		TaskInfos infos = MY_DB->DownladGet(count, DownloadFinishConfig::VideoType(), order);
-		for (auto info : infos)
-		{
-			AddItem(info);
-		}
-	}
-	else
+	m_listWnd->clear();
+
+	int count = m_leTaskNum->text().toInt();
+	bool order = m_ckbTop->isChecked();
+	TaskInfos infos = MY_DB->DownladGet(count, DownloadFinishConfig::VideoType(LoginIndex()), order);
+	for (auto info : infos)
 	{
-		QMessageBox::warning(this, TR("参数设置错误"), TR("参数设置错误"));
+		AddItem(info);
 	}
+
 }
 
 void DownloadTaskWnd::slotBigIconChanged(int state)
@@ -174,6 +192,9 @@ void DownloadTaskWnd::slotBigIconChanged(int state)
 
 void DownloadTaskWnd::slotLoginUpload()
 {
+	if (!SyncUIData())
+		return;
+
 	m_cmbLoginType->setEnabled(false);
 	m_autoUpload->Login(m_cmbLoginType->currentData().toInt());
 }
@@ -181,13 +202,8 @@ void DownloadTaskWnd::slotLoginUpload()
 void DownloadTaskWnd::slotStartUpload()
 {
 
-	if (!CheckUI())
-	{
-		QMessageBox::warning(this, TR("参数设置错误"), TR("参数设置错误"));
+	if (!SyncUIData())
 		return;
-	}
-
-	SaveUI();
 
 	m_bUploading = true;
 	m_uploadCount = 0;
@@ -207,12 +223,16 @@ void DownloadTaskWnd::slotStopUpload()
 
 void DownloadTaskWnd::InitUI()
 {
+	int index = LoginIndex();
 	m_ckbTop->setChecked(DownloadFinishConfig::Order());
 	m_leTaskNum->setText(QString("%1").arg(DownloadFinishConfig::Number()));
-	m_cmbVideoType->setCurrentIndex(m_cmbVideoType->findData(DownloadFinishConfig::VideoType()));
-	m_leUploadNum->setText(QString("%1").arg(DownloadFinishConfig::UploadNumber()));
-	m_ckbUploadLoop->setChecked(DownloadFinishConfig::UploadLoop());
+	m_cmbVideoType->setCurrentIndex(m_cmbVideoType->findData(DownloadFinishConfig::VideoType(index)));
+	m_leUploadNum->setText(QString("%1").arg(DownloadFinishConfig::UploadNumber(index)));
+	m_ckbUploadLoop->setChecked(DownloadFinishConfig::UploadLoop(index));
+	m_leUploadInternalTime->setText(QString("%1").arg(DownloadFinishConfig::UploadInternalTime(index)));
 
+	m_leKeyWords->setText(QString("%1").arg(DownloadFinishConfig::KeyWords(index)));
+	m_cmbMajorKeyWord->setCurrentIndex(m_cmbMajorKeyWord->findData(DownloadFinishConfig::MajorKeyWord(index)));
 
 }
 
@@ -225,19 +245,42 @@ bool DownloadTaskWnd::CheckUI()
 	m_leUploadNum->text().toInt(&bok);
 	if (!bok) return false;
 
+	m_leUploadInternalTime->text().toInt(&bok);
+	if (!bok) return false;
+
+	if (m_leKeyWords->text().isEmpty())
+		return false;
+
 	return true;
 }
 
 void DownloadTaskWnd::SaveUI()
 {
+	int index = LoginIndex();
 	DownloadFinishConfig::SetOrder(m_ckbTop->isChecked());
 	DownloadFinishConfig::SetNumber(m_leTaskNum->text().toInt());
-	DownloadFinishConfig::SetVideoType(m_cmbVideoType->currentData().toInt());
-	DownloadFinishConfig::SetUploadNumber(m_leUploadNum->text().toInt());
-	DownloadFinishConfig::SetUploadLoop(m_ckbUploadLoop->isChecked());
+	DownloadFinishConfig::SetVideoType(index, m_cmbVideoType->currentData().toInt());
+	DownloadFinishConfig::SetUploadNumber(index, m_leUploadNum->text().toInt());
+	DownloadFinishConfig::SetUploadLoop(index, m_ckbUploadLoop->isChecked());
+	DownloadFinishConfig::SetUploadInternalTime(index, m_leUploadInternalTime->text().toInt());
+	DownloadFinishConfig::SetKeyWords(index, m_leKeyWords->text());
+	DownloadFinishConfig::SetMajorKeyWord(index, m_cmbMajorKeyWord->currentData().toInt());
 
 }
 
+
+bool DownloadTaskWnd::SyncUIData()
+{
+	if (!CheckUI())
+	{
+		QMessageBox::warning(this, TR("参数设置错误"), TR("参数设置错误"));
+		return false;
+	}
+
+	SaveUI();
+
+	return true;
+}
 
 void DownloadTaskWnd::RemoveItemByWidget(QWidget *widget)
 {
@@ -285,12 +328,20 @@ void DownloadTaskWnd::FinishUpload(bool ret, TaskInfoPtr info)
 {
 	if (ret)
 	{
-		Convert2Hsitory(info);	
-		int time = qrand() % 30;
-		LOG(QString(TR("上传成功，%1秒后下一个上传任务")).arg(time));
-
-		QTimer::singleShot(time * 1000, this, &DownloadTaskWnd::NextUploadTask);
 		++m_uploadCount;
+		Convert2Hsitory(info);
+
+		if (ContinueTask())
+		{
+			int time = DownloadFinishConfig::UploadInternalTime(LoginIndex());
+			//int time = qrand() % 30;
+			LOG(QString(TR("上传成功，%1秒后下一个上传任务")).arg(time));
+			QTimer::singleShot(time * 1000, this, &DownloadTaskWnd::NextUploadTask);
+		}
+		else
+		{
+			StopUploadTask();
+		}
 	}
 	else
 	{
@@ -303,9 +354,7 @@ void DownloadTaskWnd::FinishUpload(bool ret, TaskInfoPtr info)
 
 void DownloadTaskWnd::StartAutoUpload()
 {
-	if (m_uploadCount < m_leUploadNum->text().toInt() 
-		// 无限上传
-		|| m_ckbUploadLoop->isChecked())
+	if (ContinueTask())
 	{
 		if (m_listWnd->count() > 0)
 		{
@@ -371,14 +420,26 @@ void DownloadTaskWnd::GetAndRemoveFromDBTaskCount(int count)
 {
 	m_listWnd->clear();
 	bool order = m_ckbTop->isChecked();
-	TaskInfos infos = MY_DB->DownladGet(count, DownloadFinishConfig::VideoType(), order);
+	TaskInfos infos = MY_DB->DownladGet(count, DownloadFinishConfig::VideoType(LoginIndex()), order);
 
 	for (auto info : infos)
 	{
-
-		//MY_DB->DownladRemove(info->id);
+		MY_DB->DownladRemove(info->id);
 		AddItem(info);
 	}
+}
+
+bool DownloadTaskWnd::ContinueTask()
+{
+	return m_uploadCount < m_leUploadNum->text().toInt()
+		// 无限上传
+		|| m_ckbUploadLoop->isChecked()
+		;
+}
+
+int DownloadTaskWnd::LoginIndex()
+{
+	return m_cmbLoginType->currentData().toInt();
 }
 
 void DownloadTaskWnd::StopUploadTask()
@@ -415,6 +476,19 @@ void DownloadTaskWnd::resizeEvent(QResizeEvent *event)
 	left = m_btnAllTaskNum->geometry().right() + margins;
 	m_cmbVideoType->setGeometry(left, top, 100, btnh);
 	left = m_cmbVideoType->geometry().right() + margins;
+	m_lbUploadInternalTime ->setGeometry(left, top, 80, btnh);
+	left = m_lbUploadInternalTime->geometry().right() + margins;
+	m_leUploadInternalTime->setGeometry(left, top, 50, btnh);
+	left = m_leUploadInternalTime->geometry().right() + margins;
+	m_lbKeyWords->setGeometry(left, top, 50, btnh);
+	left = m_lbKeyWords->geometry().right() + margins;
+	m_leKeyWords->setGeometry(left, top, 200, btnh);
+	left = m_leKeyWords->geometry().right() + margins;
+	m_cmbMajorKeyWord->setGeometry(left, top, 100, btnh);
+	left = m_cmbMajorKeyWord->geometry().right() + margins;
+	m_btnSaveSettings->setGeometry(left, top, btnh, btnh);
+
+
 
 	left = margins;
 	top = m_cmbVideoType->geometry().bottom() + margins;

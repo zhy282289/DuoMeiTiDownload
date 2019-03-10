@@ -5,16 +5,28 @@
 #include "NetworkCookie.h"
 
 #define AUTOUPLOAD "autoupload"
+#define INTERNAL_TIME 1000
+
+#define MOUSEKEYBOARD_FORBID_DISABLED	BlockInput(false);
+#define MOUSEKEYBOARD_FORBID_ENABLED	BlockInput(true);
 
 AutoUploadManager::AutoUploadManager(QObject *parent)
 	: QObject(parent)
 	, m_view(nullptr)
+	, m_cookie(nullptr)
 {
 	m_url = "https://mp.toutiao.com/profile_v3/xigua/upload-video";
 	m_tryLoadUpload = 0;
 	m_tryLoadFinish = 0;
 	m_bUploading = false;
 	m_bInDialog = false;
+	m_index = 1;
+
+	/*
+	QObject::connect: Cannot queue arguments of type 'QClipboard::Mode'
+(Make sure 'QClipboard::Mode' is registered using qRegisterMetaType().)
+	*/
+	//qRegisterMetaType<QClipboard::Mode>("QClipboard::Mode");
 }
 
 AutoUploadManager::~AutoUploadManager()
@@ -27,13 +39,17 @@ AutoUploadManager::~AutoUploadManager()
 
 bool AutoUploadManager::Login(int index)
 {
+	m_index = index;
 	CreateWebView(index);
 	m_view->load(m_url);
+
 	return true;
 }
 
 bool AutoUploadManager::StartUpload(TaskInfoPtr info, int index)
 {
+	m_index = index;
+
 	m_bUploading = true;
 	m_tryLoadFinish = 0;
 	m_tryLoadUpload = 0;
@@ -43,6 +59,7 @@ bool AutoUploadManager::StartUpload(TaskInfoPtr info, int index)
 	LOG((TR("开始上传任务")));
 	CreateWebView(index);
 	LoadURL();
+
 
 	std::thread t([=]() {
 
@@ -90,6 +107,8 @@ bool AutoUploadManager::StopUpload()
 	return true;
 }
 
+
+
 void AutoUploadManager::LoadFinished()
 {
 	DisConnect();
@@ -122,9 +141,13 @@ void AutoUploadManager::LoadFinished()
 
 				m_tryLoadUpload = 0;
 				m_view->activateWindow();
-			
-				gMoveCursorAndClick(m_view->mapToGlobal(QPoint(1000, 365)));
-				UploadFile();
+				
+				QTimer::singleShot(1000, [=]() {
+
+					gMoveCursorAndClick(m_view->mapToGlobal(QPoint(1000, 365)));
+					UploadFile();
+				});
+
 			}
 		});
 	}
@@ -146,17 +169,17 @@ void AutoUploadManager::CreateWebView(int index)
 	{
 		m_view = GET_TEST_WEBVIEW()
 		//m_view->setWindowFlags(Qt::CustomizeWindowHint | Qt::Dialog | Qt::WindowTitleHint);
-		m_view->showMaximized();
-
-		auto cookie = new NetworkCookie(m_view, index, "https://mp.toutiao.com");
+		m_view->setWindowTitle(QString(TR("账号%1")).arg(index));
+		m_cookie = new NetworkCookie(m_view, index, "https://mp.toutiao.com");
 	}
+	m_view->showMaximized();
 
 }
 
 void AutoUploadManager::UploadFile()
 {
 	m_bInDialog = true;
-	QTimer::singleShot(3000, [=]()
+	QTimer::singleShot(1000, [=]()
 	{
 		auto dlg = m_view->findChild<QDialog*>();
 		if (dlg)
@@ -192,11 +215,11 @@ void AutoUploadManager::UploadFile()
 		}
 		else
 		{
+			LOG((TR("获取不到上传文件对话框，重新获取")));
+			//gMoveCursorAndClick(m_view->mapToGlobal(QPoint(1000, 365)));
 			m_bInDialog = false;
-			UploadFile();
-			// 重新刷新网页
-			//LOG((TR("获取不到上传文件对话框，重新刷新网页")));
-			//m_view->load(m_url);
+			//UploadFile();
+			emit sigFinish(false, m_info);
 		}
 
 	});
@@ -271,19 +294,19 @@ void AutoUploadManager::UploadFileFinishEx()
 	else
 		LOG((QString(TR("替换标题\n原:%1\n目:%2")).arg(m_info->title).arg(title)));
 
-#define INTERNAL_TIME 400
 
 	QApplication::clipboard()->setText(title);
 
 
 	gWebViewScrollTop(m_view->page(), [=](QVariant html) {
+
 		m_view->activateWindow();
 
 		gMoveCursorAndClick(m_view->mapToGlobal(QPoint(870, 477)));
 		gKeybdEvent_CTL('A');
 		gKeybdEvent_CTL('V');
-
-		QTimer::singleShot(INTERNAL_TIME, [=]() {
+		 
+		QTimer::singleShot(6000, [=]() {
 
 			gKeybdEvent(VK_TAB);
 			gKeybdEvent_CTL('A');
@@ -293,46 +316,11 @@ void AutoUploadManager::UploadFileFinishEx()
 			gKeybdEvent(VK_TAB);
 			gKeybdEvent(VK_TAB);
 
-			QTimer::singleShot(INTERNAL_TIME, [=]() {
-				QApplication::clipboard()->setText(TR("搞笑"));
-				gKeybdEvent_CTL('V');
-				gKeybdEvent_CTL(VK_RETURN);
+			QStringList keyWords = DownloadFinishConfig::KeyWords(m_index).split(" ");
+			if (keyWords.isEmpty())
+				keyWords.push_back(TR("搞笑 影视"));
+			SetKeyWorks(keyWords);
 
-				QTimer::singleShot(INTERNAL_TIME, [=]() {
-					QApplication::clipboard()->setText(TR("影视"));
-					gKeybdEvent_CTL('V');
-					gKeybdEvent_CTL(VK_RETURN);
-
-					QTimer::singleShot(1000, [=]() {
-						gKeybdEvent(VK_TAB);
-						gKeybdEvent(VK_TAB);
-						gKeybdEvent(VK_TAB);
-						gKeybdEvent(VK_TAB);
-						gKeybdEvent(VK_TAB);
-						gKeybdEvent(VK_RETURN);
-
-						QTimer::singleShot(INTERNAL_TIME, [=]() {
-							for (int i = 0; i < 12; ++i)
-								gKeybdEvent(VK_DOWN);
-
-							gKeybdEvent(VK_RETURN);
-
-							QTimer::singleShot(1000, [=]() {
-
-								PROCESS_LOCK->UnLock(AUTOUPLOAD);
-								MOUSEKEYBOARD_FORBID_DISABLED;
-								Submit();
-
-							});
-						});
-
-					});
-
-
-				});
-
-
-			});
 		});
 
 	});
@@ -362,7 +350,8 @@ void AutoUploadManager::Submit()
 			else
 			{
 				LOG((TR("任务成功失败 找不到提交按钮，停止任务")));
-				emit sigStop();
+				//emit sigStop();
+				emit sigFinish(ret, m_info);
 			}
 		});
 
@@ -396,3 +385,47 @@ void AutoUploadManager::ReLoadURL(bool ret)
 		emit sigFinish(ret, m_info);
 	});
 }
+
+void AutoUploadManager::SetKeyWorks(QStringList keyWords)
+{
+	QTimer::singleShot(INTERNAL_TIME, [=]() {
+		if (keyWords.size() > 0)
+		{
+			auto key = keyWords[0];
+			QStringList templist;
+			for (int i = 1; i < keyWords.size(); ++i)
+				templist.push_back(keyWords[i]);
+			QApplication::clipboard()->setText(key);
+			gKeybdEvent_CTL('V');
+			gKeybdEvent_CTL(VK_RETURN);
+			SetKeyWorks(templist);
+		}
+		else
+		{
+			gKeybdEvent(VK_TAB);
+			gKeybdEvent(VK_TAB);
+			gKeybdEvent(VK_TAB);
+			gKeybdEvent(VK_TAB);
+			gKeybdEvent(VK_TAB);
+			gKeybdEvent(VK_RETURN);
+
+			QTimer::singleShot(INTERNAL_TIME, [=]() {
+				for (int i = 0; i < DownloadFinishConfig::MajorKeyWord(m_index); ++i)
+					gKeybdEvent(VK_DOWN);
+
+				gKeybdEvent(VK_RETURN);
+
+				QTimer::singleShot(1000, [=]() {
+
+					PROCESS_LOCK->UnLock(AUTOUPLOAD);
+					MOUSEKEYBOARD_FORBID_DISABLED;
+					Submit();
+
+				});
+			});
+		}
+	
+	});
+
+}
+

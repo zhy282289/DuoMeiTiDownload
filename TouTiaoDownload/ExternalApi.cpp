@@ -12,7 +12,8 @@ QString gGetTouTiaoResource()
 
 QString gGetTouTiaoTodayPath()
 {
-	QString path = gGetTouTiaoResource() + "\\" + QDateTime::currentDateTime().toString("yy-MM-dd");
+	//QString path = gGetTouTiaoResource() + "\\" + QDateTime::currentDateTime().toString("yy-MM-dd");
+	QString path = DownloadConfig::DownloadPath() + "\\" + QDateTime::currentDateTime().toString("yy-MM-dd");
 	gMakeDirectory(path);
 
 	return path;
