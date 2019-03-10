@@ -29,11 +29,10 @@ ScanWnd::ScanWnd(QWidget *parent)
 
 
 	m_leSearch = new QLineEdit(this);
-	m_btnSearch = new QPushButton(TR("搜索"), this);
 	m_btnStartSearch = new QPushButton(TR("开始扫描"), this);
 	m_btnStopSearch = new QPushButton(TR("停止扫描"), this);
 
-	m_leSearch->setText(TR("https://www.ixigua.com/search/?keyword="));
+	m_leSearch->setText(TR("https://www.ixigua.com/search/?keyword=小品"));
 
 	InitUI();
 
@@ -47,10 +46,14 @@ ScanWnd::ScanWnd(QWidget *parent)
 
 
 
-	connect(m_btnSearch, &QPushButton::clicked, this, &ScanWnd::SearchOpenSearch);
 	connect(m_btnStartSearch, &QPushButton::clicked, this, &ScanWnd::SearchStartScan);
 	connect(m_btnStopSearch, &QPushButton::clicked, this, &ScanWnd::SearchStopScan);
 
+
+	m_keyWordTask = new KeyWordSearchScanTaskManager(this);
+	connect(m_keyWordTask, &ScanTaskManager::sigNewInfo, this, &ScanWnd::sigNewInfo);
+	connect(m_keyWordTask, &ScanTaskManager::sigStopScan, this, &ScanWnd::TaskStopScan);
+	connect(m_keyWordTask, &ScanTaskManager::sigScanFinish, this, &ScanWnd::TaskStopScan);
 
 
 }
@@ -134,18 +137,29 @@ void ScanWnd::StopScan()
 
 void ScanWnd::SearchStartScan()
 {
+	if (CheckUI())
+	{
+		SaveUI();
+		SetEnabled(false);
+		m_btnStopSearch->setEnabled(true);
+
+		m_keyWordTask->StartScan(m_leSearch->text());
+		sigStartScan();
+	}
+	else
+	{
+		QMessageBox::warning(this, TR("参数设置错误"), TR("参数设置错误"));
+	}
 
 }
 
 void ScanWnd::SearchStopScan()
 {
-
+	m_btnStopSearch->setEnabled(false);
+	m_keyWordTask->StopScan();
 }
 
-void ScanWnd::SearchOpenSearch()
-{
 
-}
 
 void ScanWnd::SetEnabled(bool enabled)
 {
@@ -158,6 +172,10 @@ void ScanWnd::SetEnabled(bool enabled)
 	m_leScanType->setEnabled(enabled);
 
 	m_cmbVideoType->setEnabled(enabled);
+	
+	m_btnStartSearch->setEnabled(enabled);
+	m_btnStopSearch->setEnabled(enabled);
+	m_leSearch->setEnabled(enabled);
 }
 
 void ScanWnd::resizeEvent(QResizeEvent *event)
@@ -207,11 +225,9 @@ void ScanWnd::resizeEvent(QResizeEvent *event)
 	left = margins;
 	top = m_cmbVideoType->geometry().bottom() + 20;
 
-	int searchw = width() - margins - 3 * (btnw + margins);
+	int searchw = width() - margins - 2 * (btnw + margins);
 	m_leSearch->setGeometry(left, top, searchw ,btnh);
 	left = m_leSearch->geometry().right() + margins2;
-	m_btnSearch->setGeometry(left, top, btnw, btnh);
-	left = m_btnSearch->geometry().right() + margins2;
 	m_btnStartSearch->setGeometry(left, top, btnw, btnh);
 	left = m_btnStartSearch->geometry().right() + margins2;
 	m_btnStopSearch->setGeometry(left, top, btnw, btnh);

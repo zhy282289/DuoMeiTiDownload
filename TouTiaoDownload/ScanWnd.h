@@ -31,13 +31,13 @@ private:
 
 	void SearchStartScan();
 	void SearchStopScan();
-	void SearchOpenSearch();
 
 protected:
 	void resizeEvent(QResizeEvent *event);
 
 private:
 	ScanTaskManager *m_task;
+	KeyWordSearchScanTaskManager *m_keyWordTask;
 
 	QLineEdit *m_leTouTiao;
 
@@ -61,7 +61,6 @@ private:
 
 
 	QLineEdit *m_leSearch;
-	QPushButton *m_btnSearch;
 	QPushButton *m_btnStartSearch;
 	QPushButton *m_btnStopSearch;
 

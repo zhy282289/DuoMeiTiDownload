@@ -92,14 +92,10 @@ public:
 	~KeyWordSearchScanTaskManager();
 
 
-	bool StartScan();
+	bool StartScan(QString url);
 	bool StopScan();
-
-Q_SIGNALS :
-	void sigNewInfo(TaskInfoPtr info);
-	//void sigScanFinish();
-	//void sigStopScan();
 
 private:
 	void ParseMainPage();
 };
+

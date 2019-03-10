@@ -24,7 +24,7 @@ QString gGetTouTiaoTodayPath()
 QString gGetTouTiaoTodaySourcePath()
 {
 	QString path = QString("%1\\%2.mp4").arg(gGetTouTiaoTodayPath()).arg(QUuid::createUuid().toString());
-	return path;
+	return QDir::toNativeSeparators(path);
 }
 
 QString gGetTouTiaoTodayDestePath(QString src)
@@ -58,7 +58,7 @@ QComboBox* gCreateVideoTypeComboBox(QWidget *parent)
 	auto cmbVideoType = new QComboBox(parent);
 	cmbVideoType->addItem(TR("推荐"), TuiJian);
 	cmbVideoType->addItem(TR("影视"), YingShi);
-	cmbVideoType->addItem(TR("音乐"), YinYue);
+	cmbVideoType->addItem(TR("小品"), YinYue);
 	cmbVideoType->addItem(TR("时尚"), ShiShang);
 	cmbVideoType->addItem(TR("育儿"), MeiShi);
 	cmbVideoType->addItem(TR("文化"), WenHua);
@@ -73,11 +73,11 @@ QString gGetVideoTypeString(int videoType)
 	else if (videoType == YingShi)
 		return TR("影视");
 	else if (videoType == YinYue)
-		return TR("音乐");
+		return TR("小品");
 	else if (videoType == ShiShang)
 		return TR("时尚");
 	else if (videoType == MeiShi)
-		return TR("美食");
+		return TR("育儿");
 	else if (videoType == WenHua)
 		return TR("文化");
 

@@ -13,6 +13,7 @@ TaskWnd::TaskWnd(QWidget *parent)
 	: QWidget(parent)
 	, m_bDownloading(false)
 	, m_tryConvertCount(0)
+	, m_downloadCount(0)
 {
 	m_btnDownload = new QPushButton(TR("开始下载"), this);
 	m_btnStopDownload = new QPushButton(TR("停止下载"), this);
@@ -283,7 +284,7 @@ void TaskWnd::FinishDownload(int code, TaskInfoPtr info)
 		bdb = MY_DB->DownladInsert(info);
 		if (bdb)
 		{
-			LOG(TR("转码成功，下一个任务"));
+			LOG(QString(TR("成功转码第%1个任务，下一个任务")).arg(++m_downloadCount));
 			MY_DB->TaskRemove(info->id);
 			RemoveItemByInfo(info);
 			sigDownloadOneFinish(info);

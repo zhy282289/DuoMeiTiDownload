@@ -73,6 +73,7 @@ private:
 
 	int m_tryConvertCount;
 	int tryConvertDeleteTaskCount;
+	int m_downloadCount;
 };
 
 

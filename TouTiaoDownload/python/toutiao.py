@@ -17,6 +17,18 @@ def parseTouTiaoFromMain(html):
     print(urls)
     return urls
 
+def parseTouTiaoFromKeyWord(html):
+    soup = BeautifulSoup(html, 'lxml')
+    li = soup.select('ul li div div[class="video-img"] a')
+    mainUrl = 'https://www.ixigua.com'
+    urls = ''
+    for l in li:
+        temp = l['href']
+        urls += temp + ';'
+        print(temp)
+    print(urls)
+    return urls
+
 def parseTouTiaoDetail(html):
     soup = BeautifulSoup(html, 'lxml')
 
@@ -102,9 +114,9 @@ if __name__ == '__main__':
     url = 'https://www.ixigua.com/'
    #html = getHtml(url)
     html = ''
-    with open(r'E:\zhy\works\qt\DuoMeiTiDownload\TouTiaoDownload\python\text_internal2.html', 'r', encoding='utf-8') as f:
+    with open(r'E:\zhy\works\qt\DuoMeiTiDownload\TouTiaoDownload\python\text_internal3.html', 'r', encoding='utf-8') as f:
         html = f.read()
-    parseTouTiaoFromMain(html)
+    parseTouTiaoFromKeyWord(html)
     #parseTouTiaoDetail(html)
     #path = r'http://v9-tt.ixigua.com/fbb0bf396595abb1eef0efbec0d6b9fa/5c6235e1/video/m/220f211bf35915f40918d39bd0059e0779d11617068200004b1f01c474fa/?rc=MzgzO3Fncm54azMzZzczM0ApQHRAbzQ4NTw6MzUzMzY4MzQzNDVvQGgzdSlAZjN1KWRzcmd5a3VyZ3lybHh3ZjUzQDI0Ym8ybl5tY18tLWMtMHNzLW8jbyM2MjMuMzItLjAzNi8vNi06I28jOmEtcSM6YHZpXGJmK2BeYmYrXnFsOiMuL14%3D'
     #downloadFile(path, r'd:\fffff.mp4')

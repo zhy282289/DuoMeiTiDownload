@@ -130,6 +130,10 @@ copy $(ProjectDir)python\* $(SolutionDir)bin\$(Platform)\$(Configuration)\python
       <OutputFile>.\GeneratedFiles\qrc_%(Filename).cpp</OutputFile>
       <QTDIR>$(QTDIR)</QTDIR>
     </QtRcc>
+    <PostBuildEvent>
+      <Command>md $(SolutionDir)bin\$(Platform)\Debug\python\
+copy $(ProjectDir)python\* $(SolutionDir)bin\$(Platform)\Debug\python\</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AutoUploadManager.cpp" />

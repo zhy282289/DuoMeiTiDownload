@@ -165,10 +165,14 @@ void AutoUploadManager::LoadFinished()
 
 void AutoUploadManager::CreateWebView(int index)
 {
+	if (m_view)
+	{
+		m_view->deleteLater();
+		m_view = nullptr;
+	}
 	if (m_view == nullptr)
 	{
 		m_view = GET_TEST_WEBVIEW()
-		//m_view->setWindowFlags(Qt::CustomizeWindowHint | Qt::Dialog | Qt::WindowTitleHint);
 		m_view->setWindowTitle(QString(TR("账号%1")).arg(index));
 		m_cookie = new NetworkCookie(m_view, index, "https://mp.toutiao.com");
 	}
@@ -190,7 +194,7 @@ void AutoUploadManager::UploadFile()
 			auto Edit = ::FindWindowEx(ComboBox, 0, L"Edit", nullptr);  //# 上面三句依次寻找对象，直到找到输入框Edit对象的句柄
 			auto button = ::FindWindowEx(dlgHwnd, 0, L"Button", nullptr);//  # 确定按钮Button
 
-			auto pathw = m_info->localPath.toStdWString();
+			auto pathw = QDir::toNativeSeparators(m_info->localPath).toStdWString();
 			::SendMessage(Edit, WM_SETTEXT, 0, (LPARAM)pathw.c_str()); // # 往输入框输入绝对地址
 
 			int len = SendMessage(Edit, WM_GETTEXTLENGTH, 0, 0);
@@ -215,7 +219,10 @@ void AutoUploadManager::UploadFile()
 		}
 		else
 		{
-			LOG((TR("获取不到上传文件对话框，重新获取")));
+			PROCESS_LOCK->UnLock(AUTOUPLOAD);
+			MOUSEKEYBOARD_FORBID_DISABLED;
+
+			LOG((TR("获取不到上传文件对话框，上传失败，继续任务")));
 			//gMoveCursorAndClick(m_view->mapToGlobal(QPoint(1000, 365)));
 			m_bInDialog = false;
 			//UploadFile();

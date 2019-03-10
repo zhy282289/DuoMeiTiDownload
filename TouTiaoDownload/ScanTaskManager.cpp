@@ -531,7 +531,7 @@ KeyWordSearchScanTaskManager::~KeyWordSearchScanTaskManager()
 
 }
 
-bool KeyWordSearchScanTaskManager::StartScan()
+bool KeyWordSearchScanTaskManager::StartScan(QString url)
 {
 	if (m_scaning)
 	{
@@ -546,19 +546,15 @@ bool KeyWordSearchScanTaskManager::StartScan()
 	m_tryGetMoreCount = 0;
 
 	//m_url = ScanConfig::Url();
+	m_url = url;
 	m_count = ScanConfig::Number();
 	m_curCount = 1;
 
 	if (m_view == nullptr)
 	{
-		//if (ScanConfig::ScanType() == 0)
-		{
-		//	m_view = GET_UNIQUEN_WEBVIEW()
-		}
-		//else
-		//{
-			m_view = GET_TEST_WEBVIEW()
-		//}
+		m_view = GET_UNIQUEN_WEBVIEW()
+
+		//m_view = GET_TEST_WEBVIEW()
 
 		connect(m_view, &QWebEngineView::loadFinished, this, &KeyWordSearchScanTaskManager::ParseMainPage);
 
@@ -572,6 +568,8 @@ bool KeyWordSearchScanTaskManager::StartScan()
 
 bool KeyWordSearchScanTaskManager::StopScan()
 {
+	m_stoping = true;
+	LOG(TR("正在停止扫描任务！"));
 	return false;
 }
 
@@ -588,7 +586,7 @@ void KeyWordSearchScanTaskManager::ParseMainPage()
 		if (!html.isEmpty())
 		{
 			IPython_Exe *pyExe = IPython_Exe::GetInstance();
-			bool ret = pyExe->Simple_Call("toutiao", "parseTouTiaoFromMain", "(s)", html.toUtf8().data());
+			bool ret = pyExe->Simple_Call("toutiao", "parseTouTiaoFromKeyWord", "(s)", html.toUtf8().data());
 			string retString = pyExe->ReturnString();
 			if (!retString.empty())
 			{
@@ -599,7 +597,7 @@ void KeyWordSearchScanTaskManager::ParseMainPage()
 				NextUrl();
 
 			}
-
+		  
 		}
 		if (!bData)
 		{
