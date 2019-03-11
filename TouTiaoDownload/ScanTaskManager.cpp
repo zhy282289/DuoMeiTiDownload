@@ -5,6 +5,7 @@
 
 #include <QtWebEngineWidgets/QtWebEngineWidgets>
 #include <thread>
+#include "EmailSend.h"
 
 #define TRY_COUNT 5
 #define GET_MORE_COUNT 10
@@ -13,6 +14,7 @@ ScanTaskManager::ScanTaskManager(QObject *parent /*= nullptr*/)
 	:QObject(parent)
 {
 	m_tryGetMoreCount = 0;
+	m_tryParseMainURL = 0;
 	m_scaning = false;
 	m_stoping = false;
 	m_count = 1;
@@ -31,58 +33,6 @@ ScanTaskManager::~ScanTaskManager()
 {
 
 }
-
-bool ScanTaskManager::StartScan()
-{
-	if (m_scaning)
-	{
-		LOG(TR("正在扫描中！"));
-		return true;
-	}
-
-	LOG(TR("开始扫描任务"));
-
-	m_scaning = true;
-	m_stoping = false;
-	m_tryGetMoreCount = 0;
-
-	m_url = ScanConfig::Url();
-	m_count = ScanConfig::Number();
-	m_curCount = 1;
-
-	if (m_view == nullptr)
-	{
-		if (ScanConfig::ScanType() == 0)
-		{
-			m_view = GET_UNIQUEN_WEBVIEW()
-		}
-		else
-		{
-			m_view = GET_TEST_WEBVIEW()
-		}
-
-		connect(m_view, &QWebEngineView::loadFinished, this, &ScanTaskManager::_ParseMainPage);
-
-		m_view->show();
-	}
-	m_view->load(m_url);
-
-
-	return false;
-}
-
-bool ScanTaskManager::StopScan()
-{
-	m_stoping = true;
-	LOG(TR("正在停止扫描任务！"));
-	return false;
-}
-
-TaskInfos ScanTaskManager::GetInfos()
-{
-	return m_infos;
-}
-
 
 
 bool ScanTaskManager::UpdateInfo(TaskInfoPtr info)
@@ -141,9 +91,9 @@ bool ScanTaskManager::UpdateInfo(TaskInfoPtr info)
 							eventloop.exit(ERROR_CODE_NETWORK_ERROR);
 					});
 				}
-					
+
 			});
-	
+
 		});
 
 
@@ -162,6 +112,60 @@ bool ScanTaskManager::UpdateInfo(TaskInfoPtr info)
 
 	return false;
 }
+
+
+bool ScanTaskManager::StartScan()
+{
+	if (m_scaning)
+	{
+		LOG(TR("正在扫描中！"));
+		return true;
+	}
+
+	LOG(TR("开始扫描任务"));
+
+	m_scaning = true;
+	m_stoping = false;
+	m_tryGetMoreCount = 0;
+
+	m_url = ScanConfig::Url();
+	m_count = ScanConfig::Number();
+	m_curCount = 1;
+
+	if (m_view == nullptr)
+	{
+		if (ScanConfig::ScanType() == 0)
+		{
+			m_view = GET_UNIQUEN_WEBVIEW()
+		}
+		else
+		{
+			m_view = GET_TEST_WEBVIEW()
+		}
+
+		connect(m_view, &QWebEngineView::loadFinished, this, &ScanTaskManager::_ParseMainPage);
+
+		m_view->show();
+	}
+	m_view->load(m_url);
+
+
+	return false;
+}
+
+bool ScanTaskManager::StopScan()
+{
+	m_stoping = true;
+	LOG(TR("正在停止扫描任务！"));
+	return false;
+}
+
+TaskInfos ScanTaskManager::GetInfos()
+{
+	return m_infos;
+}
+
+
 
 void ScanTaskManager::ParseMainPage()
 {
@@ -194,9 +198,25 @@ void ScanTaskManager::ParseMainPage()
 			LOG("error: document.getElementsByClassName('feed-infinite-wrapper');");
 			//QThread::sleep(1);
 			if (m_stoping)
+			{
 				_StopScan();
+
+			}
 			else
-				ParseMainPage();
+			{
+				if (++m_tryParseMainURL < 10)
+				{
+					QTimer::singleShot(1000, this, &ScanTaskManager::ParseMainPage);
+				}
+				else
+				{ 
+					LOG(TR("无法获取主页信息，60秒后重新加载主页！"));
+					m_tryParseMainURL = 0;
+					QTimer::singleShot(60 * 1000, [=]() {
+						m_view->load(m_url);
+					});
+				}
+			}
 
 		}
 
@@ -274,6 +294,7 @@ void ScanTaskManager::NextUrl()
 		}
 		if (!taskUrl.isEmpty())
 		{
+			m_tryGetMoreCount = 0;
 			ParseVideoPage(taskUrl);
 		}
 		else
@@ -282,7 +303,6 @@ void ScanTaskManager::NextUrl()
 			{
 				if (m_mainOldUrlist.size() < 200)
 				{
-					m_tryGetMoreCount = 0;
 					// 刷新主页
 					GetMore();
 				}
@@ -381,6 +401,8 @@ void ScanTaskManager::_StopScan()
 	emit sigStopScan();
 }
 
+
+
 void ScanTaskManager::ParseVideoPage(const QString &url)
 {
 	if (m_detailView == nullptr)
@@ -425,6 +447,8 @@ void ScanTaskManager::ParseVideoPage(const QString &url)
 					{
 						LOG(TR("设置了无限扫描，60秒后继续扫描任务！"));
 						QTimer::singleShot(1000 * 60, this, &ScanTaskManager::NextDownload);
+
+						EMAIL_NETWORKERROR->SendEmail();
 					}
 					else
 					{

@@ -88,6 +88,16 @@ bool ReplaceWordsManager::RotateReplace(QString &text)
 	QStringList ls = text.split(TR("£¬"));
 	if (ls.size()>1)
 	{
+		for (auto &temp : ls)
+		{
+			temp.remove("£¡");
+			temp.remove("!");
+			temp.remove("¡£");
+			temp.remove(".");
+			temp.remove(",");
+			temp.remove("?");
+			temp.remove("£¿");
+		}
 		QString newtext = QString(TR("%1£¬%2")).arg(ls[1]).arg(ls[0]);
 		for (int i = 2; i < ls.size();++i)
 		{

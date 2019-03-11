@@ -156,6 +156,10 @@ void DownloadTaskWnd::SetEnabled(bool enabled)
 	m_btnAutoUpload->setEnabled(enabled);
 	m_btnAutoUploadLogin->setEnabled(enabled);
 	m_btnAutoUploadStop->setEnabled(enabled);
+
+	m_leKeyWords->setEnabled(enabled);
+	m_cmbMajorKeyWord->setEnabled(enabled);
+
 }
 
 void DownloadTaskWnd::slotLoginTypeChanged(int index)
