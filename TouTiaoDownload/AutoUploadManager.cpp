@@ -104,6 +104,12 @@ bool AutoUploadManager::StartUpload(TaskInfoPtr info, int index)
 bool AutoUploadManager::StopUpload()
 {
 	m_bUploading = false;
+	if (m_view)
+	{
+		m_view->deleteLater();
+		m_view = nullptr;
+	}
+
 	return true;
 }
 

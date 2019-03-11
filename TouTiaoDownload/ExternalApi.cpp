@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ExternalApi.h"
 
-
+#include "inc_PyDll/IPython_Exe.h"
 
 QString gGetTouTiaoResource()
 {

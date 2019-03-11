@@ -93,6 +93,9 @@
     <ClCompile Include="ProcessLockManager.cpp">
       <Filter>Infos</Filter>
     </ClCompile>
+    <ClCompile Include="EmailSend.cpp">
+      <Filter>Infos</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -114,6 +117,9 @@
       <Filter>Infos</Filter>
     </ClInclude>
     <ClInclude Include="ProcessLockManager.h">
+      <Filter>Infos</Filter>
+    </ClInclude>
+    <ClInclude Include="EmailSend.h">
       <Filter>Infos</Filter>
     </ClInclude>
   </ItemGroup>

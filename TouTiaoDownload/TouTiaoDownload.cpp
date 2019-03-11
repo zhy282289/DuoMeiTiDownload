@@ -11,7 +11,7 @@
 TouTiaoDownload::TouTiaoDownload(QWidget *parent)
 	: QWidget(parent)
 {
-	
+	setWindowTitle(TR("Î÷¹ÏÊÓÆµÏÂÔØÆ÷"));
 	resize(1024, 720);
 	m_debugInfo = new QPlainTextEdit(this);
 	m_webWnd = WebViewWnd::GetInstance(this);

@@ -4,6 +4,9 @@ from lxml import etree
 import json
 import urllib
 import urllib.request
+import smtplib
+from email.mime.text import MIMEText
+from email.header import Header
 
 def parseTouTiaoFromMain(html):
     soup = BeautifulSoup(html, 'lxml')
@@ -73,6 +76,37 @@ def parseTouTiaoDetail(html):
 
     return retrun_js
 
+def sendNetworkErrorMail(text):
+
+    texts = text.split(';')
+    if (len(texts) != 3):
+        return 0
+
+    sender = '396962243@qq.com'
+    #receivers = ['1846580439@qq.com']  # 接收邮件，可设置为你的QQ邮箱或者其他邮箱
+    receivers = [texts[0]]
+
+
+    # 三个参数：第一个为文本内容，第二个 plain 设置文本格式，第三个 utf-8 设置编码
+    #message = MIMEText('下载头条网络被限！.', 'plain', 'utf-8')
+    message = MIMEText(texts[2], 'plain', 'utf-8')
+    message['From'] = Header("baby", 'utf-8')  # 发送者
+    message['To'] = Header("baby", 'utf-8')  # 接收者
+
+    #subject = '下载头条网络被限！'
+    subject = texts[1]
+    message['Subject'] = Header(subject, 'utf-8')
+
+    try:
+        smtpObj = smtplib.SMTP_SSL('smtp.qq.com', 465)
+        smtpObj.login('396962243@qq.com', 'uuisrjxunshpbgeb')
+        smtpObj.sendmail(sender, receivers, message.as_string())
+        print("邮件发送成功")
+        return 1
+    except smtplib.SMTPException:
+        print("Error: 无法发送邮件")
+        return 0
+
 def _getString(lst):
     text = ''
     try:
@@ -114,9 +148,12 @@ if __name__ == '__main__':
     url = 'https://www.ixigua.com/'
    #html = getHtml(url)
     html = ''
-    with open(r'E:\zhy\works\qt\DuoMeiTiDownload\TouTiaoDownload\python\text_internal3.html', 'r', encoding='utf-8') as f:
+    with open(r'E:\zhy\works\qt\DuoMeiTiDownload\TouTiaoDownload\python\text_internal2.html', 'r', encoding='utf-8') as f:
         html = f.read()
-    parseTouTiaoFromKeyWord(html)
+    #parseTouTiaoFromKeyWord(html)
+
+    text = '396962243@qq.com;i am title;i love you bady'
+    sendNetworkErrorMail(text)
     #parseTouTiaoDetail(html)
     #path = r'http://v9-tt.ixigua.com/fbb0bf396595abb1eef0efbec0d6b9fa/5c6235e1/video/m/220f211bf35915f40918d39bd0059e0779d11617068200004b1f01c474fa/?rc=MzgzO3Fncm54azMzZzczM0ApQHRAbzQ4NTw6MzUzMzY4MzQzNDVvQGgzdSlAZjN1KWRzcmd5a3VyZ3lybHh3ZjUzQDI0Ym8ybl5tY18tLWMtMHNzLW8jbyM2MjMuMzItLjAzNi8vNi06I28jOmEtcSM6YHZpXGJmK2BeYmYrXnFsOiMuL14%3D'
     #downloadFile(path, r'd:\fffff.mp4')

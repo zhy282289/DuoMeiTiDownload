@@ -6,7 +6,7 @@
 #include "ScanTaskManager.h"
 #include "DownloadManager.h"
 
-
+#include "EmailSend.h"
 
 
 TaskWnd::TaskWnd(QWidget *parent)
@@ -305,6 +305,7 @@ void TaskWnd::FinishDownload(int code, TaskInfoPtr info)
 		{
 			LOG(TR("设置了无限下载任务，60秒后重新下载！"));
 			QTimer::singleShot(1000 * 60, this, &TaskWnd::NextDownload);
+			EMAIL_NETWORKERROR->SendEmail();
 		}
 		else
 		{

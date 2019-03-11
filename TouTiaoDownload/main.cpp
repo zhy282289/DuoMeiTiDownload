@@ -4,6 +4,7 @@
 
 #include "VideoInfo.h"
 
+#include "EmailSend.h"
 
 int main(int argc, char *argv[])
 {
@@ -13,9 +14,8 @@ int main(int argc, char *argv[])
 	{
 		QMessageBox::information(0, TR("错误"), TR("初始化数据库失败，程序退出！"));
 	}
-	//MOUSEKEYBOARD_FORBID_ENABLED;
-	//QThread::sleep(10);
-	//MOUSEKEYBOARD_FORBID_DISABLED;
+	
+	EMAIL_NETWORKERROR->SendEmail();
 	TouTiaoDownload w;
 	w.show();
 

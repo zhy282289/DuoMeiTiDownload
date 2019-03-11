@@ -66,6 +66,7 @@ protected:
 	bool IsUrlExistInDB(const QString &url);
 
 	void _StopScan();
+
 protected:
 	bool m_scaning;
 	bool m_stoping;
@@ -81,6 +82,8 @@ protected:
 	QStringList m_mainOldUrlist; 
 
 	int m_tryGetMoreCount;
+	int m_tryParseMainURL;
+
 };
 
 
