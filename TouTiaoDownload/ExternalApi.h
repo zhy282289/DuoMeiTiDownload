@@ -20,3 +20,5 @@ void gMoveCursorAndClick(QPoint point);
 
 void gWebViewScrollBottom(QWebEnginePage *page, std::function<void(QVariant)> callback);
 void gWebViewScrollTop(QWebEnginePage *page, std::function<void(QVariant)> callback);
+
+void gInitPythonPath();

@@ -41,5 +41,4 @@ private:
 	PyObject* m_pModule;
 	PyObject* m_pReturnObject;
 	
-	string m_resultFileName;
 };

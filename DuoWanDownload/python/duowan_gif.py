@@ -155,7 +155,10 @@ def getMp4Path(text):
     except:
         return ''
 
-
+def download(url, dir):
+    path = os.path.join(dir, os.path.split(url)[1])
+    urllib.request.urlretrieve(url, path)
+    return 1
 
 if __name__ == '__main__':
     url = 'http://tu.duowan.com/m/bxgif'

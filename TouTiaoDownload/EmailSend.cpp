@@ -29,9 +29,12 @@ bool EmailNetworkError::_SendEmail()
 {
 	QString title = QString(TR("[%1]西瓜视频下载被限制")).arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
 	QString content(TR("请快点重启网络！"));
-	QString emailText = QString("%1;%2;%3").arg("396962243@qq.com").arg(title).arg(content);
+	//QString emailText = QString("%1;%2;%3").arg("396962243@qq.com").arg(title).arg(content);
+
+	QString emailText = QString("{\"title\":\"%1\",\"receiver\":\"%2\",\"content\":\"%3\"}").arg(title).arg("396962243@qq.com").arg(content);
+
 	IPython_Exe *pyExe = IPython_Exe::GetInstance();
 	bool ret = pyExe->Simple_Call("toutiao", "sendNetworkErrorMail", "(s)", emailText.toUtf8().data());
-	ret |= pyExe->ReturnInt();
+	ret |= (bool)pyExe->ReturnInt();
 	return ret;
 }
