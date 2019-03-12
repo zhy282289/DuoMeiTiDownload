@@ -3,9 +3,20 @@
 #include <windows.h>
 
 static Python_Exe *s_Python_Exe = nullptr;
-
-
 #pragma warning(disable:4996)
+
+static void s_py_decref(PyObject *obj)
+{
+	if (obj)
+	{
+#ifndef _DEBUG
+		Py_DECREF(obj);
+		obj = nullptr;
+#endif // !_DEBUG
+	}
+}
+
+
 IPython_Exe* IPython_Exe::GetInstance()
 {
 	if (!s_Python_Exe)
@@ -22,32 +33,32 @@ void IPython_Exe::Release()
 	s_Python_Exe = nullptr;
 }
 
+IPython_Exe* IPython_Exe::CreateInstance()
+{
+	return new Python_Exe;
+}
+
 //////////////////////////////////////////////////////////////////////////
 
-#include <time.h>
 Python_Exe::Python_Exe()
 {
 	m_pModule = nullptr;
-
 	m_pReturnObject = nullptr;
 
-	Py_Initialize();
+	if (!Py_IsInitialized())
+		Py_Initialize();
 
 	if (Py_IsInitialized())
 	{
 		PyRun_SimpleString("import sys");
 	}
-
-	time_t t = time(0);
-	char tmp[64]; 
-	strftime(tmp, sizeof(tmp), "Python_Exe_Retrun_%Y-%m-%d %H-%M-%S.txt", localtime(&t));
-	m_resultFileName = tmp;
 }
 
 Python_Exe::~Python_Exe()
 {
-	Py_Finalize();
-
+	s_py_decref(m_pReturnObject);
+	s_py_decref(m_pModule);
+	//Py_Finalize();
 }
 
 bool Python_Exe::Simple_Call(const string &pythonName, const string &funName)
@@ -56,9 +67,9 @@ bool Python_Exe::Simple_Call(const string &pythonName, const string &funName)
 	if (pFun == nullptr)
 		return pFun ? true : false;
 
-	//Py_DECREF(m_pCallFunctionObject);
+	s_py_decref(m_pReturnObject);
 	m_pReturnObject = PyObject_CallObject(pFun, nullptr);
-	//Py_DECREF(pFun);
+	s_py_decref(pFun);
 
 	return m_pReturnObject ? true : false;
 }
@@ -78,8 +89,10 @@ bool Python_Exe::Simple_Call(const string &pythonName, const string &funName, co
 		return false;
 	}
 
-	//Py_DECREF(m_pCallFunctionObject);
+	s_py_decref(m_pReturnObject);
 	m_pReturnObject = PyObject_CallObject(pFun, args);
+	s_py_decref(args);
+	s_py_decref(pFun);
 	return m_pReturnObject ? true : false;
 }
 

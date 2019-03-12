@@ -28,7 +28,7 @@
       <Extensions>moc;h;cpp</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
-    <Filter Include="Infos">
+    <Filter Include="Manager">
       <UniqueIdentifier>{f4caacff-3d37-4ffc-9f22-bb6c312e9ad8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -55,13 +55,13 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Config.cpp">
-      <Filter>Infos</Filter>
+      <Filter>Manager</Filter>
     </ClCompile>
     <ClCompile Include="DB.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DownloadManager.cpp">
-      <Filter>Infos</Filter>
+      <Filter>Manager</Filter>
     </ClCompile>
     <ClCompile Include="ExternalApi.cpp">
       <Filter>Source Files</Filter>
@@ -73,28 +73,28 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VideoInfo.cpp">
-      <Filter>Infos</Filter>
+      <Filter>Manager</Filter>
     </ClCompile>
     <ClCompile Include="ScanTaskManager.cpp">
-      <Filter>Infos</Filter>
+      <Filter>Manager</Filter>
     </ClCompile>
     <ClCompile Include="AutoUploadManager.cpp">
-      <Filter>Infos</Filter>
+      <Filter>Manager</Filter>
     </ClCompile>
     <ClCompile Include="ReplaceWnd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ReplaceWordsManager.cpp">
-      <Filter>Infos</Filter>
+      <Filter>Manager</Filter>
     </ClCompile>
     <ClCompile Include="NetworkCookie.cpp">
-      <Filter>Infos</Filter>
+      <Filter>Manager</Filter>
     </ClCompile>
     <ClCompile Include="ProcessLockManager.cpp">
-      <Filter>Infos</Filter>
+      <Filter>Manager</Filter>
     </ClCompile>
     <ClCompile Include="EmailSend.cpp">
-      <Filter>Infos</Filter>
+      <Filter>Manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -102,7 +102,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Config.h">
-      <Filter>Infos</Filter>
+      <Filter>Manager</Filter>
     </ClInclude>
     <ClInclude Include="DB.h">
       <Filter>Header Files</Filter>
@@ -114,13 +114,13 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ReplaceWordsManager.h">
-      <Filter>Infos</Filter>
+      <Filter>Manager</Filter>
     </ClInclude>
     <ClInclude Include="ProcessLockManager.h">
-      <Filter>Infos</Filter>
+      <Filter>Manager</Filter>
     </ClInclude>
     <ClInclude Include="EmailSend.h">
-      <Filter>Infos</Filter>
+      <Filter>Manager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -140,25 +140,25 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="DownloadManager.h">
-      <Filter>Infos</Filter>
+      <Filter>Manager</Filter>
     </QtMoc>
     <QtMoc Include="WebViewWnd.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="VideoInfo.h">
-      <Filter>Infos</Filter>
+      <Filter>Manager</Filter>
     </QtMoc>
     <QtMoc Include="ScanTaskManager.h">
-      <Filter>Infos</Filter>
+      <Filter>Manager</Filter>
     </QtMoc>
     <QtMoc Include="AutoUploadManager.h">
-      <Filter>Infos</Filter>
+      <Filter>Manager</Filter>
     </QtMoc>
     <QtMoc Include="ReplaceWnd.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="NetworkCookie.h">
-      <Filter>Infos</Filter>
+      <Filter>Manager</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>

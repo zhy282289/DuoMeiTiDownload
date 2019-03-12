@@ -122,3 +122,10 @@ void gWebViewScrollTop(QWebEnginePage *page, std::function<void(QVariant)> callb
 		, callback);
 }
 
+void gInitPythonPath()
+{
+	QString pyevnpath = QDir::toNativeSeparators(QApplication::applicationDirPath() + "/python");
+	pyevnpath.replace('\\', '/');
+	IPython_Exe::GetInstance()->AppendPyEnvPath(pyevnpath.toLocal8Bit().data());
+}
+

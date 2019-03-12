@@ -12,3 +12,5 @@
 #include "inc_DMTCommonLib/ExteranlApi.h"
 #include "inc_DMTCommonLib/LogInfo.h"
 
+using namespace std;
+
