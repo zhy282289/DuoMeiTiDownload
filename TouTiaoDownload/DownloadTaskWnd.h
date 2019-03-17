@@ -81,9 +81,15 @@ private:
 
 	QPushButton *m_btnSaveSettings;
 
+	QLineEdit *m_leTabNum;
+
+
 	AutoUploadManager *m_autoUpload;
 	bool m_bUploading;
 	int m_uploadCount;
+
+
+
 };
 
 

@@ -104,6 +104,10 @@ public:
 	static int MajorKeyWord(int index);
 	static void SetMajorKeyWord(int index, int number);
 
+	static int TabNum(int number);
+	static void SetTabNum(int index, int number);
+
+
 };
 
 class HistoryConfig

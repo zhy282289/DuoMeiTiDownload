@@ -66,6 +66,9 @@ DownloadTaskWnd::DownloadTaskWnd(QWidget *parent)
 
 	m_btnSaveSettings = new QPushButton(TR("S"), this);
 
+	m_leTabNum = new QLineEdit(this);
+	m_leTabNum->setText("5");
+
 	InitUI();
 
 	connect(m_btnTaskNum, &QPushButton::clicked, this, &DownloadTaskWnd::slotSearchTaskNumber);
@@ -159,6 +162,7 @@ void DownloadTaskWnd::SetEnabled(bool enabled)
 
 	m_leKeyWords->setEnabled(enabled);
 	m_cmbMajorKeyWord->setEnabled(enabled);
+	m_leTabNum->setEnabled(enabled);
 
 }
 
@@ -237,6 +241,7 @@ void DownloadTaskWnd::InitUI()
 
 	m_leKeyWords->setText(QString("%1").arg(DownloadFinishConfig::KeyWords(index)));
 	m_cmbMajorKeyWord->setCurrentIndex(m_cmbMajorKeyWord->findData(DownloadFinishConfig::MajorKeyWord(index)));
+	m_leTabNum->setText(QString("%1").arg(DownloadFinishConfig::TabNum(index)));
 
 }
 
@@ -255,6 +260,10 @@ bool DownloadTaskWnd::CheckUI()
 	if (m_leKeyWords->text().isEmpty())
 		return false;
 
+	m_leTabNum->text().toInt(&bok);
+	if (!bok) return false;
+
+
 	return true;
 }
 
@@ -269,6 +278,7 @@ void DownloadTaskWnd::SaveUI()
 	DownloadFinishConfig::SetUploadInternalTime(index, m_leUploadInternalTime->text().toInt());
 	DownloadFinishConfig::SetKeyWords(index, m_leKeyWords->text());
 	DownloadFinishConfig::SetMajorKeyWord(index, m_cmbMajorKeyWord->currentData().toInt());
+	DownloadFinishConfig::SetTabNum(index, m_leTabNum->text().toInt());
 
 }
 
@@ -428,7 +438,7 @@ void DownloadTaskWnd::GetAndRemoveFromDBTaskCount(int count)
 
 	for (auto info : infos)
 	{
-		MY_DB->DownladRemove(info->id);
+		//MY_DB->DownladRemove(info->id);
 		AddItem(info);
 	}
 }
@@ -484,9 +494,13 @@ void DownloadTaskWnd::resizeEvent(QResizeEvent *event)
 	left = m_lbUploadInternalTime->geometry().right() + margins;
 	m_leUploadInternalTime->setGeometry(left, top, 50, btnh);
 	left = m_leUploadInternalTime->geometry().right() + margins;
-	m_lbKeyWords->setGeometry(left, top, 50, btnh);
-	left = m_lbKeyWords->geometry().right() + margins;
-	m_leKeyWords->setGeometry(left, top, 200, btnh);
+	m_leUploadInternalTime->setGeometry(left, top, 50, btnh);
+	left = m_leUploadInternalTime->geometry().right() + margins;
+
+	m_leTabNum->setGeometry(left, top, 30, btnh);
+	left = m_leTabNum->geometry().right() + margins;
+
+	m_leKeyWords->setGeometry(left, top, 170, btnh);
 	left = m_leKeyWords->geometry().right() + margins;
 	m_cmbMajorKeyWord->setGeometry(left, top, 100, btnh);
 	left = m_cmbMajorKeyWord->geometry().right() + margins;

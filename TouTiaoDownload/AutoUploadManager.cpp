@@ -344,32 +344,57 @@ void AutoUploadManager::UploadFileFinishEx()
 
 void AutoUploadManager::Submit()
 {
-	m_view->page()->runJavaScript(""
-		"var submitbtn = document.getElementsByClassName('submit btn ');"
-		"if(submitbtn.length>0){"
-		"submitbtn[0].click();0+1;}else{0+0;}"
-		, [=](QVariant v)
-	{
 
-		auto ret = v.toInt();
-		qDebug() << ret;
-		QTimer::singleShot(2000, [=]() {
+	//m_view->page()->runJavaScript(
+	//	"var es = document.getElementsByClassName('Select-value-label');"
+	//	"if (es.length > 0)"
+	//	"{"
+	//	"es[0].innerHTML;"
+	//	"}"
+	//	"else{''+'1';}"
+	//	, [=](QVariant v)
+	//{
+	//	QString html = v.toString();
+	//	if (html.size()==2)
+	//	{
 
-			if (ret == 1)
+			m_view->page()->runJavaScript(""
+				"var submitbtn = document.getElementsByClassName('submit btn ');"
+				"if(submitbtn.length>0){"
+				"submitbtn[0].click();0+1;}else{0+0;}"
+				, [=](QVariant v)
 			{
-				LOG((TR("任务成功提交")));
-				emit sigFinish(ret, m_info);
-			}
-			else
-			{
-				LOG((TR("任务成功失败 找不到提交按钮，停止任务")));
-				//emit sigStop();
-				emit sigFinish(ret, m_info);
-			}
-		});
+
+				auto ret = v.toInt();
+				qDebug() << ret;
+				QTimer::singleShot(2000, [=]() {
+
+					if (ret == 1)
+					{
+						LOG((TR("任务成功提交")));
+						emit sigFinish(ret, m_info);
+					}
+					else
+					{
+						LOG((TR("任务成功失败 找不到提交按钮，继续任务")));
+						//LOG((TR("任务成功失败 找不到提交按钮，停止任务")));
+						//emit sigStop();
+						emit sigFinish(ret, m_info);
+					}
+				});
 
 
-	});
+			});
+	//	}
+	//	else
+	//	{
+	//		LOG((TR("上传参数设置错误，继续任务")));
+	//		//emit sigFinish(false, m_info);
+	//	}
+	//	
+	//});
+
+
 }
 
 void AutoUploadManager::LoadURL()
@@ -415,11 +440,9 @@ void AutoUploadManager::SetKeyWorks(QStringList keyWords)
 		}
 		else
 		{
-			gKeybdEvent(VK_TAB);
-			gKeybdEvent(VK_TAB);
-			gKeybdEvent(VK_TAB);
-			gKeybdEvent(VK_TAB);
-			gKeybdEvent(VK_TAB);
+			for (int i = 0; i < DownloadFinishConfig::TabNum(m_index); ++i)
+				gKeybdEvent(VK_TAB);
+
 			gKeybdEvent(VK_RETURN);
 
 			QTimer::singleShot(INTERNAL_TIME, [=]() {

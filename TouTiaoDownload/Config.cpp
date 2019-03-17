@@ -300,7 +300,19 @@ void DownloadFinishConfig::SetMajorKeyWord(int index, int number)
 	CONFIG_SET(key, number);
 
 }
+int DownloadFinishConfig::TabNum(int index)
+{
+	QString key = QString("downloadfinish/tabnum%1").arg(index);
+	return CONFIG_INT_DEF(key, 5);
 
+}
+
+void DownloadFinishConfig::SetTabNum(int index, int number)
+{
+	QString key = QString("downloadfinish/tabnum%1").arg(index);
+	CONFIG_SET(key, number);
+
+}
 //////////////////////////////////////////////////////////////////////////
 bool HistoryConfig::Order()
 {
