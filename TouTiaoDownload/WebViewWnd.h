@@ -31,12 +31,15 @@ class HtmlView : public QWebEngineView
 public:
 	HtmlView(QWidget *parent);
 	HtmlView* GetView();
+	void SetCookieIndex(int index);
+
 protected:
 	QWebEngineView *HtmlView::createWindow(QWebEnginePage::WebWindowType type);
 	
 
 private:
 	HtmlView *m_view;
+	int m_index;
 };
 
 #define GET_WEBVIEW(id) WebViewWnd::GetInstance()->GetView(id);

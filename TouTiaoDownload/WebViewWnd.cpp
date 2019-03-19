@@ -3,6 +3,7 @@
 
 #include <QtWebEngineWidgets/QtWebEngineWidgets>
 
+#include "NetworkCookie.h"
 
 static WebViewWnd* s_WebViewWnd = nullptr;
 WebViewWnd* WebViewWnd::GetInstance(QWidget *parent /*= nullptr*/)
@@ -72,6 +73,7 @@ WebViewWnd::~WebViewWnd()
 
 HtmlView::HtmlView(QWidget *parent)
 	:QWebEngineView(parent)
+	, m_index(0)
 {
 	m_view = nullptr;
 }
@@ -80,11 +82,20 @@ HtmlView* HtmlView::GetView()
 {
 	return m_view;
 }
+
+void HtmlView::SetCookieIndex(int index)
+{
+	m_index = index;
+	auto cookie = new NetworkCookie(this, index, "https://mp.toutiao.com");
+
+}
+
 QWebEngineView *HtmlView::createWindow(QWebEnginePage::WebWindowType type)
 {
 
 	m_view = new HtmlView(0);
 	m_view->resize(800, 800);
+	m_view->SetCookieIndex(m_index);
 	m_view->show();
 	return m_view;  
 

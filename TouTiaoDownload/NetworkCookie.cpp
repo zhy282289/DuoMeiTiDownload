@@ -67,7 +67,9 @@ void NetworkCookie::LoadCookie()
 
 void NetworkCookie::SaveCookie()
 {
-	if (m_bSave)
+	QSettings settings(QApplication::applicationDirPath()+"/test.ini", QSettings::IniFormat);
+	bool config = settings.value("savecookie", 0).toInt();
+	if (m_bSave || config)
 	{
 		QSettings cookieSettings(m_cookiesPath, QSettings::IniFormat);
 		cookieSettings.setValue(("cookies"), QVariant::fromValue<QList<QNetworkCookie>>(m_cookies));
