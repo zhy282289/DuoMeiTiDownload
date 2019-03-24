@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "TouTiaoDownload.h"
 
-
-
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
