@@ -22,6 +22,9 @@ public:
 
 	Words &GetWords();
 	void Save(const Words &words);
+
+	bool IsSensitiveWord(QString title);
+
 private:
 	void Load();
 	bool Save();

@@ -388,8 +388,9 @@ void DownloadTaskWnd::StartAutoUpload()
 
 			TaskWndListItem *taksItem = qobject_cast<TaskWndListItem*>(m_listWnd->itemWidget(m_listWnd->item(0)));
 			auto info = taksItem->GetInfo();
-			if (QFile::exists(info->localPath))
+			if (QFile::exists(info->localPath) && !REPLACEWORDS_MANAGER->IsSensitiveWord(info->title))
 			{
+
 
 				LOG(QString(TR("开始第%1个上传任务，总任务数：%2")).arg(m_uploadCount+1).arg(m_leUploadNum->text().toInt()));
 

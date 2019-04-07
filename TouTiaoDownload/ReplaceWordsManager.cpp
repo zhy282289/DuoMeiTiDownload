@@ -83,6 +83,19 @@ void ReplaceWordsManager::Save(const Words &words)
 	Save();
 }
 
+bool ReplaceWordsManager::IsSensitiveWord(QString title)
+{
+	bool ret = title.contains(TR("台湾"));
+	ret |= title.contains(TR("日本"));
+	ret |= title.contains(TR("死亡"));
+	ret |= title.contains(TR("港独"));
+	ret |= title.contains(TR("台独"));
+	ret |= title.contains(TR("刑")); 
+	ret |= title.contains(TR("国歌"));
+	ret |= title.contains(TR("死亡"));
+	return ret;
+}
+
 bool ReplaceWordsManager::RotateReplace(QString &text)
 {
 	text.replace(TR("！"), TR("，"));
@@ -91,6 +104,7 @@ bool ReplaceWordsManager::RotateReplace(QString &text)
 	text.replace(TR("."), TR("，"));
 	text.replace(TR("?"), TR("，"));
 	text.replace(TR("？"), TR("，"));
+	text.replace(TR(","), TR("，"));
 	QStringList ls = text.split(TR("，"));
 	if (ls.size()>1)
 	{
