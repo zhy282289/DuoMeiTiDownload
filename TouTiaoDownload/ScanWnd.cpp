@@ -55,7 +55,10 @@ ScanWnd::ScanWnd(QWidget *parent)
 	connect(m_keyWordTask, &ScanTaskManager::sigStopScan, this, &ScanWnd::TaskStopScan);
 	connect(m_keyWordTask, &ScanTaskManager::sigScanFinish, this, &ScanWnd::TaskStopScan);
 
-
+	connect(COMMNDLINEMANAGER, &CommndLineManager::sigStartScan, this, [=]()
+	{
+		m_btnScan->click();
+	});
 }
 
 ScanWnd::~ScanWnd()

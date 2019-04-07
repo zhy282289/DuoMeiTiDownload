@@ -122,7 +122,10 @@ TouTiaoDownload::TouTiaoDownload(QWidget *parent)
 		downloadWnd->AddItem(info);
 	});
 
-
+	connect(COMMNDLINEMANAGER, &CommndLineManager::sigHaveAutoStart, this, [=]()
+	{
+		m_tabWidget->setCurrentIndex(2);
+	});
 
 }
 

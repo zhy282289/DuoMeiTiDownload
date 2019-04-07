@@ -99,6 +99,19 @@ DownloadTaskWnd::DownloadTaskWnd(QWidget *parent)
 
 	connect(m_cmbLoginType, SIGNAL(currentIndexChanged(int)), this, SLOT(slotLoginTypeChanged(int)));
 
+
+	connect(COMMNDLINEMANAGER, &CommndLineManager::sigHaveAutoStart, this, [=](int index)
+	{
+		m_cmbLoginType->setCurrentIndex(index);
+	});
+	connect(COMMNDLINEMANAGER, &CommndLineManager::sigStartLogin, this, [=]() {
+		m_btnAutoUploadLogin->click();
+	});
+	connect(COMMNDLINEMANAGER, &CommndLineManager::sigStartAutoUpload, this, [=]() {
+		m_btnAutoUpload->click();
+	});
+
+
 }
 
 DownloadTaskWnd::~DownloadTaskWnd()

@@ -66,6 +66,11 @@ TaskWnd::TaskWnd(QWidget *parent)
 
 	connect(m_btnDownloadPath, &QPushButton::clicked, this, &TaskWnd::slotDownloadPath);
 
+	connect(COMMNDLINEMANAGER, &CommndLineManager::sigStartDownload, this, [=]()
+	{
+		m_btnDownload->click();
+	});
+
 }
 
 TaskWnd::~TaskWnd()

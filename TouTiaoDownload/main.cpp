@@ -15,5 +15,7 @@ int main(int argc, char *argv[])
 	TouTiaoDownload w;
 	w.show();
 
+	COMMNDLINEMANAGER->Parse();
+
 	return a.exec();
 }

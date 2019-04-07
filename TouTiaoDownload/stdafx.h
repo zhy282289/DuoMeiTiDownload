@@ -20,4 +20,7 @@
 #include "ReplaceWordsManager.h"
 #include "ProcessLockManager.h"
 
+
+#include "CommndLineManager.h"
+
 using namespace std;

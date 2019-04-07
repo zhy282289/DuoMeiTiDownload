@@ -96,6 +96,9 @@
     <ClCompile Include="EmailSend.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
+    <ClCompile Include="CommndLineManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -159,6 +162,9 @@
     </QtMoc>
     <QtMoc Include="NetworkCookie.h">
       <Filter>Manager</Filter>
+    </QtMoc>
+    <QtMoc Include="CommndLineManager.h">
+      <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
