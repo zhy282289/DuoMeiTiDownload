@@ -132,7 +132,8 @@ copy $(ProjectDir)python\* $(SolutionDir)bin\$(Platform)\$(Configuration)\python
     </QtRcc>
     <PostBuildEvent>
       <Command>md $(SolutionDir)bin\$(Platform)\Debug\python\
-copy $(ProjectDir)python\* $(SolutionDir)bin\$(Platform)\Debug\python\</Command>
+copy $(ProjectDir)python\* $(SolutionDir)bin\$(Platform)\Debug\python\
+copy $(ProjectDir)settings\* $(SolutionDir)bin\$(Platform)\Debug\</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

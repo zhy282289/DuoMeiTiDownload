@@ -24,27 +24,8 @@ ReplaceWordsManager::ReplaceWordsManager()
 
 void ReplaceWordsManager::Load()
 {
-	QDomDocument doc("words");
-	QFile file(m_path);
-	if (!file.open(QIODevice::ReadOnly))
-		return;
-	if (!doc.setContent(&file)) 
-	{
-		return;
-	}
-
-	auto docElem = doc.documentElement();
-
-	auto childNodes = docElem.elementsByTagName("word");
-	for (int i = 0; i < childNodes.size();++i)
-	{
-		Word word;
-		auto elem = childNodes.at(i).toElement();
-		word.key = elem.firstChildElement("key").text();
-		word.value = elem.firstChildElement("value").text();
-		m_words.push_back(word);
-	}
-
+	LoadReplaceWords();
+	LoadSensitiveWords();
 }
 
 bool ReplaceWordsManager::Save()
@@ -83,17 +64,55 @@ void ReplaceWordsManager::Save(const Words &words)
 	Save();
 }
 
+void ReplaceWordsManager::LoadReplaceWords()
+{
+	QDomDocument doc("words");
+	QFile file(m_path);
+	if (!file.open(QIODevice::ReadOnly))
+		return;
+	if (!doc.setContent(&file))
+	{
+		return;
+	}
+
+	auto docElem = doc.documentElement();
+
+	auto childNodes = docElem.elementsByTagName("word");
+	for (int i = 0; i < childNodes.size(); ++i)
+	{
+		Word word;
+		auto elem = childNodes.at(i).toElement();
+		word.key = elem.firstChildElement("key").text();
+		word.value = elem.firstChildElement("value").text();
+		m_words.push_back(word);
+	}
+}
+
+void ReplaceWordsManager::LoadSensitiveWords()
+{
+	auto path = QApplication::applicationDirPath() + "/sensitiveWords.txt";
+	QFile file(path);
+	if (!file.open(QIODevice::ReadOnly))
+	{
+		return;
+	}
+	while (!file.atEnd())
+	{
+		auto b = file.readLine();
+		m_sensitiveWords.push_back(QString::fromLocal8Bit(b));
+	}
+}
+
 bool ReplaceWordsManager::IsSensitiveWord(QString title)
 {
-	bool ret = title.contains(TR("台湾"));
-	ret |= title.contains(TR("日本"));
-	ret |= title.contains(TR("死亡"));
-	ret |= title.contains(TR("港独"));
-	ret |= title.contains(TR("台独"));
-	ret |= title.contains(TR("刑")); 
-	ret |= title.contains(TR("国歌"));
-	ret |= title.contains(TR("死亡"));
-	return ret;
+	for (auto word : m_sensitiveWords)
+	{
+		if (title.contains(word))
+			return true;
+	}
+
+	return false;
+
 }
 
 bool ReplaceWordsManager::RotateReplace(QString &text)

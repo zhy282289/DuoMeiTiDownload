@@ -28,7 +28,8 @@ public:
 private:
 	void Load();
 	bool Save();
-
+	void LoadReplaceWords();
+	void LoadSensitiveWords();
 private:
 	bool RotateReplace(QString &text);
 	bool BaseReplace(QString &text, const Word &word);
@@ -40,6 +41,7 @@ private:
 private:
 	Words m_words;
 	QString m_path;
+	QList<QString> m_sensitiveWords;
 };
 
 #define REPLACEWORDS_MANAGER ReplaceWordsManager::GetInstance()
