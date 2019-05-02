@@ -6,7 +6,6 @@
 #include "DownloadTaskWnd.h"
 #include "HistoryWnd.h"
 #include "webviewwnd.h"
-#include "ReplaceWnd.h"
 
 TouTiaoDownload::TouTiaoDownload(QWidget *parent)
 	: QWidget(parent)
@@ -22,13 +21,11 @@ TouTiaoDownload::TouTiaoDownload(QWidget *parent)
 	TaskWnd *taskWnd = new TaskWnd(this);
 	DownloadTaskWnd *downloadWnd = new DownloadTaskWnd(this);
 	HistoryWnd *historyWnd = new HistoryWnd(this);
-	ReplaceWnd *replaceWnd = new ReplaceWnd(this);
 
 	m_tabWidget->addTab(scanWnd, TR("扫描设置"));
 	m_tabWidget->addTab(taskWnd, TR("待下载任务"));
 	m_tabWidget->addTab(downloadWnd, TR("已下载任务"));
 	m_tabWidget->addTab(historyWnd, TR("历史任务"));
-	m_tabWidget->addTab(replaceWnd, TR("替换词"));
 
 
 	m_splitter = new QSplitter(Qt::Vertical, this);
@@ -122,11 +119,16 @@ TouTiaoDownload::TouTiaoDownload(QWidget *parent)
 		downloadWnd->AddItem(info);
 	});
 
-	connect(COMMNDLINEMANAGER, &CommndLineManager::sigHaveAutoStart, this, [=]()
+	connect(WNDMESSAGEMANAGER, &WndMessageManager::sigTabIndexChanged, this, [=](int index)
 	{
-		m_tabWidget->setCurrentIndex(2);
+		m_tabWidget->setCurrentIndex(index);
+	});
+	connect(WNDMESSAGEMANAGER, &WndMessageManager::sigWindowTitleChanged, this, [=](QString title)
+	{
+		setWindowTitle(QString(TR("西瓜-%1")).arg(title));
 	});
 
+	REPLACEWORDS_MANAGER;
 }
 
 TouTiaoDownload::~TouTiaoDownload()

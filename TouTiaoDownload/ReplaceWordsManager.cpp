@@ -28,64 +28,29 @@ void ReplaceWordsManager::Load()
 	LoadSensitiveWords();
 }
 
-bool ReplaceWordsManager::Save()
-{
-
-	QFile file(m_path);
-	if (!file.open(QIODevice::WriteOnly))
-		return false;
-
-
-	QDomDocument doc("words");
-	auto wordsElem = doc.createElement("words");
-	doc.appendChild(wordsElem);
-
-	for (auto &word : m_words)
-	{
-		auto wordElem = doc.createElement("word");
-		auto keyElem = doc.createElement("key");
-		keyElem.appendChild(doc.createTextNode(word.key));
-		wordElem.appendChild(keyElem);
-
-		auto valueElem = doc.createElement("value");
-		valueElem.appendChild(doc.createTextNode(word.value));
-		wordElem.appendChild(valueElem);
-
-		wordsElem.appendChild(wordElem);
-	}
-
-	file.write(doc.toByteArray());
-	return true;
-}
-
-void ReplaceWordsManager::Save(const Words &words)
-{
-	m_words = words;
-	Save();
-}
 
 void ReplaceWordsManager::LoadReplaceWords()
 {
-	QDomDocument doc("words");
-	QFile file(m_path);
+
+	auto path = QApplication::applicationDirPath() + "/replaceWords.txt";
+	QFile file(path);
 	if (!file.open(QIODevice::ReadOnly))
-		return;
-	if (!doc.setContent(&file))
 	{
 		return;
 	}
-
-	auto docElem = doc.documentElement();
-
-	auto childNodes = docElem.elementsByTagName("word");
-	for (int i = 0; i < childNodes.size(); ++i)
+	while (!file.atEnd())
 	{
-		Word word;
-		auto elem = childNodes.at(i).toElement();
-		word.key = elem.firstChildElement("key").text();
-		word.value = elem.firstChildElement("value").text();
-		m_words.push_back(word);
+		auto b = file.readLine();
+		auto words = b.split('=');
+		if (words.size() == 2)
+		{
+			Word word;
+			word.key = TR(words[0]);
+			word.value = TR(words[1]);
+			m_replaceWords.push_back(word);
+		}
 	}
+
 }
 
 void ReplaceWordsManager::LoadSensitiveWords()
@@ -99,7 +64,8 @@ void ReplaceWordsManager::LoadSensitiveWords()
 	while (!file.atEnd())
 	{
 		auto b = file.readLine();
-		m_sensitiveWords.push_back(QString::fromLocal8Bit(b));
+		if(!b.trimmed().isEmpty())
+			m_sensitiveWords.push_back(TR(b));
 	}
 }
 
@@ -243,7 +209,7 @@ QString ReplaceWordsManager::Replace(QString text)
 	RotateReplace(text);
 	int count = 0;
 
-	for (auto &word : m_words)
+	for (auto &word : m_replaceWords)
 	{
 		bool ret = BaseReplace(text, word);
 		if (ret)
@@ -265,5 +231,5 @@ QString ReplaceWordsManager::Replace(QString text)
 
 Words & ReplaceWordsManager::GetWords()
 {
-	return m_words;
+	return m_replaceWords;
 }

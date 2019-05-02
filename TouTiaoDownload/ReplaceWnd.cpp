@@ -67,7 +67,7 @@ void ReplaceWnd::Save()
 			}
 		}
 
-		REPLACEWORDS_MANAGER->Save(words);
+		//REPLACEWORDS_MANAGER->Save(words);
 	}
 
 

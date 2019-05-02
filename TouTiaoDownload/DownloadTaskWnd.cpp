@@ -100,17 +100,28 @@ DownloadTaskWnd::DownloadTaskWnd(QWidget *parent)
 	connect(m_cmbLoginType, SIGNAL(currentIndexChanged(int)), this, SLOT(slotLoginTypeChanged(int)));
 
 
-	connect(COMMNDLINEMANAGER, &CommndLineManager::sigHaveAutoStart, this, [=](int index)
+	connect(COMMNDLINEMANAGER, &CommndLineManager::sigLoginIndex, this, [=](int index)
 	{
 		m_cmbLoginType->setCurrentIndex(index);
 	});
+
+	connect(COMMNDLINEMANAGER, &CommndLineManager::sigStartAutoUpload, this, [=]() {
+		int index = COMMNDLINEMANAGER->GetIndex();
+		QTimer::singleShot(index * 20 * 1000 + 2, [=]() {
+			m_btnAutoUploadLogin->click();
+			QTimer::singleShot(10 * 1000, [=]() {
+				m_btnAutoUpload->click();
+			});
+		});
+
+
+	});
 	connect(COMMNDLINEMANAGER, &CommndLineManager::sigStartLogin, this, [=]() {
 		m_btnAutoUploadLogin->click();
+		QTimer::singleShot(5 * 1000, [=]() {
+			m_btnAutoUploadLogin->click();
+		});
 	});
-	connect(COMMNDLINEMANAGER, &CommndLineManager::sigStartAutoUpload, this, [=]() {
-		m_btnAutoUpload->click();
-	});
-
 
 }
 
@@ -400,7 +411,7 @@ void DownloadTaskWnd::StartAutoUpload()
 			}
 			else
 			{
-				LOG(TR("文件路径不存在，1分钟后重新获取上传任务"));
+				LOG(TR("文件路径不存在,或者标题存在敏感字，1分钟后继续下个上传任务"));
 				//Convert2Task(info);
 				GetAndRemoveFromDBTaskCount(1);
 				QTimer::singleShot(60 * 1000, this, &DownloadTaskWnd::StartAutoUpload);
@@ -452,7 +463,7 @@ void DownloadTaskWnd::GetAndRemoveFromDBTaskCount(int count)
 
 	for (auto info : infos)
 	{
-		MY_DB->DownladRemove(info->id);
+		//MY_DB->DownladRemove(info->id);
 		AddItem(info);
 	}
 }

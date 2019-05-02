@@ -244,6 +244,7 @@ void AutoUploadManager::MonitorUploadFileFinish()
 	{
 		QTimer::singleShot(2 * 1000, [=]()
 		{
+			if (m_view)
 			m_view->page()->runJavaScript(
 				"var es = document.getElementsByClassName('tips');"
 				"if (es.length > 0)"
@@ -300,6 +301,8 @@ void AutoUploadManager::UploadFileFinishEx()
 	MOUSEKEYBOARD_FORBID_ENABLED;
 
 
+	m_view->activateWindow();
+
 	QString title = REPLACEWORDS_MANAGER->Replace(m_info->title);
 
 	if (title == m_info->title)
@@ -345,18 +348,29 @@ void AutoUploadManager::UploadFileFinishEx()
 void AutoUploadManager::Submit()
 {
 
-	//m_view->page()->runJavaScript(
-	//	"var es = document.getElementsByClassName('Select-value-label');"
-	//	"if (es.length > 0)"
-	//	"{"
-	//	"es[0].innerHTML;"
-	//	"}"
-	//	"else{''+'1';}"
-	//	, [=](QVariant v)
-	//{
-	//	QString html = v.toString();
-	//	if (html.size()==2)
-	//	{
+	m_view->page()->runJavaScript(
+		"var es = document.getElementsByTagName('input');"
+		"if (es.length > 0)"
+		"{"
+			"var ret='';"
+			"for(var i=0;i<es.length;i++){"
+				"if (es[i].getAttribute('type')=='text')"
+				"{ret = es[i].value;break;}"
+			"}"
+			"ret + ''"
+		"}"
+		"else{''+'';}"
+		, [=](QVariant v)
+	{
+		QString html = v.toString();
+		int count = 0;
+		for (int i = 0; i < html.size(); ++i)
+		{
+			if (html[i].isNumber())
+				++count;
+		}
+		if (count < 5)
+		{
 
 			m_view->page()->runJavaScript(""
 				"var submitbtn = document.getElementsByClassName('submit btn ');"
@@ -377,22 +391,20 @@ void AutoUploadManager::Submit()
 					else
 					{
 						LOG((TR("任务成功失败 找不到提交按钮，继续任务")));
-						//LOG((TR("任务成功失败 找不到提交按钮，停止任务")));
-						//emit sigStop();
 						emit sigFinish(ret, m_info);
 					}
 				});
 
 
 			});
-	//	}
-	//	else
-	//	{
-	//		LOG((TR("上传参数设置错误，继续任务")));
-	//		//emit sigFinish(false, m_info);
-	//	}
-	//	
-	//});
+		}
+		else
+		{
+			LOG((TR("上传参数设置错误，继续任务")));
+			emit sigFinish(false, m_info);
+		}
+		
+	});
 
 
 }

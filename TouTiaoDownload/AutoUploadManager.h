@@ -7,7 +7,7 @@ class NetworkCookie;
 class AutoUploadManager : public QObject
 {
 	Q_OBJECT
-
+ 
 public:
 	AutoUploadManager(QObject *parent);
 	~AutoUploadManager();

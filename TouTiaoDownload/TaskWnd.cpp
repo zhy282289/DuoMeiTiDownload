@@ -68,6 +68,9 @@ TaskWnd::TaskWnd(QWidget *parent)
 
 	connect(COMMNDLINEMANAGER, &CommndLineManager::sigStartDownload, this, [=]()
 	{
+		m_ckbDownloadFromDB->setChecked(false);
+		m_ckbLoop->setChecked(true);
+		SaveUI();
 		m_btnDownload->click();
 	});
 
@@ -249,7 +252,8 @@ void TaskWnd::StartDownload()
 		if (!m_ckbDownloadFromDB->isChecked())
 		{
 			LOG(TR("无转码任务，获取数据库数据"));
-			slotSearchTaskNumber();
+			//slotSearchTaskNumber();
+			GetAndRemoveFromDBTaskCount(1);
 			if (m_listWnd->count() > 0)
 			{
 				NextDownload();
@@ -290,7 +294,7 @@ void TaskWnd::FinishDownload(int code, TaskInfoPtr info)
 		if (bdb)
 		{
 			LOG(QString(TR("成功转码第%1个任务，下一个任务")).arg(++m_downloadCount));
-			MY_DB->TaskRemove(info->id);
+			//MY_DB->TaskRemove(info->id);
 			RemoveItemByInfo(info);
 			sigDownloadOneFinish(info);
 			NextDownload();
@@ -434,6 +438,19 @@ void TaskWnd::NextDownload()
 	{
 		StopDownload();
 
+	}
+}
+
+void TaskWnd::GetAndRemoveFromDBTaskCount(int count)
+{
+	m_listWnd->clear();
+	bool order = m_ckbTop->isChecked();
+	TaskInfos infos = MY_DB->TaskGetUrls(count, DownloadFinishConfig::VideoType(m_cmbVideoType->currentData().toInt()), order);
+
+	for (auto info : infos)
+	{
+		MY_DB->TaskRemove(info->id);
+		AddItem(info);
 	}
 }
 

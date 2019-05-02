@@ -21,13 +21,11 @@ public:
 	QString Replace(QString text);
 
 	Words &GetWords();
-	void Save(const Words &words);
 
 	bool IsSensitiveWord(QString title);
 
 private:
 	void Load();
-	bool Save();
 	void LoadReplaceWords();
 	void LoadSensitiveWords();
 private:
@@ -39,7 +37,7 @@ private:
 	void LimitWords(QString &text);
 
 private:
-	Words m_words;
+	Words m_replaceWords;
 	QString m_path;
 	QList<QString> m_sensitiveWords;
 };

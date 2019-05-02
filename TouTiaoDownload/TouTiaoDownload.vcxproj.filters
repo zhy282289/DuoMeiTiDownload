@@ -81,9 +81,6 @@
     <ClCompile Include="AutoUploadManager.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
-    <ClCompile Include="ReplaceWnd.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ReplaceWordsManager.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
@@ -97,7 +94,10 @@
       <Filter>Manager</Filter>
     </ClCompile>
     <ClCompile Include="CommndLineManager.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="WndMessageManager.cpp">
+      <Filter>Manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -157,14 +157,14 @@
     <QtMoc Include="AutoUploadManager.h">
       <Filter>Manager</Filter>
     </QtMoc>
-    <QtMoc Include="ReplaceWnd.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
     <QtMoc Include="NetworkCookie.h">
       <Filter>Manager</Filter>
     </QtMoc>
     <QtMoc Include="CommndLineManager.h">
-      <Filter>Header Files</Filter>
+      <Filter>Manager</Filter>
+    </QtMoc>
+    <QtMoc Include="WndMessageManager.h">
+      <Filter>Manager</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>

@@ -28,48 +28,65 @@ int CommndLineManager::GetIndex()
 
 void CommndLineManager::Parse()
 {
-	QCommandLineOption op1("a");
-	op1.setValueName("a");
+	QCommandLineOption opLoginIndex("i");
+	opLoginIndex.setValueName("i");
 
-	QCommandLineOption op2("s");
-	QCommandLineOption op3("d");
+	QCommandLineOption opAutoUpload("a");
+	QCommandLineOption opStartScan("s");
+	QCommandLineOption opDownload("d");
+	QCommandLineOption opStartLogin("l");
 
 	QCommandLineParser parser;
-	parser.addOption(op1);
-	parser.addOption(op2);
-	parser.addOption(op3);
+	parser.addOption(opLoginIndex);
+	parser.addOption(opAutoUpload);
+	parser.addOption(opStartScan);
+	parser.addOption(opDownload);
+	parser.addOption(opStartLogin);
 
 
 	parser.process(*qApp);
 
-	if (parser.isSet(op1))
+#define ELAPSE_TIME 1000
+
+	QString title;
+	if (parser.isSet(opLoginIndex))
 	{
-		auto index = parser.value(op1).toInt();
-		AutoStart(index);
+		m_index = parser.value(opLoginIndex).toInt();
+		title += QString(TR("ÕËºÅ%1")).arg(m_index + 1);
+		QTimer::singleShot(ELAPSE_TIME, [=]() {
+			emit sigLoginIndex(m_index);
+		});
+
 	}
-	if (parser.isSet(op2))
+	if (parser.isSet(opAutoUpload))
 	{
-		emit sigStartScan();
-	}
-	if (parser.isSet(op3))
-	{
-		emit sigStartDownload();
-	}
-}
-
-void CommndLineManager::AutoStart(int index)
-{
-	m_index = index;
-
-	emit sigHaveAutoStart(m_index);
-
-	QTimer::singleShot(m_index * 20 * 1000 + 2, [=]() {
-		emit sigStartLogin();
-
-		QTimer::singleShot(10 * 1000, [=]() {
+		title += TR("-ÉÏ´«");
+		QTimer::singleShot(ELAPSE_TIME, [=]() {
 			emit sigStartAutoUpload();
 		});
 
-	});
+	}
+	if (parser.isSet(opStartScan))
+	{
+		title += TR("-É¨Ãè");
+		QTimer::singleShot(ELAPSE_TIME, [=]() {
+			emit sigStartScan();
+		});
+	}
+	if (parser.isSet(opDownload))
+	{
+		title += TR("-ÏÂÔØ");
+		QTimer::singleShot(ELAPSE_TIME, [=]() {
+			emit sigStartDownload();
+		});
+	}
+	if (parser.isSet(opStartLogin))
+	{
+		title += TR("-µÇÂ½");
+		QTimer::singleShot(ELAPSE_TIME, [=]() {
+			emit sigStartLogin();
+		});
+	}
+	WNDMESSAGEMANAGER->sigWindowTitleChanged(title);
 
 }

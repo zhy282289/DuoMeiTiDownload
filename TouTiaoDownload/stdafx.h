@@ -22,5 +22,7 @@
 
 
 #include "CommndLineManager.h"
+#include "WndMessageManager.h"
+
 
 using namespace std;

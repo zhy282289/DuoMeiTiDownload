@@ -46,6 +46,7 @@ private:
 	void FinishDownload(int code, TaskInfoPtr info);
 	void StopDownload();
 	void NextDownload();
+	void GetAndRemoveFromDBTaskCount(int count);
 
 protected:
 	void resizeEvent(QResizeEvent *event);
