@@ -1,7 +1,7 @@
 @echo off
 @echo start autoupload
 
-set /a n=0
+set /a n=1
 :aaa
 if %n% leq 3 (
 @echo TouTiaoDownload.exe -a %n%

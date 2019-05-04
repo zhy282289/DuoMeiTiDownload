@@ -463,7 +463,7 @@ void DownloadTaskWnd::GetAndRemoveFromDBTaskCount(int count)
 
 	for (auto info : infos)
 	{
-		//MY_DB->DownladRemove(info->id);
+		MY_DB->DownladRemove(info->id);
 		AddItem(info);
 	}
 }

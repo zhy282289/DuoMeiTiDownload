@@ -5,7 +5,8 @@
 class CommndLineManager : public QObject
 {
 	Q_OBJECT
-
+public:
+	enum AutoType{NONE, SCAN, DOWNLOAD, LOGIN, UPLOAD};
 public:
 	CommndLineManager(QObject *parent = nullptr);
 	~CommndLineManager();
@@ -14,6 +15,8 @@ public:
 
 	int GetIndex();
 	void Parse();
+
+	AutoType GetType();
 
 Q_SIGNALS:
 	// 自动上传信号
@@ -30,7 +33,7 @@ private:
 
 private:
 	int m_index;
-
+	AutoType m_type;
 };
 
 #define COMMNDLINEMANAGER CommndLineManager::GetInstance()

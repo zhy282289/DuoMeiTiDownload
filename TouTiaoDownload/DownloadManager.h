@@ -22,6 +22,8 @@ private:
 	void Finish(int code);
 private:
 	TaskInfoPtr m_info;
+	bool m_isDownload;
+	QTimer *m_timer;
 };
 
 

@@ -5,6 +5,7 @@ CommndLineManager::CommndLineManager(QObject *parent)
 	: QObject(parent)
 {
 	m_index = 0;
+	m_type = NONE;
 }
 
 CommndLineManager::~CommndLineManager()
@@ -60,6 +61,7 @@ void CommndLineManager::Parse()
 	}
 	if (parser.isSet(opAutoUpload))
 	{
+		m_type = UPLOAD;
 		title += TR("-ÉÏ´«");
 		QTimer::singleShot(ELAPSE_TIME, [=]() {
 			emit sigStartAutoUpload();
@@ -68,6 +70,7 @@ void CommndLineManager::Parse()
 	}
 	if (parser.isSet(opStartScan))
 	{
+		m_type = SCAN;
 		title += TR("-É¨Ãè");
 		QTimer::singleShot(ELAPSE_TIME, [=]() {
 			emit sigStartScan();
@@ -75,6 +78,7 @@ void CommndLineManager::Parse()
 	}
 	if (parser.isSet(opDownload))
 	{
+		m_type = DOWNLOAD;
 		title += TR("-ÏÂÔØ");
 		QTimer::singleShot(ELAPSE_TIME, [=]() {
 			emit sigStartDownload();
@@ -82,11 +86,19 @@ void CommndLineManager::Parse()
 	}
 	if (parser.isSet(opStartLogin))
 	{
+		m_type = LOGIN;
 		title += TR("-µÇÂ½");
 		QTimer::singleShot(ELAPSE_TIME, [=]() {
 			emit sigStartLogin();
 		});
 	}
-	WNDMESSAGEMANAGER->sigWindowTitleChanged(title);
 
+	if (m_type != NONE)
+		WNDMESSAGEMANAGER->sigWindowTitleChanged(title);
+
+}
+
+CommndLineManager::AutoType CommndLineManager::GetType()
+{
+	return m_type;
 }

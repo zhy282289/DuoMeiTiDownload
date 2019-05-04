@@ -9,6 +9,17 @@
 DownloadManager::DownloadManager(QObject *parent)
 	: QObject(parent)
 {
+	m_isDownload = false;
+	m_timer = new QTimer(this);
+	// 五分钟没结果,就崩溃,重启
+	m_timer->setInterval(5 * 60 * 1000);
+	connect(m_timer, &QTimer::timeout, this, [=]() {
+		if (m_isDownload)
+		{
+			char * p = nullptr;
+			p[100] = 'a';
+		}
+	});
 }
 
 DownloadManager::~DownloadManager()
@@ -75,6 +86,11 @@ bool DownloadManager::Download(TaskInfoPtr info)
 	});
 	t.detach();
 
+	m_isDownload = true;
+
+	m_timer->start();
+
+
 	return true;
 }
 
@@ -111,6 +127,8 @@ bool DownloadManager::Convert(QString dstpath)
 void DownloadManager::Finish(int code)
 {
 	emit sigFinish(code, m_info);
+	m_isDownload = false;
+	m_timer->stop();
 	deleteLater();
 }
 
