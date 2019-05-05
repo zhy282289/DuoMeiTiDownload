@@ -44,7 +44,7 @@ public:
 
 private:
 	int _Count(QString table);
-	bool _Contain(QString table);
+	bool _Contain(QString id, QString table);
 	bool _Insert(TaskInfo *info, QString table);
 	bool _Remove(QString id, QString table);
 	TaskInfos _GetUrls(QString table, int count, int videoType, bool order = true);

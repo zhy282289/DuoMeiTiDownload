@@ -16,7 +16,7 @@ public:
 	int GetIndex();
 	void Parse();
 
-	AutoType GetType();
+	AutoType GetType(); 
 
 Q_SIGNALS:
 	// 自动上传信号

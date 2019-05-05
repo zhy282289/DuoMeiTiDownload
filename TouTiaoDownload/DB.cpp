@@ -73,13 +73,13 @@ int DB::_Count(QString table)
 	return count;
 }
 
-bool DB::_Contain(QString table)
+bool DB::_Contain(QString id, QString table)
 {
 	DB_IS_OPEN;
 	DB_LOCK;
 	int count = 0;
 	QSqlQuery sql_query;
-	QString insert_sql = QString("select 1 from %1 where id=?").arg(table);
+	QString insert_sql = QString("select 1 from %1 where id=%2").arg(table).arg(id);
 	if (sql_query.exec(insert_sql))
 	{
 		while (sql_query.next())
@@ -277,7 +277,7 @@ bool DB::TaskInsert(TaskInfo *info)
 
 bool DB::TaskContain(QString id)
 {
-	return _Contain("urls");
+	return _Contain(id, "urls");
 }
 bool DB::TaskRemove(QString id)
 {
@@ -319,7 +319,7 @@ int DB::DownladCount()
 
 bool DB::DownladContain(QString id)
 {
-	return _Contain("downloadurls");
+	return _Contain(id, "downloadurls");
 
 }
 
@@ -367,7 +367,7 @@ int DB::HistoryCount()
 
 bool DB::HistoryContain(QString id)
 {
-	return _Contain("historyurls");
+	return _Contain(id, "historyurls");
 
 }
 

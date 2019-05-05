@@ -376,7 +376,7 @@ bool ScanTaskManager::IsUrlExistInDB(const QString &url)
 		}
 	} while (false);
 	if (bexist)
-		LOG(TR("查询完毕，重复数据"));
+		LOG(TR("[查询完毕，重复数据]"));
 	else
 		LOG(TR("查询完毕，无重复数据"));
 
