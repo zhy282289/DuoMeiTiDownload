@@ -9,3 +9,5 @@ start ../bin/x64/Debug/TouTiaoDownload.exe -a -i %n%
 set /a n+=1
 goto :aaa)
 
+start shutdown -s -t 7200
+
