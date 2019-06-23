@@ -58,6 +58,19 @@ HtmlView* WebViewWnd::CreateTestView()
 	return view;
 }
 
+HtmlView* WebViewWnd::GetOtherView(int id)
+{
+	if (!m_otherViews.contains(id))
+	{
+		HtmlView *view = new HtmlView(nullptr);
+		m_otherViews[id] = view;
+	}
+
+	return m_otherViews[id];
+}
+
+
+
 WebViewWnd::WebViewWnd(QWidget *parent)
 	: QWidget(parent)
 {

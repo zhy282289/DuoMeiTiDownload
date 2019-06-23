@@ -13,6 +13,7 @@
 #define ERROR_CODE_CONVERT_ERROR 2 //
 #define ERROR_CODE_REMOTEPATH_NOT_EXIST_ERROR 3 //
 
+#define AUTOUPLOAD "autoupload"
 
 enum VideoType
 {

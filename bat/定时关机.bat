@@ -1,2 +1,2 @@
 @echo off
-start shutdown -s -t 7800
+start shutdown -s -t 1800

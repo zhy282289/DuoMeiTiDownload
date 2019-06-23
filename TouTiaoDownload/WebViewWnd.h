@@ -2,6 +2,12 @@
 
 #include <QWidget>
 
+
+enum ViewType
+{
+	ViewType_Scan,
+
+};
 class HtmlView;
 class WebViewWnd : public QWidget
 {
@@ -17,11 +23,15 @@ public:
 
 	HtmlView* CreateTestView();
 
+	HtmlView* GetOtherView(int id);
+
+
 	WebViewWnd(QWidget *parent);
 	~WebViewWnd();
 
 private:
 	QMap<int, HtmlView*> m_views;
+	QMap<int, HtmlView*> m_otherViews;
 };
 
 
@@ -42,7 +52,9 @@ private:
 	int m_index;
 };
 
-#define GET_WEBVIEW(id) WebViewWnd::GetInstance()->GetView(id);
-#define GET_EXIST_WEBVIEW(id) WebViewWnd::GetInstance()->GetExistView(id);
-#define GET_UNIQUEN_WEBVIEW() WebViewWnd::GetInstance()->GetUniquenView();
-#define GET_TEST_WEBVIEW() WebViewWnd::GetInstance()->CreateTestView();
+#define GET_WEBVIEW(id) WebViewWnd::GetInstance()->GetView(id)
+#define GET_EXIST_WEBVIEW(id) WebViewWnd::GetInstance()->GetExistView(id)
+#define GET_UNIQUEN_WEBVIEW() WebViewWnd::GetInstance()->GetUniquenView()
+#define GET_TEST_WEBVIEW() WebViewWnd::GetInstance()->CreateTestView()
+#define GET_OTHER_WEBVIEW(id) WebViewWnd::GetInstance()->GetOtherView(id)
+

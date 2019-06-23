@@ -50,7 +50,7 @@ bool ScanTaskManager::UpdateInfo(TaskInfoPtr info)
 		{
 
 			m_redownloadView->page()->runJavaScript(
-				"var es = document.getElementsByClassName('bui-left index-content');"
+				"var es = document.getElementsByClassName('Page_Projection__main');"
 				"if (es.length > 0)"
 				"{es[0].innerHTML;}"
 				, [=](QVariant v)
@@ -134,14 +134,17 @@ bool ScanTaskManager::StartScan()
 
 	if (m_view == nullptr)
 	{
-		if (ScanConfig::ScanType() == 0)
-		{
-			m_view = GET_UNIQUEN_WEBVIEW()
-		}
-		else
-		{
-			m_view = GET_TEST_WEBVIEW()
-		}
+		m_view = GET_OTHER_WEBVIEW(ViewType_Scan);
+		m_view->showMaximized();
+		m_view->isActiveWindow();
+		//if (ScanConfig::ScanType() == 0)
+		//{
+		//	m_view = GET_UNIQUEN_WEBVIEW();
+		//}
+		//else
+		//{
+		//	m_view = GET_TEST_WEBVIEW();
+		//}
 
 		connect(m_view, &QWebEngineView::loadFinished, this, &ScanTaskManager::_ParseMainPage);
 
@@ -170,7 +173,7 @@ TaskInfos ScanTaskManager::GetInfos()
 void ScanTaskManager::ParseMainPage()
 {
 	m_view->page()->runJavaScript(
-		"var es = document.getElementsByClassName('feed-infinite-wrapper');"
+		"var es = document.getElementsByClassName('swiper-news');"
 		"if (es.length > 0)"
 		"{es[0].innerHTML;}"
 		, [=](QVariant v)
@@ -227,26 +230,26 @@ void ScanTaskManager::ParseMainPage()
 void ScanTaskManager::_ParseMainPage()
 {
 	// 切换类型
-	const int delayTime = 6000;
+	const int delayTime = 2000;
 
 
 	LOG(QString(TR("切换类型:%1")).arg(ScanConfig::ScanType()));
 	QTimer::singleShot(delayTime, [=]() {
-		m_view->page()->runJavaScript(QString(
-			"var es = document.getElementsByClassName('channel-item');"
-			"if (es.length > 0)"
-			"{es[%1].click();}"
-		).arg(ScanConfig::ScanType())
-			, [=](QVariant v)
-		{
-			LOG(TR("开始解析主页数据！"));
-			QTimer::singleShot(delayTime, [=]() {
+		//m_view->page()->runJavaScript(QString(
+		//	"var es = document.getElementsByClassName('channel-item');"
+		//	"if (es.length > 0)"
+		//	"{es[%1].click();}"
+		//).arg(ScanConfig::ScanType())
+		//	, [=](QVariant v)
+		//{
+		//	LOG(TR("开始解析主页数据！"));
+		//	QTimer::singleShot(delayTime, [=]() {
 				ParseMainPage();
 
-			});
+			//});
 
 
-		});
+		//});
 
 	});
 
@@ -276,7 +279,7 @@ void ScanTaskManager::NextDownload()
 
 void ScanTaskManager::NextUrl()
 {
-	QTimer::singleShot(10*1000, [=]() {
+	QTimer::singleShot(1*1000, [=]() {
 
 		QString taskUrl;
 		while (!m_mainNewUrlist.isEmpty())
@@ -301,18 +304,18 @@ void ScanTaskManager::NextUrl()
 		{
 			if (++m_tryGetMoreCount < 10)
 			{
-				if (m_mainOldUrlist.size() < 200)
+				//if (m_mainOldUrlist.size() < 200)
 				{
 					// 刷新主页
 					GetMore();
 				}
-				else
-				{
-					m_mainOldUrlist.clear();
-					// 重新加载主页
-					LOG(TR("重新加载主页！"));
-					m_view->load(m_url);
-				}
+				//else
+				//{
+				//	//m_mainOldUrlist.clear();
+				//	// 重新加载主页
+				//	LOG(TR("重新加载主页！"));
+				//	m_view->load(m_url);
+				//}
 			}
 			else
 			{
@@ -338,13 +341,29 @@ void ScanTaskManager::GetMore()
 	else
 	{
 		LOG("get more");
-		gWebViewScrollBottom(m_view->page(), [=](QVariant)
-		{
-			QTimer::singleShot(2000, [=]()
+		PROCESS_LOCK->Lock(AUTOUPLOAD);
+		//1537, 330
+		//MOUSEKEYBOARD_FORBID_DISABLED;
+		m_view->showMaximized();
+		m_view->activateWindow();
+		gWebViewScrollTop(m_view->page(), [=](QVariant v) {
+			QTimer::singleShot(1000, [=]()
 			{
+				gMoveCursorAndClick(QPoint(1537, 330));
 				ParseMainPage();
+				//MOUSEKEYBOARD_FORBID_ENABLED;
+				PROCESS_LOCK->UnLock(AUTOUPLOAD);
 			});
 		});
+
+
+		//gWebViewScrollBottom(m_view->page(), [=](QVariant)
+		//{
+		//	QTimer::singleShot(2000, [=]()
+		//	{
+		//		ParseMainPage();
+		//	});
+		//});
 	}
 
 }
@@ -413,53 +432,58 @@ void ScanTaskManager::ParseVideoPage(const QString &url)
 		connect(m_detailView, &QWebEngineView::loadFinished, this, [=]()
 		{
 
-			m_detailView->page()->runJavaScript(
-				"var es = document.getElementsByClassName('bui-left index-content');"
-				"if (es.length > 0)"
-				"{es[0].innerHTML;}"
-				, [=](QVariant v)
+			QTimer::singleShot(4000, [=]() 
 			{
-
-				QString html = v.toString();
-				if (!html.isEmpty())
+				m_detailView->page()->runJavaScript(
+					"var es = document.getElementsByClassName('Page_Projection__main');"
+					"if (es.length > 0)"
+					"{es[0].innerHTML;}"
+					, [=](QVariant v)
 				{
-					IPython_Exe *pyExe = IPython_Exe::GetInstance();
-					bool ret = pyExe->Simple_Call("toutiao", "parseTouTiaoDetail", "(s)", html.toUtf8().data());
-					string retString = pyExe->ReturnString();
-					if (!retString.empty())
+
+					QString html = v.toString();
+					if (!html.isEmpty())
 					{
-						_ParseVideoPage(retString);
-					}
-					else
-					{ 
-						LOG("error: parseTouTiaoDetail return empty");
-						m_stoping = true;
-						NextDownload();
-					}
+						IPython_Exe *pyExe = IPython_Exe::GetInstance();
+						bool ret = pyExe->Simple_Call("toutiao", "parseTouTiaoDetail", "(s)", html.toUtf8().data());
+						string retString = pyExe->ReturnString();
+						if (!retString.empty())
+						{
+							_ParseVideoPage(retString);
+						}
+						else
+						{
+							LOG("error: parseTouTiaoDetail return empty");
+							m_stoping = true;
+							NextDownload();
+						}
 
-				}
-				else
-				{
-					LOG(QString("error: document.getElementsByClassName('bui-left index-content')"));
-					LOG(TR("获取视频详细信息失败，可能网络访问被限！"));
-
-					if (ScanConfig::Loop())
-					{
-						LOG(TR("设置了无限扫描，60秒后继续扫描任务！"));
-						QTimer::singleShot(1000 * 60, this, &ScanTaskManager::NextDownload);
-
-						EMAIL_NETWORKERROR->SendEmail();
 					}
 					else
 					{
-						_StopScan();
+						LOG(QString("error: document.getElementsByClassName('bui-left index-content')"));
+						LOG(TR("获取视频详细信息失败，可能网络访问被限！"));
+
+						if (ScanConfig::Loop())
+						{
+							LOG(TR("设置了无限扫描，60秒后继续扫描任务！"));
+							QTimer::singleShot(1000 * 60, this, &ScanTaskManager::NextDownload);
+
+							EMAIL_NETWORKERROR->SendEmail();
+						}
+						else
+						{
+							_StopScan();
+						}
+
+
 					}
+				});
 
-
-				}
+			});
 			});
 
-		});
+			
 
 
 	}
@@ -526,6 +550,7 @@ void ScanTaskManager::_ParseVideoPage(const string& retString)
 	info->userUrl = detailObject["userurl"].toString();
 	info->videoType = ScanConfig::VideoType();
 	// 保存到数据库
+
 	if (MY_DB->TaskInsert(info))
 	{
 		m_infos.push_back(info);
@@ -576,7 +601,7 @@ bool KeyWordSearchScanTaskManager::StartScan(QString url)
 
 	if (m_view == nullptr)
 	{
-		m_view = GET_UNIQUEN_WEBVIEW()
+		m_view = GET_UNIQUEN_WEBVIEW();
 
 		//m_view = GET_TEST_WEBVIEW()
 

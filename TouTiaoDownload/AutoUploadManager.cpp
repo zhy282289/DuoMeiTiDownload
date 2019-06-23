@@ -4,11 +4,9 @@
 #include <thread>
 #include "NetworkCookie.h"
 
-#define AUTOUPLOAD "autoupload"
 #define INTERNAL_TIME 1000
 
-#define MOUSEKEYBOARD_FORBID_DISABLED	BlockInput(false);
-#define MOUSEKEYBOARD_FORBID_ENABLED	BlockInput(true);
+
 
 AutoUploadManager::AutoUploadManager(QObject *parent)
 	: QObject(parent)
@@ -178,7 +176,7 @@ void AutoUploadManager::CreateWebView(int index)
 	}
 	if (m_view == nullptr)
 	{
-		m_view = GET_TEST_WEBVIEW()
+		m_view = GET_TEST_WEBVIEW();
 		m_view->setWindowTitle(QString(TR("账号%1")).arg(index));
 		m_cookie = new NetworkCookie(m_view, index, "https://mp.toutiao.com");
 	}
@@ -245,26 +243,24 @@ void AutoUploadManager::MonitorUploadFileFinish()
 		QTimer::singleShot(2 * 1000, [=]()
 		{
 			if (m_view)
-			m_view->page()->runJavaScript(
-				"var es = document.getElementsByClassName('tips');"
-				"if (es.length > 0)"
-				"{"
-				"var s;"
-				"for(var i=0;i<es.length;i++){s=s+es[i].innerHTML;}"
-				"s+'1';"
+				m_view->page()->runJavaScript(
+					"var es = document.getElementsByClassName('upload-btn');"
+					"if (es.length > 0)"
+					"{"
+					"es[0].innerHTML;"
 				"}"
 				"else{''+'1';}"
 				, [=](QVariant v)
 			{
 				QString html = v.toString();
 				qDebug() << html;
-				if (html.contains(TR("上传完毕")))
+				if (html.contains(TR("上传成功")))
 				{
 					m_tryLoadFinish = 0;
 					LOG((TR("获取到上传完毕状态")));
 					UploadFileFinishEx();
 				}
-				else if (html.contains(TR("重复")))
+				else if (html.contains(TR("视频重复")))
 				{
 					LOG((TR("视频重复上传,下个任务")));
 					m_tryLoadFinish = 0;
@@ -297,6 +293,8 @@ void AutoUploadManager::MonitorUploadFileFinish()
 
 void AutoUploadManager::UploadFileFinishEx()
 {
+
+
 	PROCESS_LOCK->Lock(AUTOUPLOAD);
 	MOUSEKEYBOARD_FORBID_ENABLED;
 
@@ -313,35 +311,44 @@ void AutoUploadManager::UploadFileFinishEx()
 
 	QApplication::clipboard()->setText(title);
 
+	QTimer::singleShot(1000, [=]() {
 
-	gWebViewScrollTop(m_view->page(), [=](QVariant html) {
 
-		m_view->activateWindow();
+		gWebViewScrollTop(m_view->page(), [=](QVariant html) {
 
-		gMoveCursorAndClick(m_view->mapToGlobal(QPoint(870, 477)));
-		gKeybdEvent_CTL('A');
-		gKeybdEvent_CTL('V');
-		 
-		QTimer::singleShot(6000, [=]() {
+			m_view->activateWindow();
 
-			gKeybdEvent(VK_TAB);
+			gMoveCursorAndClick(m_view->mapToGlobal(QPoint(870, 490)));
 			gKeybdEvent_CTL('A');
 			gKeybdEvent_CTL('V');
 
-			gKeybdEvent(VK_TAB);
-			gKeybdEvent(VK_TAB);
-			gKeybdEvent(VK_TAB);
+			QTimer::singleShot(6000, [=]() {
 
-			QStringList keyWords = DownloadFinishConfig::KeyWords(m_index).split(" ");
-			if (keyWords.isEmpty())
-				keyWords.push_back(TR("搞笑 影视"));
-			SetKeyWorks(keyWords);
+				gKeybdEvent(VK_TAB);
+				gKeybdEvent_CTL('A');
+				gKeybdEvent_CTL('V');
+
+				//gKeybdEvent(VK_TAB);
+				//gKeybdEvent(VK_TAB);
+				//gKeybdEvent(VK_TAB);
+
+				QStringList keyWords = DownloadFinishConfig::KeyWords(m_index).split(" ");
+				if (keyWords.isEmpty())
+				{
+					keyWords.push_back(TR("搞笑"));
+					keyWords.push_back(TR("影视"));
+				}
+				gWebViewScrollBottom(m_view->page(), [=](QVariant) {
+					gMoveCursorAndClick(QPoint(870, 840));
+					SetKeyWorks(keyWords);
+				});
+
+
+			});
 
 		});
 
 	});
-
-
 
 }
 
@@ -438,7 +445,8 @@ void AutoUploadManager::ReLoadURL(bool ret)
 
 void AutoUploadManager::SetKeyWorks(QStringList keyWords)
 {
-	QTimer::singleShot(INTERNAL_TIME, [=]() {
+	QTimer::singleShot(INTERNAL_TIME, [=]() 
+	{
 		if (keyWords.size() > 0)
 		{
 			auto key = keyWords[0];
@@ -452,16 +460,16 @@ void AutoUploadManager::SetKeyWorks(QStringList keyWords)
 		}
 		else
 		{
-			for (int i = 0; i < DownloadFinishConfig::TabNum(m_index); ++i)
-				gKeybdEvent(VK_TAB);
+			//for (int i = 0; i < DownloadFinishConfig::TabNum(m_index); ++i)
+			//	gKeybdEvent(VK_TAB);
 
-			gKeybdEvent(VK_RETURN);
+			//gKeybdEvent(VK_RETURN);
 
-			QTimer::singleShot(INTERNAL_TIME, [=]() {
-				for (int i = 0; i < DownloadFinishConfig::MajorKeyWord(m_index); ++i)
-					gKeybdEvent(VK_DOWN);
+			//QTimer::singleShot(INTERNAL_TIME, [=]() {
+			//	for (int i = 0; i < DownloadFinishConfig::MajorKeyWord(m_index); ++i)
+			//		gKeybdEvent(VK_DOWN);
 
-				gKeybdEvent(VK_RETURN);
+			//	gKeybdEvent(VK_RETURN);
 
 				QTimer::singleShot(1000, [=]() {
 
@@ -470,8 +478,8 @@ void AutoUploadManager::SetKeyWorks(QStringList keyWords)
 					Submit();
 
 				});
-			});
-		}
+			//});
+			}
 	
 	});
 

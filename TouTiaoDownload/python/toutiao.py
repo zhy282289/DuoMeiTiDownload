@@ -10,7 +10,7 @@ from email.header import Header
 
 def parseTouTiaoFromMain(html):
     soup = BeautifulSoup(html, 'lxml')
-    li = soup.select('li div div[class="bui-left single-mode-lbox"] a')
+    li = soup.select('div[class="card-list-only"] div div div a')
     mainUrl = 'https://www.ixigua.com'
     urls = ''
     for l in li:
@@ -37,35 +37,36 @@ def parseTouTiaoDetail(html):
 
     retrun_js = '{'
     #标题
-    title = _getString(soup.select('div h2[class="title"]'))
+    title = _getString(soup.select('div[class="player__videoTitle"] h1'))
     retrun_js += '"{0}":"{1}",'.format('title', title)
     #是否原创
-    origin = _getString(soup.select('div div[class="origin"][style="display: none;"] span'))
+    origin = _getString(soup.select('div[class="player__videoTitle"] span'))
     retrun_js += '"{0}":"{1}",'.format('origin', origin)
 
     #下载地址
-    videourl = soup.select('div[class="player"] div[class="player-wrap"] div video')
+    videourl = soup.select('div[class="player"] div video')
+    
     try:
-        videourl = 'https:' + videourl[0]['src']
+        videourl = videourl[0]['src']
     except:
-        videourl = soup.select('div[class="player"] div[class="player-wrap"] div div video source')
+        videourl = soup.select('div[class="player"] div[id="vs"] div video source')
         try:
             videourl = videourl[0]['src']
         except:
             pass
     retrun_js += '"{0}":"{1}",'.format('videourl', videourl)
 
-    #时长
-    playcount = _getString(soup.select('div[class="abstract"] div div span em'))
+    #播放次数
+    playcount = _getString(soup.select('span[class="view_counts"]'))
     retrun_js += '"{0}":"{1}",'.format('playcount', playcount)
 
     #作者
-    username = _getString(soup.select('div[class="abstract"] div div a span[class="name"]'))
+    username = _getStringAttr(soup.select('div[class="videoDesc"] div div a[class="component-avatar__inner"]'), 'title')
     retrun_js += '"{0}":"{1}",'.format('username', username)
 
     #作者url
     try:
-        userurl = soup.select('div[class="abstract"] div div a')
+        userurl = soup.select('div[class="videoDesc"] div div a[class="component-avatar__inner"]')
         userurl = userurl[0]['href']
         retrun_js += '"{0}":"{1}",'.format('userurl', userurl)
     except:
@@ -119,6 +120,14 @@ def _getString(lst):
     text = ''
     try:
         text = lst[0].string
+    except:
+        pass
+    return text
+
+def _getStringAttr(lst, attr):
+    text = ''
+    try:
+        text = lst[0][attr]
     except:
         pass
     return text

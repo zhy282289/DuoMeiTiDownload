@@ -22,3 +22,7 @@ void gWebViewScrollBottom(QWebEnginePage *page, std::function<void(QVariant)> ca
 void gWebViewScrollTop(QWebEnginePage *page, std::function<void(QVariant)> callback);
 
 void gInitPythonPath();
+
+
+#define MOUSEKEYBOARD_FORBID_DISABLED	BlockInput(false);
+#define MOUSEKEYBOARD_FORBID_ENABLED	BlockInput(true);

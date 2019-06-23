@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "ScanWnd.h"
+#include "WebViewWnd.h"
 
 ScanWnd::ScanWnd(QWidget *parent)
 	: QWidget(parent)
@@ -33,6 +34,7 @@ ScanWnd::ScanWnd(QWidget *parent)
 	m_btnStopSearch = new QPushButton(TR("ֹͣɨ��"), this);
 
 	m_leSearch->setText(TR("https://www.ixigua.com/search/?keyword=СƷ"));
+
 
 	InitUI();
 
@@ -236,6 +238,7 @@ void ScanWnd::resizeEvent(QResizeEvent *event)
 	m_btnStopSearch->setGeometry(left, top, btnw, btnh);
 	left = m_btnStopSearch->geometry().right() + margins2;
 
-
+	left = 0;
+	top = m_btnStopSearch->geometry().bottom() + 10;
 
 }

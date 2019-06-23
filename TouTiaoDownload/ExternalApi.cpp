@@ -113,6 +113,9 @@ void gWebViewScrollBottom(QWebEnginePage *page, std::function<void(QVariant)> ca
 	page->runJavaScript(
 		"window.scrollTo(0,document.body.scrollHeight);"
 		, callback);
+
+	
+
 }
 
 void gWebViewScrollTop(QWebEnginePage *page, std::function<void(QVariant)> callback)
